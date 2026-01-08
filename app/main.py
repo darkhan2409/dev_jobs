@@ -12,6 +12,7 @@ from fastapi_cache.decorator import cache
 from app.database import SessionLocal, get_db
 from app.models import Vacancy
 from app.schemas import VacancyResponse, MetricsResponse, PaginatedVacancies, FiltersResponse
+from app.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -20,22 +21,17 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="DevJobs API", lifespan=lifespan)
 
-# CORS Setup
+# CORS Setup - parametrized from settings
+# For production, set ALLOWED_ORIGINS="https://yourdomain.com,https://www.yourdomain.com"
+allowed_origins = settings.ALLOWED_ORIGINS.split(",") if settings.ALLOWED_ORIGINS != "*" else ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @app.get("/api/metrics", response_model=MetricsResponse)
 @cache(expire=300)
