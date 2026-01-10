@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-slate-900 text-slate-200 antialiased font-sans selection:bg-violet-500/30;
+  }
+}
+
+@layer utilities {
+  .font-mono {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', monospace;
+  }
+
+  .glass-panel {
+    @apply bg-slate-900/80 backdrop-blur-md border border-slate-700/50;
+  }
+
+  .btn-primary {
+    @apply bg-violet-600 hover:bg-violet-500 text-white font-medium px-4 py-2 rounded-lg transition-all duration-200 active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply text-slate-400 hover:text-slate-100 font-medium px-4 py-2 rounded-lg transition-colors;
+  }
+
+  .input-code {
+    @apply bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 font-mono placeholder:text-slate-600 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 transition-all;
+  }
+}
+
+/* Custom Scrollbar for IDE feel */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 5px;
+  border: 2px solid #0f172a;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
