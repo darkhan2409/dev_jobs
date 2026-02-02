@@ -2,7 +2,12 @@
 
 @layer base {
   body {
-    @apply bg-slate-900 text-slate-200 antialiased font-sans selection:bg-violet-500/30;
+    @apply bg-slate-950 text-slate-200 antialiased font-sans selection:bg-violet-500/30;
+    background-image: url('/bg-texture.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
   }
 }
 

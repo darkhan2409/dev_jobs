@@ -99,3 +99,25 @@ class Vacancy(Base):
         return f"<Vacancy(title={self.title}, source={self.source})>"
 
 
+class User(Base):
+    """User model for authentication."""
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String, unique=True, index=True)
+    hashed_password: Mapped[str] = mapped_column(String)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), 
+        server_default=func.now()
+    )
+    
+    # Profile fields
+    full_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    location: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    grade: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # Junior, Middle, Senior, Lead
+    skills: Mapped[list] = mapped_column(JSONB, default=list, server_default='[]')
+    bio: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    def __repr__(self) -> str:
+        return f"<User(email={self.email})>"

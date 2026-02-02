@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
 import { formatSalary, formatDate } from '../utils/formatters';
-import { MapPin, Building2, ExternalLink, ArrowLeft, Share2, Globe } from 'lucide-react';
+import { MapPin, Building2, ExternalLink, Globe } from 'lucide-react';
+import ErrorState from '../components/ui/ErrorState';
 import DOMPurify from 'dompurify';
 import JobDetailsSkeleton from './JobDetailsSkeleton';
 
@@ -27,19 +28,24 @@ const JobDetailsPage = () => {
         fetchVacancy();
     }, [id]);
 
+    useEffect(() => {
+        if (vacancy) {
+            document.title = `${vacancy.title} | DevJobs`;
+        }
+        return () => {
+            document.title = 'DevJobs - Find Your Dream Job'; // Reset on unmount
+        };
+    }, [vacancy]);
+
     if (loading) return <JobDetailsSkeleton />;
 
     if (error || !vacancy) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
-                <div className="text-center">
-                    <h2 className="text-3xl font-bold mb-4">Vacancy not found</h2>
-                    <p className="text-slate-400 mb-6">{error || "This position might have been closed."}</p>
-                    <Link to="/" className="text-indigo-400 hover:text-indigo-300 flex items-center justify-center gap-2">
-                        <ArrowLeft size={20} />
-                        Back to Jobs
-                    </Link>
-                </div>
+            <div className="min-h-screen flex items-center justify-center">
+                <ErrorState
+                    title="Vacancy not found"
+                    message={error || "This position might have been closed or removed."}
+                />
             </div>
         );
     }
@@ -47,18 +53,8 @@ const JobDetailsPage = () => {
     const sanitizedDescription = DOMPurify.sanitize(vacancy.description);
 
     return (
-        <div className="min-h-screen bg-slate-900 text-slate-200 font-sans pb-24 lg:pb-12">
-            {/* Top Navigation */}
-            <nav className="border-b border-slate-800/50 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
-                <div className="max-w-7xl mx-auto px-4 h-16 flex items-center">
-                    <Link to="/" className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group">
-                        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-                        <span className="font-medium">Back to Jobs</span>
-                    </Link>
-                </div>
-            </nav>
-
-            <main className="max-w-7xl mx-auto px-4 py-8">
+        <div className="min-h-screen text-slate-200 font-sans pb-24 lg:pb-12">
+            <main className="max-w-7xl mx-auto px-4 py-8 pt-24">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative">
 
                     {/* LEFT COLUMN: Header & Description */}
@@ -66,11 +62,11 @@ const JobDetailsPage = () => {
 
                         {/* Header Block */}
                         <div className="space-y-4">
-                            {/* Breadcrumbs / Meta */}
+                            {/* Breadcrumbs */}
                             <div className="flex items-center gap-2 text-sm text-slate-500">
-                                <span>Jobs</span>
+                                <Link to="/jobs" className="hover:text-white transition-colors">Jobs</Link>
                                 <span>/</span>
-                                <span className="text-slate-300">{vacancy.title}</span>
+                                <span className="text-slate-300 truncate max-w-[300px]">{vacancy.title}</span>
                             </div>
 
                             <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight">
@@ -79,7 +75,7 @@ const JobDetailsPage = () => {
 
                             <div className="flex flex-wrap items-center gap-4 text-base text-slate-400">
                                 <div className="flex items-center gap-2">
-                                    <Building2 size={18} className="text-indigo-400" />
+                                    <Building2 size={18} className="text-violet-400" />
                                     <span className="text-slate-200 font-medium">{vacancy.company_name}</span>
                                 </div>
                                 <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
@@ -96,8 +92,8 @@ const JobDetailsPage = () => {
                         <div className="bg-slate-900/50 rounded-2xl">
                             <article
                                 className="prose prose-invert prose-slate prose-lg max-w-none 
-                                prose-headings:text-slate-100 prose-a:text-indigo-400 hover:prose-a:text-indigo-300
-                                prose-strong:text-white prose-li:marker:text-indigo-500"
+                                prose-headings:text-slate-100 prose-a:text-violet-400 hover:prose-a:text-violet-300
+                                prose-strong:text-white prose-li:marker:text-violet-500"
                                 dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
                             />
                         </div>
@@ -122,7 +118,7 @@ const JobDetailsPage = () => {
                                     rel="noopener noreferrer"
                                     className="block w-full"
                                 >
-                                    <button className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 group">
+                                    <button className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-violet-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 group">
                                         <span>Apply Now</span>
                                         <ExternalLink size={18} className="group-hover:translate-x-1 transition-transform" />
                                     </button>
@@ -132,6 +128,71 @@ const JobDetailsPage = () => {
                                     Opens on {vacancy.source === 'hh' ? 'HeadHunter' : vacancy.source}
                                 </p>
                             </div>
+
+                            {/* Card 1.5: Job Summary (New) */}
+                            {vacancy.raw_data && (
+                                <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6 space-y-4">
+                                    <h3 className="font-semibold text-white mb-2">Job Details</h3>
+
+                                    <div className="space-y-3 text-sm">
+                                        {/* Experience */}
+                                        {vacancy.raw_data.experience?.name && (
+                                            <div className="flex justify-between items-start pt-2 border-t border-slate-700/50 first:pt-0 first:border-0">
+                                                <span className="text-slate-500">Experience</span>
+                                                <span className="text-slate-200 font-medium text-right">{vacancy.raw_data.experience.name}</span>
+                                            </div>
+                                        )}
+
+                                        {/* Employment Type */}
+                                        {(vacancy.raw_data.employment?.name || vacancy.raw_data.employment_form?.name) && (
+                                            <div className="flex justify-between items-start pt-2 border-t border-slate-700/50">
+                                                <span className="text-slate-500">Employment</span>
+                                                <span className="text-slate-200 font-medium text-right">
+                                                    {vacancy.raw_data.employment?.name || vacancy.raw_data.employment_form?.name}
+                                                </span>
+                                            </div>
+                                        )}
+
+                                        {/* Schedule */}
+                                        {(vacancy.raw_data.schedule?.name || (vacancy.raw_data.work_schedule_by_days?.[0]?.name)) && (
+                                            <div className="flex justify-between items-start pt-2 border-t border-slate-700/50">
+                                                <span className="text-slate-500">Schedule</span>
+                                                <div className="text-right">
+                                                    <div className="text-slate-200 font-medium">
+                                                        {vacancy.raw_data.schedule?.name}
+                                                    </div>
+                                                    {vacancy.raw_data.work_schedule_by_days?.[0]?.name && (
+                                                        <div className="text-slate-400 text-xs mt-0.5">
+                                                            {vacancy.raw_data.work_schedule_by_days[0].name}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Working Hours */}
+                                        {vacancy.raw_data.working_hours?.[0]?.name && (
+                                            <div className="flex justify-between items-start pt-2 border-t border-slate-700/50">
+                                                <span className="text-slate-500">Hours</span>
+                                                <span className="text-slate-200 font-medium text-right">
+                                                    {vacancy.raw_data.working_hours[0].name}
+                                                </span>
+                                            </div>
+                                        )}
+
+                                        {/* Address / Location Detail */}
+                                        {vacancy.raw_data.address && (
+                                            <div className="flex justify-between items-start pt-2 border-t border-slate-700/50">
+                                                <span className="text-slate-500 shrink-0">Location</span>
+                                                <span className="text-slate-200 font-medium text-right truncate pl-4" title={vacancy.raw_data.address.city || vacancy.raw_data.address.raw}>
+                                                    {vacancy.raw_data.address.city}
+                                                    {vacancy.raw_data.address.street && `, ${vacancy.raw_data.address.street}`}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Card 2: Tech Stack */}
                             {vacancy.key_skills && vacancy.key_skills.length > 0 && (
@@ -171,10 +232,13 @@ const JobDetailsPage = () => {
                                 <div className="text-slate-400 text-sm mb-4">
                                     {vacancy.location || 'Kazakhstan'}
                                 </div>
-                                <button className="text-sm text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1">
+                                <Link
+                                    to={`/companies/${encodeURIComponent(vacancy.company_name)}`}
+                                    className="text-sm text-violet-400 hover:text-violet-300 font-medium flex items-center gap-1"
+                                >
                                     <Globe size={14} />
                                     View Company Profile
-                                </button>
+                                </Link>
                             </div>
 
                         </div>
@@ -190,7 +254,7 @@ const JobDetailsPage = () => {
                     rel="noopener noreferrer"
                     className="block w-full"
                 >
-                    <button className="w-full bg-indigo-600 text-white font-semibold py-2.5 rounded-xl shadow-lg flex items-center justify-center gap-2">
+                    <button className="w-full bg-violet-600 text-white font-semibold py-2.5 rounded-xl shadow-lg flex items-center justify-center gap-2">
                         <span>Apply Now</span>
                         <ExternalLink size={16} />
                     </button>

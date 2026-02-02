@@ -27,7 +27,7 @@ TECH_KEYWORDS = {
     'ClickHouse', 'CouchDB', 'Neo4j',
     
     # DevOps/Tools
-    'Docker', 'Kubernetes', 'K8s', 'Git', 'GitHub', 'GitLab', 'Bitbucket',
+    'Docker', 'Kubernetes', 'K8s', 'Git', 'GitHub', 'GitLab', 'Bitbucket', 'DevOps',
     'Jenkins', 'CircleCI', 'Travis CI', 'GitHub Actions', 'GitLab CI',
     'Terraform', 'Ansible', 'Chef', 'Puppet', 'Vagrant',
     'Linux', 'Ubuntu', 'CentOS', 'Debian', 'RHEL',
@@ -67,16 +67,20 @@ def extract_tech_stack(text: str) -> List[str]:
     text_lower = text.lower()
     
     for tech in TECH_KEYWORDS:
-        # Create regex pattern for whole word matching
-        # Use word boundaries but account for dots and slashes
-        pattern = r'\b' + re.escape(tech.lower()) + r'\b'
+        # Escape the tech string for regex
+        escaped_tech = re.escape(tech.lower())
+        
+        # Use lookarounds for boundaries instead of \b to handle special chars (C++, C#, .NET)
+        # (?<!\w) ensures preceding char is not a word char (or start of string)
+        # (?!\w) ensures following char is not a word char (or end of string)
+        pattern = r'(?<!\w)' + escaped_tech + r'(?!\w)'
         
         if re.search(pattern, text_lower):
             found_techs.add(tech)
     
-    # Sort by length (longer names first) to prioritize specific technologies
-    # e.g., "React Native" before "React"
+    # Sort by length (longer names first)
     return sorted(found_techs, key=lambda x: (-len(x), x))
+
 
 
 def extract_tech_from_vacancy(title: str, description: str) -> List[str]:

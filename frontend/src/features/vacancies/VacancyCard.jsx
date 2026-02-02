@@ -1,8 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Badge from '../../components/ui/Badge';
-import { formatCurrency, formatDate } from '../../utils/formatters';
-import { MapPin, Building2, Calendar, Terminal } from 'lucide-react';
+import { formatCurrency } from '../../utils/formatters';
+import { MapPin } from 'lucide-react';
 
 // Helper function to map skill names to Devicon classes
 const getIconClass = (skillName) => {
@@ -89,120 +88,131 @@ const getIconClass = (skillName) => {
     return iconMap[skill] || null;
 };
 
+const getGradeColor = (grade) => {
+    // Unified Green styling for all grades, but clearer/darker
+    // Using emerald-900ish background for "darker" green feel, and emerald-200 text for visibility
+    if (!grade) return 'border-slate-800 text-slate-500 bg-slate-900';
+    return 'border-emerald-500/20 text-emerald-200 bg-emerald-900/40 shadow-[inset_0_0_8px_rgba(16,185,129,0.1)]';
+};
+
 const VacancyCard = ({ vacancy }) => {
-    // Use key_skills from backend instead of parsing title
     const tags = vacancy.key_skills || [];
     const hasSalary = (vacancy.salary_from && vacancy.salary_from > 0) || (vacancy.salary_to && vacancy.salary_to > 0);
     const location = vacancy.location || 'Remote';
-    const postedAt = vacancy.published_at || new Date().toISOString();
+    const gradeColorClass = getGradeColor(vacancy.grade);
 
     return (
-        <div className="group relative bg-slate-900 border border-slate-800 rounded-lg hover:border-slate-600 transition-all duration-200 hover:shadow-2xl hover:shadow-violet-900/10 flex flex-col h-full overflow-hidden">
-            {/* Code Editor Line Numbers Decoration */}
-            <div className="absolute left-0 top-0 bottom-0 w-8 bg-slate-950/50 border-r border-slate-800/50 flex flex-col items-center pt-6 text-[10px] font-mono text-slate-700 select-none">
-                <span>01</span>
-                <span>02</span>
-                <span>03</span>
-            </div>
+        <div className="group relative flex flex-col h-full bg-slate-900 border border-slate-800 rounded-xl overflow-hidden transition-all duration-300 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/10 cursor-pointer divide-y divide-slate-800">
+            <Link to={`/jobs/${vacancy.id}`} className="flex flex-col h-full">
 
-            <Link to={`/vacancies/${vacancy.id}`} className="block pl-12 pr-6 py-6 flex-1">
-                <div className="flex justify-between items-start mb-4">
-                    <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
+                {/* 1. Header Section ("The Cap") */}
+                <div className="bg-white/[0.02] px-4 py-3 flex items-center justify-between gap-3">
+                    {/* Left: Company */}
+                    <div
+                        className="flex items-center gap-2 flex-1 min-w-0"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            // Future: navigate to company
+                        }}
+                    >
+                        <div className="relative w-6 h-6 rounded-full overflow-hidden bg-white p-0.5 flex-shrink-0">
                             {vacancy.company_logo ? (
                                 <img
                                     src={vacancy.company_logo}
                                     alt={vacancy.company_name}
-                                    className="w-5 h-5 rounded object-cover"
-                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                    className="w-full h-full object-contain rounded-full"
+                                    onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
                                 />
-                            ) : (
-                                <Building2 size={16} className="text-slate-500" />
-                            )}
-                            <span className="font-mono text-xs text-violet-400">
-                                {vacancy.company_name || 'Incognito_Mode'}
-                            </span>
-                        </div>
-
-                        <h3 className="text-xl font-bold text-slate-100 font-sans group-hover:text-violet-400 transition-colors mb-3">
-                            {vacancy.title}
-                        </h3>
-
-                        <div className="flex flex-wrap gap-y-2 gap-x-4 text-sm font-mono text-slate-400 mb-4">
-                            {hasSalary && (
-                                <div className="text-emerald-400 flex items-center gap-1.5">
-                                    <span>$</span>
-                                    {formatCurrency(vacancy.salary_from, vacancy.salary_to, vacancy.currency)}
-                                </div>
-                            )}
-                            <div className="flex items-center gap-1.5">
-                                <MapPin size={14} className="text-slate-500" />
-                                {location}
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <Calendar size={14} className="text-slate-500" />
-                                {formatDate(postedAt)}
+                            ) : null}
+                            <div
+                                className="absolute inset-0 w-full h-full flex items-center justify-center text-[10px] font-bold text-slate-600 bg-white rounded-full"
+                                style={{ display: vacancy.company_logo ? 'none' : 'flex' }}
+                            >
+                                {(vacancy.company_name || 'I').charAt(0).toUpperCase()}
                             </div>
                         </div>
+                        <span className="font-medium text-slate-300 text-sm truncate group-hover:text-violet-200 transition-colors" title={vacancy.company_name}>
+                            {vacancy.company_name || 'Incognito'}
+                        </span>
                     </div>
-                </div>
 
-                {/* Tech Stack Icons */}
-                <div className="flex flex-wrap items-center gap-3 mt-auto">
+                    {/* Right: Grade Badge */}
                     {vacancy.grade && (
-                        <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-700 text-[10px] font-mono text-slate-300">
+                        <span className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full border shrink-0 ${gradeColorClass}`}>
                             {vacancy.grade}
                         </span>
                     )}
-
-                    {tags.slice(0, 5).map((tech, index) => {
-                        const iconClass = getIconClass(tech);
-
-                        // Only render if we have an icon mapping
-                        if (iconClass) {
-                            return (
-                                <i
-                                    key={index}
-                                    className={`${iconClass} colored text-2xl transition-all hover:scale-110`}
-                                    title={tech}
-                                ></i>
-                            );
-                        }
-                        return null; // Don't render text badges for unmapped skills
-                    }).filter(Boolean)}
                 </div>
-            </Link>
 
-            {/* Terminal Action Footer */}
-            <div className="pl-12 pr-6 pb-4 pt-2 border-t border-slate-800/50 bg-slate-900/50 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="text-xs font-mono text-slate-500">
-                    git checkout -b job/{vacancy.id}
-                </span>
-                <Link to={`/ vacancies / ${vacancy.id} `} className="flex items-center gap-2 text-xs font-mono font-bold text-violet-400 hover:text-violet-300">
-                    <span className="text-violet-500">&gt;</span> Apply_Now()
-                </Link>
-            </div>
+                {/* 2. Body Section (Main Info) */}
+                <div className="p-4 flex flex-col gap-2 flex-1">
+                    <h3 className="text-lg font-bold text-white line-clamp-2 leading-tight group-hover:text-violet-100 transition-colors">
+                        {vacancy.title}
+                    </h3>
+
+                    {hasSalary && (
+                        <div className="text-emerald-400 font-semibold text-base">
+                            {formatCurrency(vacancy.salary_from, vacancy.salary_to, vacancy.currency)}
+                        </div>
+                    )}
+
+                    <div className="flex items-center gap-1 text-xs text-slate-500 mt-auto pt-2 font-mono">
+                        <MapPin size={12} />
+                        {location}
+                    </div>
+                </div>
+
+                {/* 3. Footer Section (Tech Stack) */}
+                {tags.length > 0 && (
+                    <div className="px-4 py-3 bg-white/[0.02]">
+                        <div className="flex items-center gap-2">
+                            {tags.slice(0, 4).map((tech, index) => {
+                                const iconClass = getIconClass(tech);
+                                if (iconClass) {
+                                    return (
+                                        <i
+                                            key={index}
+                                            className={`${iconClass} colored text-lg opacity-80 group-hover:opacity-100 transition-opacity`}
+                                            title={tech}
+                                        ></i>
+                                    );
+                                }
+                                return null;
+                            }).filter(Boolean)}
+                            {tags.length > 4 && (
+                                <span className="text-xs text-slate-500 font-mono">+{tags.length - 4}</span>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </Link>
         </div>
     );
 };
 
 export const VacancySkeleton = () => {
     return (
-        <div className="p-5 rounded-xl border border-slate-800 bg-slate-900/30 animate-pulse space-y-4">
-            <div className="flex justify-between">
-                <div className="space-y-2 w-2/3">
-                    <div className="h-5 bg-slate-800 rounded w-3/4"></div>
-                    <div className="h-4 bg-slate-800 rounded w-1/3"></div>
+        <div className="p-5 rounded-xl border border-slate-800 bg-slate-900/30 animate-pulse flex flex-col h-[250px]">
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-slate-800"></div>
+                    <div className="w-20 h-4 bg-slate-800 rounded"></div>
                 </div>
-                <div className="h-6 w-16 bg-slate-800 rounded-full"></div>
+                <div className="w-16 h-5 bg-slate-800 rounded-full"></div>
             </div>
-            <div className="flex gap-2">
-                <div className="h-5 w-16 bg-slate-800 rounded-full"></div>
-                <div className="h-5 w-20 bg-slate-800 rounded-full"></div>
+
+            <div className="w-3/4 h-6 bg-slate-800 rounded mb-2"></div>
+            <div className="w-1/2 h-6 bg-slate-800 rounded mb-4"></div>
+
+            <div className="mt-auto flex gap-2 mb-4">
+                <div className="w-20 h-4 bg-slate-800 rounded"></div>
             </div>
-            <div className="pt-3 border-t border-slate-800/50 flex justify-between">
-                <div className="h-4 w-24 bg-slate-800 rounded"></div>
-                <div className="h-4 w-20 bg-slate-800 rounded"></div>
+
+            <div className="pt-3 mt-auto border-t border-slate-800/50 flex gap-2">
+                <div className="w-6 h-6 bg-slate-800 rounded-full"></div>
+                <div className="w-6 h-6 bg-slate-800 rounded-full"></div>
+                <div className="w-6 h-6 bg-slate-800 rounded-full"></div>
             </div>
         </div>
     );

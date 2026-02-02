@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d946ef;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" rx="20" fill="#0f172a"/>
+  <rect x="8" y="8" width="84" height="84" rx="16" fill="none" stroke="url(#grad)" stroke-width="3"/>
+  <text x="50" y="42" font-family="monospace" font-size="18" fill="#e2e8f0" text-anchor="middle">&lt;/&gt;</text>
+  <text x="50" y="68" font-family="system-ui, sans-serif" font-size="16" font-weight="bold" fill="url(#grad)" text-anchor="middle">DJ</text>
+</svg>
