@@ -52,3 +52,4 @@ venv.bak/
 
 # Custom project ignores
 antigravity/
+.vscode/
