@@ -2,6 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '../../utils/formatters';
 import { MapPin } from 'lucide-react';
+import Badge from '../../components/ui/Badge';
+import { motion } from 'framer-motion';
+import { cardHoverVariants } from '../../utils/animations';
 
 // Helper function to map skill names to Devicon classes
 const getIconClass = (skillName) => {
@@ -88,22 +91,19 @@ const getIconClass = (skillName) => {
     return iconMap[skill] || null;
 };
 
-const getGradeColor = (grade) => {
-    // Unified Green styling for all grades, but clearer/darker
-    // Using emerald-900ish background for "darker" green feel, and emerald-200 text for visibility
-    if (!grade) return 'border-slate-800 text-slate-500 bg-slate-900';
-    return 'border-emerald-500/20 text-emerald-200 bg-emerald-900/40 shadow-[inset_0_0_8px_rgba(16,185,129,0.1)]';
-};
-
 const VacancyCard = ({ vacancy }) => {
     const tags = vacancy.key_skills || [];
     const hasSalary = (vacancy.salary_from && vacancy.salary_from > 0) || (vacancy.salary_to && vacancy.salary_to > 0);
     const location = vacancy.location || 'Remote';
-    const gradeColorClass = getGradeColor(vacancy.grade);
 
     return (
-        <div className="group relative flex flex-col h-full bg-slate-900 border border-slate-800 rounded-xl overflow-hidden transition-all duration-300 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/10 cursor-pointer divide-y divide-slate-800">
-            <Link to={`/jobs/${vacancy.id}`} className="flex flex-col h-full">
+        <motion.div
+            variants={cardHoverVariants}
+            whileHover="hover"
+            initial="rest"
+            className="group relative flex flex-col h-full bg-surface border border-border rounded-xl osverflow-hidden cursor-pointer divide-y divide-border"
+        >
+            <Link to={`/jobs/${vacancy.id}`} className="flex flex-col h-full relative z-10">
 
                 {/* 1. Header Section ("The Cap") */}
                 <div className="bg-white/[0.02] px-4 py-3 flex items-center justify-between gap-3">
@@ -132,22 +132,22 @@ const VacancyCard = ({ vacancy }) => {
                                 {(vacancy.company_name || 'I').charAt(0).toUpperCase()}
                             </div>
                         </div>
-                        <span className="font-medium text-slate-300 text-sm truncate group-hover:text-violet-200 transition-colors" title={vacancy.company_name}>
+                        <span className="font-medium text-text-muted text-sm truncate group-hover:text-text-main transition-colors" title={vacancy.company_name}>
                             {vacancy.company_name || 'Incognito'}
                         </span>
                     </div>
 
                     {/* Right: Grade Badge */}
                     {vacancy.grade && (
-                        <span className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full border shrink-0 ${gradeColorClass}`}>
+                        <Badge variant="success" className="uppercase tracking-wider font-semibold">
                             {vacancy.grade}
-                        </span>
+                        </Badge>
                     )}
                 </div>
 
                 {/* 2. Body Section (Main Info) */}
                 <div className="p-4 flex flex-col gap-2 flex-1">
-                    <h3 className="text-lg font-bold text-white line-clamp-2 leading-tight group-hover:text-violet-100 transition-colors">
+                    <h3 className="text-lg font-bold text-white line-clamp-2 leading-tight group-hover:text-primary-light transition-colors">
                         {vacancy.title}
                     </h3>
 
@@ -157,7 +157,7 @@ const VacancyCard = ({ vacancy }) => {
                         </div>
                     )}
 
-                    <div className="flex items-center gap-1 text-xs text-slate-500 mt-auto pt-2 font-mono">
+                    <div className="flex items-center gap-1 text-xs text-text-muted mt-auto pt-2 font-mono">
                         <MapPin size={12} />
                         {location}
                     </div>
@@ -181,38 +181,38 @@ const VacancyCard = ({ vacancy }) => {
                                 return null;
                             }).filter(Boolean)}
                             {tags.length > 4 && (
-                                <span className="text-xs text-slate-500 font-mono">+{tags.length - 4}</span>
+                                <span className="text-xs text-text-muted font-mono">+{tags.length - 4}</span>
                             )}
                         </div>
                     </div>
                 )}
             </Link>
-        </div>
+        </motion.div>
     );
 };
 
 export const VacancySkeleton = () => {
     return (
-        <div className="p-5 rounded-xl border border-slate-800 bg-slate-900/30 animate-pulse flex flex-col h-[250px]">
+        <div className="p-5 rounded-xl border border-border bg-surface/30 animate-pulse flex flex-col h-[250px]">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-slate-800"></div>
-                    <div className="w-20 h-4 bg-slate-800 rounded"></div>
+                    <div className="w-6 h-6 rounded-full bg-border"></div>
+                    <div className="w-20 h-4 bg-border rounded"></div>
                 </div>
-                <div className="w-16 h-5 bg-slate-800 rounded-full"></div>
+                <div className="w-16 h-5 bg-border rounded-full"></div>
             </div>
 
-            <div className="w-3/4 h-6 bg-slate-800 rounded mb-2"></div>
-            <div className="w-1/2 h-6 bg-slate-800 rounded mb-4"></div>
+            <div className="w-3/4 h-6 bg-border rounded mb-2"></div>
+            <div className="w-1/2 h-6 bg-border rounded mb-4"></div>
 
             <div className="mt-auto flex gap-2 mb-4">
-                <div className="w-20 h-4 bg-slate-800 rounded"></div>
+                <div className="w-20 h-4 bg-border rounded"></div>
             </div>
 
             <div className="pt-3 mt-auto border-t border-slate-800/50 flex gap-2">
-                <div className="w-6 h-6 bg-slate-800 rounded-full"></div>
-                <div className="w-6 h-6 bg-slate-800 rounded-full"></div>
-                <div className="w-6 h-6 bg-slate-800 rounded-full"></div>
+                <div className="w-6 h-6 bg-border rounded-full"></div>
+                <div className="w-6 h-6 bg-border rounded-full"></div>
+                <div className="w-6 h-6 bg-border rounded-full"></div>
             </div>
         </div>
     );

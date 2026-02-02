@@ -52,7 +52,15 @@ export const pageVariants = {
 
 export const fadeInUp = {
     initial: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 20 },
     animate: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            ...springConfig
+        }
+    },
+    visible: {
         opacity: 1,
         y: 0,
         transition: {
@@ -66,5 +74,29 @@ export const scaleOnHover = {
     transition: {
         duration: 0.2,
         ease: "easeOut"
+    }
+};
+
+export const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1
+        }
+    }
+};
+
+export const cardHoverVariants = {
+    hover: {
+        y: -8,
+        scale: 1.01,
+        boxShadow: "0px 12px 24px rgba(124, 58, 237, 0.1)", // primary/10
+        borderColor: "rgba(124, 58, 237, 0.5)", // primary/50
+        transition: {
+            type: "spring",
+            stiffness: 400,
+            damping: 25
+        }
     }
 };

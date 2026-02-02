@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Terminal, Code2, LogOut, User, ChevronDown } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
+import Button from './ui/Button';
 
 const AppHeader = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -45,11 +46,17 @@ const AppHeader = () => {
         setIsUserMenuOpen(false);
     };
 
+    const navLinkClass = ({ isActive }) =>
+        `px-3 py-2 rounded-md text-sm font-medium transition-all ${isActive
+            ? 'text-white bg-primary/20 border border-primary/30'
+            : 'text-text-muted hover:text-white hover:bg-white/5'
+        }`;
+
     return (
         <>
             <header
                 className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled
-                    ? 'bg-[#0A0F1E]/80 backdrop-blur-2xl shadow-[inset_0_-1px_0_0_rgba(255,255,255,0.08)]'
+                    ? 'bg-background/80 backdrop-blur-2xl border-b border-white/5'
                     : 'bg-transparent border-b border-transparent backdrop-blur-sm'
                     }`}
             >
@@ -60,35 +67,35 @@ const AppHeader = () => {
                             <Link to="/" className="flex items-center gap-2 group">
                                 <motion.div
                                     whileHover={{
-                                        boxShadow: "0 0 15px rgba(139, 92, 246, 0.5)",
-                                        borderColor: "rgba(139, 92, 246, 0.8)"
+                                        boxShadow: "0 0 15px rgba(124, 58, 237, 0.5)",
+                                        borderColor: "rgba(124, 58, 237, 0.8)"
                                     }}
-                                    className="bg-slate-900/50 p-2 rounded-lg border border-slate-700 transition-all duration-300 group-hover:bg-slate-800"
+                                    className="bg-surface/50 p-2 rounded-lg border border-border transition-all duration-300 group-hover:bg-surface"
                                 >
-                                    <Terminal className="h-6 w-6 text-violet-500 group-hover:text-violet-400 transition-colors" />
+                                    <Terminal className="h-6 w-6 text-primary-light group-hover:text-primary transition-colors" />
                                 </motion.div>
-                                <span className="text-xl font-bold font-mono tracking-tight text-slate-100 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-violet-400 group-hover:to-fuchsia-400 transition-all duration-300">
+                                <span className="text-xl font-bold font-mono tracking-tight text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-violet-400 group-hover:to-fuchsia-400 transition-all duration-300">
                                     &lt;DevJobs /&gt;
                                 </span>
                             </Link>
                         </div>
 
                         <nav className="hidden md:flex items-center gap-1">
-                            <Link to="/jobs" className="px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-all">
+                            <NavLink to="/jobs" className={navLinkClass}>
                                 Vacancies
-                            </Link>
-                            <Link to="/companies" className="px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-all">
+                            </NavLink>
+                            <NavLink to="/companies" className={navLinkClass}>
                                 Companies
-                            </Link>
-                            <Link to="/about" className="px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-all">
+                            </NavLink>
+                            <NavLink to="/about" className={navLinkClass}>
                                 About Us
-                            </Link>
+                            </NavLink>
                         </nav>
 
                         {/* Auth Actions */}
                         <div className="flex items-center gap-3">
                             {isLoading ? (
-                                <div className="w-20 h-8 bg-slate-800 rounded-lg animate-pulse"></div>
+                                <div className="w-20 h-8 bg-surface rounded-lg animate-pulse"></div>
                             ) : isAuthenticated ? (
                                 /* User Menu */
                                 <div className="relative">
@@ -97,15 +104,15 @@ const AppHeader = () => {
                                             e.stopPropagation();
                                             setIsUserMenuOpen(!isUserMenuOpen);
                                         }}
-                                        className="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+                                        className="flex items-center gap-2 px-3 py-2 bg-surface hover:bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-border"
                                     >
-                                        <div className="w-7 h-7 bg-violet-600 rounded-full flex items-center justify-center">
+                                        <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center">
                                             <User size={14} className="text-white" />
                                         </div>
-                                        <span className="text-sm text-slate-200 hidden sm:inline max-w-[120px] truncate">
+                                        <span className="text-sm text-text-main hidden sm:inline max-w-[120px] truncate">
                                             {user?.email?.split('@')[0]}
                                         </span>
-                                        <ChevronDown size={14} className={`text-slate-400 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+                                        <ChevronDown size={14} className={`text-text-muted transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                                     </button>
 
                                     <AnimatePresence>
@@ -114,24 +121,24 @@ const AppHeader = () => {
                                                 initial={{ opacity: 0, y: 5 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 exit={{ opacity: 0, y: 5 }}
-                                                className="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-xl overflow-hidden"
+                                                className="absolute right-0 mt-2 w-48 bg-surface border border-border rounded-xl shadow-xl overflow-hidden"
                                             >
-                                                <div className="p-3 border-b border-slate-800">
-                                                    <p className="text-xs text-slate-500">Signed in as</p>
+                                                <div className="p-3 border-b border-border">
+                                                    <p className="text-xs text-text-muted">Signed in as</p>
                                                     <p className="text-sm text-white truncate">{user?.email}</p>
                                                 </div>
                                                 <div className="p-1">
                                                     <Link
                                                         to="/profile"
                                                         onClick={() => setIsUserMenuOpen(false)}
-                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-muted hover:text-white hover:bg-white/5 rounded-lg transition-colors"
                                                     >
                                                         <User size={14} />
                                                         My Profile
                                                     </Link>
                                                     <button
                                                         onClick={handleLogout}
-                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-muted hover:text-white hover:bg-white/5 rounded-lg transition-colors"
                                                     >
                                                         <LogOut size={14} />
                                                         Log Out
@@ -144,21 +151,21 @@ const AppHeader = () => {
                             ) : (
                                 /* Login/Register Buttons */
                                 <>
-                                    <button
+                                    <Button
+                                        variant="ghost"
                                         onClick={openLogin}
-                                        className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors hidden sm:inline-block"
+                                        className="hidden sm:inline-flex"
                                     >
                                         Log In
-                                    </button>
-                                    <motion.button
+                                    </Button>
+                                    <Button
+                                        variant="primary"
                                         onClick={openRegister}
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-900 hover:bg-white rounded-lg font-medium text-sm transition-colors shadow-lg shadow-violet-500/10"
+                                        icon={Code2}
+                                        as={motion.button}
                                     >
-                                        <Code2 size={16} />
-                                        <span>Sign Up</span>
-                                    </motion.button>
+                                        Sign Up
+                                    </Button>
                                 </>
                             )}
                         </div>
@@ -175,5 +182,4 @@ const AppHeader = () => {
         </>
     );
 };
-
 export default AppHeader;
