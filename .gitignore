@@ -53,3 +53,11 @@ venv.bak/
 # Custom project ignores
 antigravity/
 .vscode/
+.claude/
+
+# Log files
+*.log
+logs/
+
+# Windows artifacts
+nul

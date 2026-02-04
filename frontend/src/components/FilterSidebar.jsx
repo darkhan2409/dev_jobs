@@ -155,14 +155,14 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
             <div className="flex items-center justify-between pb-4 border-b border-slate-800/50 shrink-0">
                 <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                     <Filter size={20} className="text-violet-500" />
-                    Filters
+                    Фильтры
                 </h3>
                 {hasActiveFilters && (
                     <button
                         onClick={clearFilters}
                         className="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition-colors"
                     >
-                        <X size={14} /> Reset
+                        <X size={14} /> Сбросить
                     </button>
                 )}
             </div>
@@ -174,13 +174,13 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
             <div className="space-y-3">
                 <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider flex items-center gap-2">
                     <Briefcase size={14} />
-                    Job Title
+                    Должность
                 </h4>
                 <div className="relative">
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                     <input
                         type="text"
-                        placeholder="e.g. React Developer, Python..."
+                        placeholder="например: React‑разработчик, Python…"
                         value={localFilters.search}
                         onChange={(e) => handleSearchChange(e.target.value)}
                         onKeyDown={(e) => {
@@ -197,31 +197,31 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
             <div className="space-y-3">
                 <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider flex items-center gap-2">
                     <DollarSign size={14} />
-                    Salary
+                    Зарплата
                 </h4>
                 <div className="space-y-2">
                     <input
                         type="number"
                         min="0"
-                        placeholder="Min salary (KZT)"
+                        placeholder="Зарплата от (₸)"
                         value={localFilters.minSalary}
                         onChange={(e) => handleSalaryChange(e.target.value)}
                         className="w-full bg-slate-900 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20"
                     />
-                    <p className="text-xs text-slate-500">Leave empty to show all</p>
+                    <p className="text-xs text-slate-500">Можно оставить пустым</p>
                 </div>
             </div>
 
             {/* Location Filter - Dropdown */}
             <div className="space-y-3">
-                <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Location</h4>
+                <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Город</h4>
                 <div className="relative" ref={dropdownRef}>
                     <button
                         onClick={() => setIsLocationOpen(!isLocationOpen)}
                         className="w-full flex items-center justify-between bg-slate-900 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-slate-200 hover:border-violet-500/50 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500/20"
                     >
                         <span className="truncate">
-                            {localFilters.location || 'All Locations'}
+                            {localFilters.location || 'Все города'}
                         </span>
                         <ChevronDown size={16} className={`text-slate-500 transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} />
                     </button>
@@ -239,7 +239,7 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
                                         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                                         <input
                                             type="text"
-                                            placeholder="Search city..."
+                                            placeholder="Поиск города…"
                                             value={locationSearch}
                                             onChange={(e) => setLocationSearch(e.target.value)}
                                             className="w-full bg-slate-800 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 border-none focus:ring-1 focus:ring-violet-500/50"
@@ -254,7 +254,7 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
                                         className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between group ${!localFilters.location ? 'bg-violet-500/10 text-violet-300' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
                                             }`}
                                     >
-                                        <span>All Locations</span>
+                                        <span>Все города</span>
                                         {!localFilters.location && <Check size={14} />}
                                     </button>
 
@@ -272,7 +272,7 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
 
                                     {filteredLocations.length === 0 && (
                                         <div className="px-3 py-4 text-center text-xs text-slate-500">
-                                            No locations found
+                                            Города не найдены
                                         </div>
                                     )}
                                 </div>
@@ -284,7 +284,7 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
 
             {/* Grade Filter (Multi-select) */}
             <div className="space-y-3">
-                <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Grade</h4>
+                <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Грейд</h4>
                 <div className="space-y-2">
                     {grades.map(grade => (
                         <label key={grade} className="flex items-center gap-3 cursor-pointer group">
@@ -311,7 +311,7 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
 
             {/* Tech Stack Filter */}
             <div className="space-y-3">
-                <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Tech Stack</h4>
+                <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Стек</h4>
                 <div className="flex flex-wrap gap-2">
                     {technologies.map(tech => (
                         <button
@@ -340,7 +340,7 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
                     }`}
                 >
                     <Search size={18} />
-                    Apply Filters
+                    Применить фильтры
                 </button>
             </div>
         </div>
@@ -362,7 +362,7 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
                     className="w-full bg-slate-800 border border-slate-700 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-medium"
                 >
                     <Filter size={18} />
-                    Filters
+                    Фильтры
                     {(filters.grade || filters.location || filters.stack || filters.minSalary) && (
                         <span className="bg-violet-500 text-xs px-2 py-0.5 rounded-full">!</span>
                     )}
@@ -386,7 +386,7 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
                                 onClick={e => e.stopPropagation()}
                             >
                                 <div className="flex justify-between items-center mb-6">
-                                    <h3 className="text-xl font-bold text-white">Filters</h3>
+                                    <h3 className="text-xl font-bold text-white">Фильтры</h3>
                                     <button
                                         onClick={() => setIsMobileOpen(false)}
                                         className="p-2 bg-slate-900 rounded-lg text-slate-400 hover:text-white"

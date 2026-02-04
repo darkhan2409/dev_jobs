@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { AlertCircle, RefreshCw, Home } from 'lucide-react';
 
 const ErrorState = ({
-    title = "Something went wrong",
-    message = "An unexpected error occurred. Please try again.",
+    title = "Что-то пошло не так",
+    message = "Произошла непредвиденная ошибка. Попробуйте ещё раз.",
     onRetry,
     showHomeLink = true,
     className = ""
@@ -23,7 +23,7 @@ const ErrorState = ({
                         className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-medium rounded-xl transition-colors"
                     >
                         <RefreshCw size={16} />
-                        Try Again
+                        Повторить
                     </button>
                 )}
                 {showHomeLink && (
@@ -32,7 +32,7 @@ const ErrorState = ({
                         className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl transition-colors"
                     >
                         <Home size={16} />
-                        Back to Home
+                        На главную
                     </Link>
                 )}
             </div>

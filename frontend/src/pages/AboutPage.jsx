@@ -17,37 +17,37 @@ const AboutPage = () => {
     const features = [
         {
             icon: <Zap className="text-yellow-400" size={24} />,
-            title: 'AI-Powered Filtering',
-            description: 'Intelligent filtering removes irrelevant vacancies using LLM classification.'
+            title: 'AI‑фильтрация',
+            description: 'Умная фильтрация убирает нерелевантные вакансии с помощью LLM‑классификации.'
         },
         {
             icon: <Code2 className="text-violet-400" size={24} />,
-            title: 'Developer-First',
-            description: 'Built by developers, for developers. Clean interface, no recruiter noise.'
+            title: 'Для разработчиков',
+            description: 'Сделано разработчиками для разработчиков. Чистый интерфейс без «шума» рекрутеров.'
         },
         {
             icon: <Users className="text-blue-400" size={24} />,
-            title: 'Open Source',
-            description: 'Fully open source project. Contribute, fork, or learn from the codebase.'
+            title: 'Открытый код',
+            description: 'Полностью открытый проект. Можно контрибьютить, форкать и учиться по коду.'
         },
     ];
 
     const faqs = [
         {
-            q: 'How often are vacancies updated?',
-            a: 'Vacancies are scraped from HH.ru every few hours to ensure fresh listings.'
+            q: 'Как часто обновляются вакансии?',
+            a: 'Мы обновляем вакансии с HH.ru каждые несколько часов, чтобы список был свежим.'
         },
         {
-            q: 'Is registration required?',
-            a: 'No! You can browse all vacancies without creating an account.'
+            q: 'Нужна регистрация?',
+            a: 'Нет. Все вакансии доступны без аккаунта.'
         },
         {
-            q: 'How does AI filtering work?',
-            a: 'We use LLM to classify vacancies and filter out non-IT roles, ensuring quality listings.'
+            q: 'Как работает AI‑фильтрация?',
+            a: 'Мы классифицируем вакансии и убираем не‑IT роли, чтобы выдача оставалась качественной.'
         },
         {
-            q: 'Can I contribute to the project?',
-            a: 'Absolutely! Check out our GitHub repository to get started.'
+            q: 'Можно помочь проекту?',
+            a: 'Конечно. Загляните в репозиторий на GitHub и подключайтесь.'
         },
     ];
 
@@ -63,11 +63,11 @@ const AboutPage = () => {
                 {/* Hero Section */}
                 <motion.div variants={fadeInUp} className="text-center mb-16">
                     <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                        About <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">DevJobs</span>
+                        О <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">DevJobs</span>
                     </h1>
                     <p className="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-                        The open-source job board built for the Kazakhstan IT community.
-                        No noise, just opportunities.
+                        Открытая платформа вакансий для IT‑сообщества Казахстана.
+                        Без шума — только возможности.
                     </p>
                 </motion.div>
 
@@ -76,20 +76,20 @@ const AboutPage = () => {
                     <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-8 backdrop-blur-xl">
                         <div className="flex items-center gap-3 mb-4">
                             <Heart className="text-red-500" size={28} />
-                            <h2 className="text-2xl font-bold text-white">Our Mission</h2>
+                            <h2 className="text-2xl font-bold text-white">Наша миссия</h2>
                         </div>
                         <p className="text-slate-300 text-lg leading-relaxed">
-                            We believe finding a developer job shouldn't feel like searching for a needle in a haystack.
-                            DevJobs aggregates IT vacancies from multiple sources, filters out irrelevant listings using AI,
-                            and presents them in a clean, developer-friendly interface. Our goal is to connect talented
-                            developers in Kazakhstan with meaningful opportunities.
+                            Мы верим, что поиск работы в IT не должен быть «игрой в иголку в стоге сена».
+                            DevJobs агрегирует вакансии из разных источников, убирает нерелевантные роли с помощью AI
+                            и показывает всё в чистом, developer‑friendly интерфейсе. Наша цель — соединять сильных
+                            разработчиков в Казахстане с действительно интересными возможностями.
                         </p>
                     </div>
                 </motion.section>
 
                 {/* Features */}
                 <motion.section variants={fadeInUp} className="mb-16">
-                    <h2 className="text-2xl font-bold text-white mb-8 text-center">Why DevJobs?</h2>
+                    <h2 className="text-2xl font-bold text-white mb-8 text-center">Почему DevJobs?</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {features.map((feature, idx) => (
                             <div
@@ -108,7 +108,7 @@ const AboutPage = () => {
 
                 {/* Tech Stack */}
                 <motion.section variants={fadeInUp} className="mb-16">
-                    <h2 className="text-2xl font-bold text-white mb-8 text-center">Tech Stack</h2>
+                    <h2 className="text-2xl font-bold text-white mb-8 text-center">Технологии</h2>
                     <div className="flex flex-wrap justify-center gap-4">
                         {techStack.map((tech, idx) => (
                             <div
@@ -124,7 +124,7 @@ const AboutPage = () => {
 
                 {/* FAQ */}
                 <motion.section variants={fadeInUp} className="mb-16">
-                    <h2 className="text-2xl font-bold text-white mb-8 text-center">FAQ</h2>
+                    <h2 className="text-2xl font-bold text-white mb-8 text-center">Вопросы и ответы</h2>
                     <div className="space-y-4">
                         {faqs.map((faq, idx) => (
                             <div
@@ -141,9 +141,9 @@ const AboutPage = () => {
                 {/* Contact */}
                 <motion.section variants={fadeInUp}>
                     <div className="bg-gradient-to-r from-violet-900/30 to-fuchsia-900/30 border border-violet-500/30 rounded-2xl p-8 text-center">
-                        <h2 className="text-2xl font-bold text-white mb-4">Get in Touch</h2>
+                        <h2 className="text-2xl font-bold text-white mb-4">Связаться с нами</h2>
                         <p className="text-slate-300 mb-6">
-                            Have questions, suggestions, or want to contribute?
+                            Есть вопросы, идеи или хотите помочь проекту?
                         </p>
                         <div className="flex flex-wrap justify-center gap-4">
                             <a

@@ -21,28 +21,28 @@ class ErrorBoundary extends React.Component {
                 <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-200 px-4">
                     <div className="max-w-md w-full bg-slate-900/50 border border-slate-800 rounded-xl p-8 text-center">
                         <div className="text-6xl mb-4">⚠️</div>
-                        <h1 className="text-2xl font-bold text-slate-100 mb-2">Oops! Something went wrong</h1>
+                        <h1 className="text-2xl font-bold text-slate-100 mb-2">Произошла ошибка</h1>
                         <p className="text-slate-400 mb-6">
-                            We encountered an unexpected error. Please try refreshing the page.
+                            Мы столкнулись с непредвиденной ошибкой. Обновите страницу и попробуйте ещё раз.
                         </p>
                         <div className="flex gap-3 justify-center">
                             <button
                                 onClick={() => window.location.reload()}
                                 className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg transition-colors"
                             >
-                                Refresh Page
+                                Обновить страницу
                             </button>
                             <Link
                                 to="/"
                                 className="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-lg transition-colors"
                             >
-                                Go Home
+                                На главную
                             </Link>
                         </div>
                         {this.state.error && (
                             <details className="mt-6 text-left">
                                 <summary className="text-sm text-slate-500 cursor-pointer hover:text-slate-400">
-                                    Error details
+                                    Детали ошибки
                                 </summary>
                                 <pre className="mt-2 p-3 bg-slate-950 rounded text-xs text-red-400 overflow-auto">
                                     {this.state.error.toString()}

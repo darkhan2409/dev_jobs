@@ -36,7 +36,7 @@ const ProfilePage = () => {
                 });
             } catch (error) {
                 console.error("Failed to fetch profile:", error);
-                setMessage({ type: 'error', text: 'Failed to load profile data' });
+                setMessage({ type: 'error', text: 'Не удалось загрузить данные профиля' });
             } finally {
                 setIsLoading(false);
             }
@@ -61,13 +61,13 @@ const ProfilePage = () => {
 
         try {
             await axiosClient.put('/users/me/profile', formData);
-            setMessage({ type: 'success', text: 'Profile updated successfully!' });
+            setMessage({ type: 'success', text: 'Профиль обновлён' });
 
             // Clear success message after 3 seconds
             setTimeout(() => setMessage({ type: '', text: '' }), 3000);
         } catch (error) {
             console.error("Failed to update profile:", error);
-            setMessage({ type: 'error', text: error.response?.data?.detail || 'Failed to update profile' });
+            setMessage({ type: 'error', text: error.response?.data?.detail || 'Не удалось обновить профиль' });
         } finally {
             setIsSaving(false);
         }
@@ -90,9 +90,9 @@ const ProfilePage = () => {
             >
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-white mb-2">My Profile</h1>
+                    <h1 className="text-3xl font-bold text-white mb-2">Мой профиль</h1>
                     <p className="text-slate-400">
-                        Manage your personal information and professional details to get better job recommendations.
+                        Заполните профиль, чтобы получать более точные рекомендации.
                     </p>
                 </div>
 
@@ -115,33 +115,33 @@ const ProfilePage = () => {
                     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6">
                         <div className="flex items-center gap-3 text-lg font-semibold text-white border-b border-slate-800 pb-4">
                             <User className="text-violet-500" size={24} />
-                            <h2>Personal Information</h2>
+                            <h2>Личные данные</h2>
                         </div>
 
                         <div className="grid grid-cols-1 gap-6">
                             {/* Full Name */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-300">Full Name</label>
+                                <label className="text-sm font-medium text-slate-300">Имя и фамилия</label>
                                 <input
                                     type="text"
                                     name="full_name"
                                     value={formData.full_name}
                                     onChange={handleChange}
-                                    placeholder="John Doe"
+                                    placeholder="Иван Иванов"
                                     className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
                                 />
                             </div>
 
                             {/* Location */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-300">Location</label>
+                                <label className="text-sm font-medium text-slate-300">Город</label>
                                 <div className="relative">
                                     <input
                                         type="text"
                                         name="location"
                                         value={formData.location}
                                         onChange={handleChange}
-                                        placeholder="Almaty, Kazakhstan"
+                                        placeholder="Алматы, Казахстан"
                                         className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
                                     />
                                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
@@ -150,14 +150,14 @@ const ProfilePage = () => {
 
                             {/* Bio */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-300">Bio</label>
+                                <label className="text-sm font-medium text-slate-300">О себе</label>
                                 <div className="relative">
                                     <textarea
                                         name="bio"
                                         value={formData.bio}
                                         onChange={handleChange}
                                         rows="4"
-                                        placeholder="Tell us a bit about yourself..."
+                                        placeholder="Расскажите немного о себе…"
                                         className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all resize-none"
                                     />
                                     <FileText className="absolute left-3 top-4 text-slate-500" size={18} />
@@ -170,13 +170,13 @@ const ProfilePage = () => {
                     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6">
                         <div className="flex items-center gap-3 text-lg font-semibold text-white border-b border-slate-800 pb-4">
                             <Briefcase className="text-violet-500" size={24} />
-                            <h2>Professional Details</h2>
+                            <h2>Профессиональный профиль</h2>
                         </div>
 
                         <div className="grid grid-cols-1 gap-6">
                             {/* Grade */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-300">Current Grade</label>
+                                <label className="text-sm font-medium text-slate-300">Текущий грейд</label>
                                 <div className="relative">
                                     <select
                                         name="grade"
@@ -184,7 +184,7 @@ const ProfilePage = () => {
                                         onChange={handleChange}
                                         className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all appearance-none cursor-pointer"
                                     >
-                                        <option value="">Select your grade</option>
+                                        <option value="">Выберите грейд</option>
                                         {GRADES.map(grade => (
                                             <option key={grade} value={grade}>{grade}</option>
                                         ))}
@@ -195,11 +195,11 @@ const ProfilePage = () => {
 
                             {/* Skills */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-300">Skills & Technologies</label>
+                                <label className="text-sm font-medium text-slate-300">Навыки и технологии</label>
                                 <SkillTagInput
                                     value={formData.skills}
                                     onChange={handleSkillsChange}
-                                    placeholder="Add skills (e.g., Python, React, AWS)..."
+                                    placeholder="Добавьте навыки (например: Python, React, AWS)…"
                                 />
                             </div>
                         </div>
@@ -217,7 +217,7 @@ const ProfilePage = () => {
                             ) : (
                                 <Save size={20} />
                             )}
-                            {isSaving ? 'Saving Changes...' : 'Save Changes'}
+                            {isSaving ? 'Сохраняем…' : 'Сохранить'}
                         </button>
                     </div>
                 </form>

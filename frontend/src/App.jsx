@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { ScrollRestoration } from 'react-router-dom';
 import HomePage from './pages/HomePage';
@@ -11,6 +11,7 @@ import PrivacyPage from './pages/PrivacyPage';
 import ProfilePage from './pages/ProfilePage';
 import PostJobPage from './pages/PostJobPage';
 import NotFoundPage from './pages/NotFoundPage';
+import CareerPage from './pages/CareerPage';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppHeader from './components/AppHeader';
 import AppFooter from './components/AppFooter';
@@ -23,12 +24,13 @@ const TitleUpdater = () => {
 
   React.useEffect(() => {
     const path = location.pathname;
-    if (path === '/') document.title = 'DevJobs - Find IT Work';
-    else if (path === '/jobs') document.title = 'Vacancy Catalog | DevJobs';
-    else if (path === '/about') document.title = 'About Us | DevJobs';
-    else if (path === '/privacy') document.title = 'Privacy Policy | DevJobs';
-    else if (path === '/post-job') document.title = 'For Employers | DevJobs';
-    else if (path === '/companies') document.title = 'Companies | DevJobs';
+    if (path === '/') document.title = 'DevJobs — IT‑вакансии в Казахстане';
+    else if (path === '/jobs') document.title = 'Каталог вакансий | DevJobs';
+    else if (path === '/about') document.title = 'О нас | DevJobs';
+    else if (path === '/privacy') document.title = 'Политика конфиденциальности | DevJobs';
+    else if (path === '/post-job') document.title = 'Работодателям | DevJobs';
+    else if (path === '/companies') document.title = 'Компании | DevJobs';
+    else if (path === '/career') document.title = 'Карьерный тест | DevJobs';
     // Note: Detail page title updates will happen in the page itself once data is loaded
   }, [location]);
 
@@ -47,6 +49,12 @@ const ScrollToTop = () => {
 
 import React from 'react';
 
+// Redirect component for legacy /vacancies/:id URLs
+const VacancyRedirect = () => {
+  const { id } = useParams();
+  return <Navigate to={`/jobs/${id}`} replace />;
+};
+
 function AnimatedRoutes() {
   const location = useLocation();
 
@@ -59,10 +67,11 @@ function AnimatedRoutes() {
         <Route path="/companies" element={<CompaniesPage />} />
         <Route path="/companies/:companyName" element={<CompanyProfilePage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/career" element={<CareerPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/post-job" element={<PostJobPage />} />
-        {/* Legacy support primarily for old links if any */}
-        <Route path="/vacancies/:id" element={<JobDetailsPage />} />
+        {/* Legacy redirect: /vacancies/:id → /jobs/:id */}
+        <Route path="/vacancies/:id" element={<VacancyRedirect />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

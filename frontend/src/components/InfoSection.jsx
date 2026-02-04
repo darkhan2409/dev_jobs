@@ -10,18 +10,18 @@ const InfoSection = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <FeatureCard
                         icon={<Sparkles className="text-violet-400" size={24} />}
-                        title="AI Filtering"
-                        description="Our algorithms strip away the noise. No HR spam, just relevant listings for developers."
+                        title="AI‑фильтрация"
+                        description="Алгоритмы убирают шум: без HR-спама, только релевантные вакансии для разработчиков."
                     />
                     <FeatureCard
                         icon={<BarChart className="text-emerald-400" size={24} />}
-                        title="Smart Grading"
-                        description="Automatic classification of Junior, Middle, and Senior roles based on salary and skills."
+                        title="Умный грейдинг"
+                        description="Автоматически определяем Junior/Middle/Senior по зарплате и навыкам."
                     />
                     <FeatureCard
                         icon={<Zap className="text-amber-400" size={24} />}
-                        title="Direct Access"
-                        description="Apply directly to the company. No middlemen, no registration walls."
+                        title="Прямой отклик"
+                        description="Откликайтесь напрямую работодателю. Без посредников и обязательной регистрации."
                     />
                 </div>
             </div>

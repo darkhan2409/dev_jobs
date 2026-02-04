@@ -1,0 +1,242 @@
+{
+    "version": "2.0",
+    "generated_at": "2026-02-04T12:00:00Z",
+    "career_pipeline_graph": [
+        {
+            "from": "data_analyst",
+            "to": "data_engineer",
+            "reason": "Переход от анализа данных к построению надежных пайплайнов и инфраструктуры.",
+            "avg_transition_years": "1.5-2",
+            "required_upskill": [
+                "Advanced SQL",
+                "ETL-фреймворки (Airflow)",
+                "Data Warehousing (Хранилища данных)",
+                "Оптимизация Python"
+            ],
+            "difficulty": "medium"
+        },
+        {
+            "from": "data_analyst",
+            "to": "product_manager",
+            "reason": "Использование инсайтов из данных для развития стратегии продукта и принятия бизнес-решений.",
+            "avg_transition_years": "2-3",
+            "required_upskill": [
+                "Продуктовая стратегия",
+                "Исследования пользователей (UX)",
+                "Agile/Scrum",
+                "Управление стейкхолдерами"
+            ],
+            "difficulty": "hard"
+        },
+        {
+            "from": "data_analyst",
+            "to": "ml_engineer",
+            "reason": "Углубление знаний в математике и статистике для создания прогнозных моделей.",
+            "avg_transition_years": "2-3",
+            "required_upskill": [
+                "Алгоритмы машинного обучения",
+                "Глубокое обучение (Deep Learning)",
+                "Проектирование ПО",
+                "Высшая математика и статистика"
+            ],
+            "difficulty": "hard"
+        },
+        {
+            "from": "backend_developer",
+            "to": "systems_architect",
+            "reason": "Развитие от разработки компонентов до проектирования систем и технической стратегии.",
+            "avg_transition_years": "5+",
+            "required_upskill": [
+                "Паттерны проектирования систем",
+                "Облачная архитектура",
+                "Масштабируемость",
+                "Техническое лидерство"
+            ],
+            "difficulty": "very_hard"
+        },
+        {
+            "from": "backend_developer",
+            "to": "devops_engineer",
+            "reason": "Переход в сторону инфраструктуры, автоматизации и обеспечения надежности систем.",
+            "avg_transition_years": "2-3",
+            "required_upskill": [
+                "CI/CD",
+                "Kubernetes/Docker",
+                "Инфраструктура как код (IaC)",
+                "Сетевые технологии"
+            ],
+            "difficulty": "medium"
+        },
+        {
+            "from": "backend_developer",
+            "to": "fullstack_developer",
+            "reason": "Расширение компетенций во фронтенд для создания полноценных приложений.",
+            "avg_transition_years": "1-2",
+            "required_upskill": [
+                "Frontend-фреймворки (React/Vue)",
+                "CSS/HTML",
+                "Управление состоянием (Redux/Zustand)",
+                "Основы UI/UX"
+            ],
+            "difficulty": "medium"
+        },
+        {
+            "from": "frontend_developer",
+            "to": "fullstack_developer",
+            "reason": "Освоение бэкенд-разработки для полного контроля над стеком приложения.",
+            "avg_transition_years": "1-2",
+            "required_upskill": [
+                "Backend-языки (Python/Node/Go)",
+                "Базы данных",
+                "Проектирование API",
+                "Управление серверами"
+            ],
+            "difficulty": "medium"
+        },
+        {
+            "from": "frontend_developer",
+            "to": "mobile_developer",
+            "reason": "Переход в мобильную разработку, часто с использованием кроссплатформенных инструментов.",
+            "avg_transition_years": "1-2",
+            "required_upskill": [
+                "React Native/Flutter",
+                "Гайдлайны мобильного дизайна",
+                "Нативные модули (iOS/Android)",
+                "Публикация в сторы"
+            ],
+            "difficulty": "medium"
+        },
+        {
+            "from": "frontend_developer",
+            "to": "ui_ux_researcher",
+            "reason": "Перенос фокуса с реализации кода на дизайн и пользовательские исследования.",
+            "avg_transition_years": "1-2",
+            "required_upskill": [
+                "Методы UX-исследований",
+                "Инструменты прототипирования (Figma)",
+                "Юзабилити-тестирование",
+                "Психология дизайна"
+            ],
+            "difficulty": "medium"
+        },
+        {
+            "from": "qa_engineer",
+            "to": "backend_developer",
+            "reason": "Переход от тестирования кода к его написанию для продакшена.",
+            "avg_transition_years": "2-3",
+            "required_upskill": [
+                "Алгоритмы и структуры данных",
+                "Проектирование БД",
+                "Паттерны проектирования",
+                "Освоение фреймворков"
+            ],
+            "difficulty": "hard"
+        },
+        {
+            "from": "qa_engineer",
+            "to": "devops_engineer",
+            "reason": "Использование навыков автоматизации для управления пайплайнами деплоя и инфраструктурой.",
+            "avg_transition_years": "2-3",
+            "required_upskill": [
+                "Администрирование Linux",
+                "Облачные платформы",
+                "Контейнеризация",
+                "Скриптинг (Bash/Python)"
+            ],
+            "difficulty": "medium"
+        },
+        {
+            "from": "devops_engineer",
+            "to": "security_engineer",
+            "reason": "Специализация на обеспечении безопасности инфраструктуры и процессов доставки кода.",
+            "avg_transition_years": "1-2",
+            "required_upskill": [
+                "Тестирование на проникновение",
+                "Комплаенс и безопасность",
+                "Криптография",
+                "Моделирование угроз"
+            ],
+            "difficulty": "hard"
+        },
+        {
+            "from": "devops_engineer",
+            "to": "systems_architect",
+            "reason": "Применение глубоких знаний инфраструктуры для проектирования масштабируемых систем.",
+            "avg_transition_years": "4-5",
+            "required_upskill": [
+                "Архитектура ПО",
+                "Интеграция систем",
+                "Бизнес-анализ"
+            ],
+            "difficulty": "very_hard"
+        },
+        {
+            "from": "ml_engineer",
+            "to": "llm_engineer",
+            "reason": "Специализация в быстро развивающейся области больших языковых моделей (LLM).",
+            "avg_transition_years": "1-2",
+            "required_upskill": [
+                "Архитектура трансформеров",
+                "Промпт-инжиниринг",
+                "RAG-системы",
+                "Векторные БД"
+            ],
+            "difficulty": "medium"
+        },
+        {
+            "from": "technical_writer",
+            "to": "product_manager",
+            "reason": "Использование знаний о продукте и коммуникационных навыков для развития стратегии продукта.",
+            "avg_transition_years": "2-3",
+            "required_upskill": [
+                "Продуктовые метрики",
+                "Анализ рынка",
+                "Приоритизация функций",
+                "Дорожные карты и планирование"
+            ],
+            "difficulty": "hard"
+        }
+    ],
+    "role_clusters": [
+        {
+            "cluster": "Ядро разработки",
+            "roles": [
+                "backend_developer",
+                "frontend_developer",
+                "fullstack_developer",
+                "mobile_developer",
+                "game_developer"
+            ],
+            "entry_point": "frontend_developer"
+        },
+        {
+            "cluster": "Данные и ИИ",
+            "roles": [
+                "data_analyst",
+                "data_engineer",
+                "ml_engineer",
+                "llm_engineer"
+            ],
+            "entry_point": "data_analyst"
+        },
+        {
+            "cluster": "Инфраструктура и безопасность",
+            "roles": [
+                "devops_engineer",
+                "security_engineer",
+                "systems_architect"
+            ],
+            "entry_point": "qa_engineer"
+        },
+        {
+            "cluster": "Продукт и качество",
+            "roles": [
+                "product_manager",
+                "qa_engineer",
+                "ui_ux_researcher",
+                "technical_writer"
+            ],
+            "entry_point": "qa_engineer"
+        }
+    ]
+}

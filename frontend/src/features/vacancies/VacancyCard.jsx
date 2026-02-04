@@ -94,7 +94,7 @@ const getIconClass = (skillName) => {
 const VacancyCard = ({ vacancy }) => {
     const tags = vacancy.key_skills || [];
     const hasSalary = (vacancy.salary_from && vacancy.salary_from > 0) || (vacancy.salary_to && vacancy.salary_to > 0);
-    const location = vacancy.location || 'Remote';
+    const location = vacancy.location || 'Удалённо';
 
     return (
         <motion.div
@@ -129,11 +129,11 @@ const VacancyCard = ({ vacancy }) => {
                                 className="absolute inset-0 w-full h-full flex items-center justify-center text-[10px] font-bold text-slate-600 bg-white rounded-full"
                                 style={{ display: vacancy.company_logo ? 'none' : 'flex' }}
                             >
-                                {(vacancy.company_name || 'I').charAt(0).toUpperCase()}
+                                {(vacancy.company_name || '—').charAt(0).toUpperCase()}
                             </div>
                         </div>
                         <span className="font-medium text-text-muted text-sm truncate group-hover:text-text-main transition-colors" title={vacancy.company_name}>
-                            {vacancy.company_name || 'Incognito'}
+                            {vacancy.company_name || 'Не указано'}
                         </span>
                     </div>
 

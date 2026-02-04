@@ -1,7 +1,6 @@
 """
 Authentication utilities for JWT-based auth.
 """
-import os
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -14,11 +13,12 @@ from sqlalchemy import select
 
 from app.database import get_db
 from app.models import User
+from app.config import settings
 
-# Configuration from environment variables
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-secret-key-change-in-production")
-ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+# Configuration from settings (reads from .env)
+SECRET_KEY = getattr(settings, 'JWT_SECRET_KEY', 'dev-secret-key-change-in-production')
+ALGORITHM = getattr(settings, 'JWT_ALGORITHM', 'HS256')
+ACCESS_TOKEN_EXPIRE_MINUTES = int(getattr(settings, 'ACCESS_TOKEN_EXPIRE_MINUTES', 30))
 
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

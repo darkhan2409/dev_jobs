@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Plus, Hash } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const SkillTagInput = ({ value = [], onChange, placeholder = "Add a skill (e.g., Python, React)..." }) => {
+const SkillTagInput = ({ value = [], onChange, placeholder = "Добавьте навык (например, Python, React)…" }) => {
     const [inputValue, setInputValue] = useState('');
 
     const handleKeyDown = (e) => {
@@ -82,7 +82,7 @@ const SkillTagInput = ({ value = [], onChange, placeholder = "Add a skill (e.g.,
                 </AnimatePresence>
                 {value.length === 0 && (
                     <span className="text-sm text-slate-500 py-1.5 italic">
-                        No skills added yet. Add relevant technologies to get better matches.
+                        Пока нет навыков. Добавьте технологии — и подбор станет точнее.
                     </span>
                 )}
             </div>

@@ -44,18 +44,17 @@ const VacancyShowcase = () => {
                 <div className="flex justify-between items-end mb-12">
                     <div>
                         <h2 className="text-3xl font-bold text-slate-100 mb-4">
-                            Explore Recent Opportunities
+                            Свежие вакансии
                         </h2>
                         <p className="text-slate-400 max-w-2xl">
-                            Discover the latest roles from top tech companies.
-                            From startups to enterprise, find your next challenge.
+                            Подборка последних вакансий от IT‑компаний — от стартапов до крупных команд.
                         </p>
                     </div>
                     <Link
                         to="/jobs"
                         className="hidden md:flex items-center gap-2 text-violet-400 hover:text-violet-300 transition-colors font-medium group"
                     >
-                        View all jobs
+                        Все вакансии
                         <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                     </Link>
                 </div>
@@ -71,7 +70,7 @@ const VacancyShowcase = () => {
                         to="/jobs"
                         className="inline-flex items-center gap-2 text-violet-400 hover:text-violet-300 transition-colors font-medium"
                     >
-                        View all jobs
+                        Все вакансии
                         <ArrowRight size={20} />
                     </Link>
                 </div>

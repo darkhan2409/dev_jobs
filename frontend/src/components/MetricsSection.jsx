@@ -27,7 +27,7 @@ const MetricsSection = () => {
         return (
             <div className="py-20 flex flex-col items-center justify-center text-slate-500">
                 <Loader2 className="animate-spin mb-4 text-violet-500" size={32} />
-                <p>Analyzing market data...</p>
+                <p>Анализируем рынок...</p>
             </div>
         );
     }
@@ -36,8 +36,8 @@ const MetricsSection = () => {
         return (
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
                 <ErrorState
-                    title="Failed to load metrics"
-                    message="We couldn't fetch market data. Please try again later."
+                    title="Не удалось загрузить статистику"
+                    message="Не получилось загрузить данные рынка. Попробуйте позже."
                     showHomeLink={false}
                 />
             </section>
@@ -52,30 +52,30 @@ const MetricsSection = () => {
             <div className="mb-12">
                 <h2 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
                     <BarChart className="text-violet-500" />
-                    Market Intelligence
+                    Аналитика рынка
                 </h2>
-                <p className="text-slate-400">Real-time insights from the Kazakhstani IT market.</p>
+                <p className="text-slate-400">Актуальные инсайты по IT‑рынку Казахстана.</p>
             </div>
 
             {/* Top Level Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                 <StatCard
-                    label="Active Vacancies"
+                    label="Активные вакансии"
                     value={metrics.total_count}
                     icon={<Briefcase className="text-violet-400" />}
-                    subtitle="Open positions"
+                    subtitle="Открытые вакансии"
                 />
                 <StatCard
-                    label="Avg Senior Salary"
+                    label="Средняя зарплата Senior"
                     value={formatCurrency(metrics.avg_salary_by_grade['Senior'] || 0, null, 'KZT')}
                     icon={<DollarSign className="text-emerald-400" />}
-                    subtitle="KZT Net"
+                    subtitle="₸ на руки"
                 />
                 <StatCard
-                    label="Top Tech Hub"
+                    label="Главный хаб"
                     value={Object.keys(metrics.top_locations)[0] || 'N/A'}
                     icon={<MapPin className="text-amber-400" />}
-                    subtitle={`${Object.values(metrics.top_locations)[0] || 0} openings`}
+                    subtitle={`${Object.values(metrics.top_locations)[0] || 0} вакансий`}
                 />
             </div>
 
@@ -84,14 +84,14 @@ const MetricsSection = () => {
                 <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-8">
                     <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                         <MapPin size={20} className="text-slate-400" />
-                        Top Locations
+                        Топ городов
                     </h3>
                     <div className="space-y-4">
                         {Object.entries(metrics.top_locations).map(([city, count], idx) => (
                             <div key={city} className="flex flex-col gap-1">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-slate-300 font-medium">{city}</span>
-                                    <span className="text-slate-500 font-mono">{count} jobs</span>
+                                    <span className="text-slate-500 font-mono">{count} вакансий</span>
                                 </div>
                                 <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
                                     <div
@@ -108,7 +108,7 @@ const MetricsSection = () => {
                 <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-8">
                     <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                         <DollarSign size={20} className="text-slate-400" />
-                        Salary by Grade (KZT)
+                        Зарплата по грейду (₸)
                     </h3>
                     <div className="space-y-6">
                         {Object.entries(metrics.avg_salary_by_grade).map(([grade, salary]) => (
@@ -123,7 +123,7 @@ const MetricsSection = () => {
 
                     {/* Grade Distribution Mini-Bar */}
                     <div className="mt-8 pt-8 border-t border-slate-800">
-                        <h4 className="text-sm font-semibold text-slate-500 mb-4 uppercase tracking-wider">Demand by Level</h4>
+                        <h4 className="text-sm font-semibold text-slate-500 mb-4 uppercase tracking-wider">Спрос по уровню</h4>
                         <div className="flex h-4 rounded-full overflow-hidden w-full">
                             {Object.entries(metrics.grade_distribution).map(([grade, count], idx) => {
                                 const total = Object.values(metrics.grade_distribution).reduce((a, b) => a + b, 0);
@@ -134,7 +134,7 @@ const MetricsSection = () => {
                                         key={grade}
                                         className={`${colors[idx % colors.length]} hover:brightness-110 transition-all cursor-help`}
                                         style={{ width: `${pct}%` }}
-                                        title={`${grade}: ${count} vacancies (${pct.toFixed(1)}%)`}
+                                        title={`${grade}: ${count} вакансий (${pct.toFixed(1)}%)`}
                                     ></div>
                                 );
                             })}

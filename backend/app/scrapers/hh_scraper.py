@@ -188,6 +188,13 @@ class HHScraper:
         rate = EXCHANGE_RATES.get(currency, 1)
         return int(salary.get("from") * rate)
 
+    def _extract_company_name(self, item: dict) -> Optional[str]:
+        """Extract company name from employer data."""
+        employer = item.get("employer")
+        if not employer:
+            return None
+        return employer.get("name")
+
     def _extract_company_logo(self, item: dict) -> Optional[str]:
         employer = item.get("employer")
         if not employer:
@@ -231,6 +238,7 @@ class HHScraper:
                     "employment": item.get("employment", {}).get("name"),
                     "schedule": item.get("schedule", {}).get("name"),
                     "grade": grade,
+                    "company_name": self._extract_company_name(item),
                     "company_logo": self._extract_company_logo(item),
                     "salary_in_kzt": self._calculate_salary_in_kzt(salary),
                     "key_skills": tech_stack,  # Use extracted tech stack instead of HH.ru's key_skills

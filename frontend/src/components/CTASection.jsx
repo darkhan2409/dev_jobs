@@ -14,21 +14,21 @@ const CTASection = () => {
                     <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
                         <div className="flex-1 space-y-4">
                             <h2 className="text-2xl md:text-3xl font-bold text-white">
-                                Don't miss your dream job
+                                Не пропустите работу мечты
                             </h2>
                             <p className="text-slate-400 text-lg">
-                                Stop refreshing the page. Subscribe to our Telegram bot and get instant notifications for new vacancies matching your stack.
+                                Не обновляйте страницу вручную. Подпишитесь на Telegram‑бота и получайте уведомления о новых вакансиях под ваш стек.
                             </p>
                         </div>
 
                         <div className="flex flex-col sm:flex-row gap-4 shrink-0">
                             <button className="flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-violet-600/20 transform hover:-translate-y-0.5">
                                 <Send size={20} />
-                                <span>Join Telegram</span>
+                                <span>Telegram</span>
                             </button>
                             <button className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 px-6 rounded-xl border border-slate-700 transition-all">
                                 <Bell size={20} />
-                                <span>Enable Alerts</span>
+                                <span>Уведомления</span>
                             </button>
                         </div>
                     </div>

@@ -13,9 +13,9 @@ const AppFooter = () => {
                             &lt;DevJobs /&gt;
                         </div>
                         <p className="text-slate-400 text-sm leading-relaxed max-w-md">
-                            The open-source job board built for developers, by developers.
-                            We connect talent with opportunity using AI-powered matching and
-                            transparent insights. No noise, just code.
+                            Открытая доска вакансий для разработчиков — от разработчиков.
+                            Мы соединяем таланты и возможности с помощью умного подбора и
+                            прозрачной аналитики. Без шума — только код.
                         </p>
                         <div className="flex items-center gap-4">
                             <a href="#" className="p-2 bg-slate-900 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
@@ -33,10 +33,10 @@ const AppFooter = () => {
                     {/* 2. Quick Links & Contact */}
                     <div className="flex flex-col md:items-end space-y-6">
                         <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm font-medium">
-                            <Link to="/jobs" className="text-slate-400 hover:text-violet-400 transition-colors">Browse Jobs</Link>
-                            <Link to="/companies" className="text-slate-400 hover:text-violet-400 transition-colors">Companies</Link>
-                            <Link to="/post-job" className="text-slate-400 hover:text-violet-400 transition-colors">For Employers</Link>
-                            <Link to="/privacy" className="text-slate-400 hover:text-violet-400 transition-colors">Privacy</Link>
+                            <Link to="/jobs" className="text-slate-400 hover:text-violet-400 transition-colors">Вакансии</Link>
+                            <Link to="/companies" className="text-slate-400 hover:text-violet-400 transition-colors">Компании</Link>
+                            <Link to="/post-job" className="text-slate-400 hover:text-violet-400 transition-colors">Работодателям</Link>
+                            <Link to="/privacy" className="text-slate-400 hover:text-violet-400 transition-colors">Конфиденциальность</Link>
                         </div>
 
                         <div className="flex items-center gap-2 p-3 bg-slate-900/50 rounded-lg border border-slate-800/50">
@@ -44,7 +44,7 @@ const AppFooter = () => {
                                 <Mail size={18} />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Contact Us</span>
+                                <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Контакты</span>
                                 <a href="mailto:hello@devjobs.kz" className="text-slate-200 hover:text-white text-sm">hello@devjobs.kz</a>
                             </div>
                         </div>
@@ -53,12 +53,12 @@ const AppFooter = () => {
 
                 <div className="pt-8 border-t border-slate-900 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-600 font-mono">
                     <div>
-                        © {new Date().getFullYear()} DevJobs KZ. Open Source.
+                        © {new Date().getFullYear()} DevJobs KZ. Открытый код.
                     </div>
                     <div className="flex items-center gap-2">
-                        <span>Made with</span>
+                        <span>Сделано с</span>
                         <Heart size={12} className="text-red-500 fill-red-500" />
-                        <span>in Kazakhstan</span>
+                        <span>в Казахстане</span>
                     </div>
                 </div>
             </div>

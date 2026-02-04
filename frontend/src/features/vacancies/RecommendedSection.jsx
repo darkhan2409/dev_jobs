@@ -69,13 +69,13 @@ const RecommendedSection = () => {
                                 <Sparkles size={20} />
                             </span>
                             <h2 className="text-3xl font-bold text-slate-100">
-                                Recommended for You
+                                Подобрано для вас
                             </h2>
                         </div>
                         <p className="text-slate-400 max-w-2xl pl-12">
                             {hasProfile
-                                ? "Personalized job matches based on your grade and skills."
-                                : "Complete your profile to get personalized job matches."}
+                                ? "Рекомендации по вашему грейду и навыкам."
+                                : "Заполните профиль, чтобы получать более точные рекомендации."}
                         </p>
                     </div>
                 </div>
@@ -87,15 +87,15 @@ const RecommendedSection = () => {
                                 <UserPlus size={32} />
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold text-white mb-1">Tailor your feed</h3>
-                                <p className="text-slate-300">Add your grade and skills to see the most relevant opportunities.</p>
+                                <h3 className="text-xl font-bold text-white mb-1">Сделайте подбор точнее</h3>
+                                <p className="text-slate-300">Укажите грейд и ключевые навыки — покажем самые релевантные вакансии.</p>
                             </div>
                         </div>
                         <Link
                             to="/profile"
                             className="px-6 py-3 bg-violet-600 hover:bg-violet-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-violet-500/20 whitespace-nowrap"
                         >
-                            Complete Profile
+                            Заполнить профиль
                         </Link>
                     </div>
                 )}

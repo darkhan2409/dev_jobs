@@ -15,12 +15,13 @@ from fastapi.responses import JSONResponse
 from app.database import get_db
 from app.models import Vacancy, User
 from app.schemas import (
-    VacancyResponse, MetricsResponse, PaginatedVacancies, 
+    VacancyResponse, MetricsResponse, PaginatedVacancies,
     FiltersResponse, CompanyResponse, CompaniesListResponse, CompanyDetailResponse,
-    UserCreate, UserOut, Token, UserProfileOut
+    UserCreate, UserOut, Token, UserProfileOut,
+    GradeEnum, SortEnum
 )
 from app.auth import verify_password, get_password_hash, create_access_token, get_current_user
-from app.routers import users, recommendations
+from app.routers import users, recommendations, interview
 from app.config import settings
 
 # Rate Limiting
@@ -60,6 +61,7 @@ app.add_middleware(
 
 app.include_router(users.router)
 app.include_router(recommendations.router)
+app.include_router(interview.router)
 
 @app.get("/health")
 def health_check():
@@ -168,6 +170,8 @@ async def get_filters(request: Request, db: AsyncSession = Depends(get_db)):
         technologies=technologies
     )
 
+VALID_GRADES = {e.value for e in GradeEnum}
+
 @app.get("/api/vacancies", response_model=PaginatedVacancies, summary="Get vacancies", description="Returns paginated list of IT vacancies with filtering and sorting options.")
 @limiter.limit("100/minute")
 @cache(expire=300)
@@ -177,11 +181,11 @@ async def get_vacancies(
     per_page: int = Query(21, ge=1, le=100, description="Number of records per page"),
     search: Optional[str] = Query(None, description="Search in title, description, and company name"),
     location: Optional[str] = Query(None, description="Filter by location"),
-    grade: Optional[str] = Query(None, description="Filter by grade (Junior, Middle, Senior, Lead)"),
+    grade: Optional[str] = Query(None, description="Filter by grade (Junior, Middle, Senior, Lead). Supports comma-separated values."),
     stack: Optional[str] = Query(None, description="Filter by technology stack"),
     min_salary: Optional[int] = Query(None, description="Minimum salary in KZT"),
     company: Optional[str] = Query(None, description="Filter by company name"),
-    sort: Optional[str] = Query("newest", description="Sort order: newest, oldest, salary_desc, salary_asc"),
+    sort: SortEnum = Query(SortEnum.newest, description="Sort order: newest, oldest, salary_desc, salary_asc"),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -202,14 +206,13 @@ async def get_vacancies(
     query = select(Vacancy).filter(Vacancy.is_active == True)
 
     if search:
-        # Smart Search: Title OR Description OR Company Name (in raw_data)
+        # Smart Search: Title OR Description OR Company Name
         search_pattern = f"%{search}%"
         query = query.filter(
             or_(
                 Vacancy.title.ilike(search_pattern),
                 Vacancy.description.ilike(search_pattern),
-                # Search in company name within raw_data JSONB
-                Vacancy.raw_data['employer']['name'].astext.ilike(search_pattern)
+                Vacancy.company_name.ilike(search_pattern)
             )
         )
     
@@ -223,6 +226,13 @@ async def get_vacancies(
     if grade:
         # Support comma-separated grades for multi-select (e.g., "Junior,Middle")
         grades_list = [g.strip() for g in grade.split(',') if g.strip()]
+        # Validate each grade value
+        invalid_grades = [g for g in grades_list if g not in VALID_GRADES]
+        if invalid_grades:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid grade value(s): {', '.join(invalid_grades)}. Allowed: {', '.join(VALID_GRADES)}"
+            )
         if len(grades_list) == 1:
             query = query.filter(Vacancy.grade == grades_list[0])
         elif len(grades_list) > 1:
@@ -242,10 +252,8 @@ async def get_vacancies(
         )
 
     if company:
-        # Exact filter by company name in raw_data JSONB
-        query = query.filter(
-            Vacancy.raw_data['employer']['name'].astext == company
-        )
+        # Exact filter by company name
+        query = query.filter(Vacancy.company_name == company)
 
     # Get total count before pagination
     count_query = select(func.count()).select_from(query.subquery())
@@ -253,11 +261,11 @@ async def get_vacancies(
     total = result.scalar()
 
     # Apply sorting based on sort parameter
-    if sort == "oldest":
+    if sort == SortEnum.oldest:
         query = query.order_by(asc(Vacancy.published_at))
-    elif sort == "salary_desc":
+    elif sort == SortEnum.salary_desc:
         query = query.order_by(desc(Vacancy.salary_in_kzt).nulls_last(), desc(Vacancy.published_at))
-    elif sort == "salary_asc":
+    elif sort == SortEnum.salary_asc:
         query = query.order_by(asc(Vacancy.salary_in_kzt).nulls_last(), desc(Vacancy.published_at))
     else:  # default: newest
         query = query.order_by(desc(Vacancy.published_at), desc(Vacancy.salary_in_kzt))
@@ -297,47 +305,38 @@ async def get_companies(
     """
     Get list of companies aggregated from active vacancies.
     Returns company name, vacancy count, and logo.
+    Optimized with GROUP BY for better performance.
     """
-    # Get all active vacancies with company info
+    # Aggregate companies with GROUP BY (efficient single query)
     result = await db.execute(
-        select(Vacancy)
-        .filter(Vacancy.is_active == True)
+        select(
+            Vacancy.company_name,
+            func.count(Vacancy.id).label("vacancy_count"),
+            func.max(Vacancy.company_logo).label("logo_url")
+        )
+        .filter(
+            Vacancy.is_active == True,
+            Vacancy.company_name != None
+        )
+        .group_by(Vacancy.company_name)
+        .order_by(func.count(Vacancy.id).desc())
     )
-    vacancies = result.scalars().all()
-    
-    # Aggregate companies
-    companies_dict = {}
-    for vacancy in vacancies:
-        company_name = vacancy.company_name
-        if not company_name:
-            continue
-            
-        if company_name not in companies_dict:
-            companies_dict[company_name] = {
-                "name": company_name,
-                "vacancy_count": 0,
-                "logo_url": vacancy.company_logo
-            }
-        
-        companies_dict[company_name]["vacancy_count"] += 1
-        
-        # Update logo if current vacancy has one and we don't have it yet
-        if vacancy.company_logo and not companies_dict[company_name]["logo_url"]:
-            companies_dict[company_name]["logo_url"] = vacancy.company_logo
-    
-    # Convert to list and sort by vacancy count
-    companies_list = sorted(
-        companies_dict.values(),
-        key=lambda x: x["vacancy_count"],
-        reverse=True
-    )
-    
-    # Apply limit
-    companies_list = companies_list[:limit]
-    
+    all_companies = result.all()
+
+    # Get total count and apply limit
+    total = len(all_companies)
+    companies_list = [
+        {
+            "name": row.company_name,
+            "vacancy_count": row.vacancy_count,
+            "logo_url": row.logo_url
+        }
+        for row in all_companies[:limit]
+    ]
+
     return CompaniesListResponse(
         items=companies_list,
-        total=len(companies_dict)
+        total=total
     )
 
 @app.get("/api/companies/{company_name}", response_model=CompanyDetailResponse)
@@ -362,7 +361,7 @@ async def get_company_detail(
         select(Vacancy)
         .filter(
             Vacancy.is_active == True,
-            Vacancy.raw_data['employer']['name'].astext == decoded_name
+            Vacancy.company_name == decoded_name
         )
         .order_by(desc(Vacancy.published_at))
     )
@@ -470,20 +469,101 @@ async def get_current_user_info(
 
 
 # --- Internal Admin Endpoints ---
+def verify_admin_secret(secret: str):
+    """Verify admin secret token."""
+    if secret != settings.INTERNAL_SECRET:
+        raise HTTPException(status_code=403, detail="Invalid secret token")
+
+
 @app.post("/api/internal/clear-cache")
 async def clear_cache(secret: str):
     """
     Force clear the entire In-Memory cache.
     Protected by a simple secret token.
     """
-    import os
-    from dotenv import load_dotenv
-    load_dotenv()
-    
-    INTERNAL_SECRET = os.getenv("INTERNAL_SECRET")
-    
-    if secret != INTERNAL_SECRET:
-        raise HTTPException(status_code=403, detail="Invalid secret token")
-        
+    verify_admin_secret(secret)
     await FastAPICache.clear()
     return {"status": "ok", "message": "Cache successfully cleared"}
+
+
+@app.get("/api/admin/users", summary="Get all users (Admin)")
+async def get_all_users(
+    secret: str = Query(..., description="Admin secret token"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get list of all registered users with their profiles.
+    Protected by INTERNAL_SECRET.
+    """
+    verify_admin_secret(secret)
+
+    result = await db.execute(
+        select(User).order_by(desc(User.created_at))
+    )
+    users = result.scalars().all()
+
+    return {
+        "total": len(users),
+        "users": [
+            {
+                "id": u.id,
+                "email": u.email,
+                "is_active": u.is_active,
+                "created_at": u.created_at.isoformat() if u.created_at else None,
+                "full_name": u.full_name,
+                "location": u.location,
+                "grade": u.grade,
+                "skills": u.skills,
+                "bio": u.bio
+            }
+            for u in users
+        ]
+    }
+
+
+@app.get("/api/admin/stats", summary="Get platform stats (Admin)")
+async def get_admin_stats(
+    secret: str = Query(..., description="Admin secret token"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get platform statistics: users, vacancies, etc.
+    Protected by INTERNAL_SECRET.
+    """
+    verify_admin_secret(secret)
+
+    # Users count
+    result = await db.execute(select(func.count(User.id)))
+    total_users = result.scalar()
+
+    # Active users (with profile filled)
+    result = await db.execute(
+        select(func.count(User.id)).filter(User.skills != '[]')
+    )
+    users_with_profile = result.scalar()
+
+    # Vacancies count
+    result = await db.execute(
+        select(func.count(Vacancy.id)).filter(Vacancy.is_active == True)
+    )
+    active_vacancies = result.scalar()
+
+    # Companies count
+    result = await db.execute(
+        select(func.count(func.distinct(Vacancy.company_name)))
+        .filter(Vacancy.is_active == True, Vacancy.company_name != None)
+    )
+    total_companies = result.scalar()
+
+    return {
+        "users": {
+            "total": total_users,
+            "with_profile": users_with_profile
+        },
+        "vacancies": {
+            "active": active_vacancies
+        },
+        "companies": {
+            "total": total_companies
+        }
+    }

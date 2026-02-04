@@ -1,6 +1,23 @@
 from datetime import datetime
+from enum import Enum
 from typing import Optional, Any, List, Dict
 from pydantic import BaseModel, field_validator
+
+
+class GradeEnum(str, Enum):
+    """Allowed grade values for filtering vacancies."""
+    junior = "Junior"
+    middle = "Middle"
+    senior = "Senior"
+    lead = "Lead"
+
+
+class SortEnum(str, Enum):
+    """Allowed sort options for vacancies."""
+    newest = "newest"
+    oldest = "oldest"
+    salary_desc = "salary_desc"
+    salary_asc = "salary_asc"
 
 class VacancyResponse(BaseModel):
     id: int

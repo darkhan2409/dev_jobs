@@ -68,6 +68,9 @@ class Vacancy(Base):
     onupdate=func.now() # SQLAlchemy сам обновит время при любом UPDATE
 )
     
+    # Название компании (денормализовано для индексации и быстрого поиска)
+    company_name: Mapped[Optional[str]] = mapped_column(String, index=True)
+
     # URL логотипа компании
     company_logo: Mapped[Optional[str]] = mapped_column(String)
     
@@ -80,15 +83,6 @@ class Vacancy(Base):
     # Хранение полных данных от API в формате JSONB
     raw_data: Mapped[dict] = mapped_column(JSONB)
 
-    @property
-    def company_name(self) -> Optional[str]:
-        """Извлекает название компании из JSONB (raw_data)."""
-        if not self.raw_data:
-            return None
-        employer = self.raw_data.get("employer")
-        if not employer:
-            return None
-        return employer.get("name")
 
     # Ограничение уникальности: одна и та же вакансия из одного источника не может дублироваться
     __table_args__ = (

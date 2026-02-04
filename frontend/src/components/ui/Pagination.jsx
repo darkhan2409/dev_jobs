@@ -23,7 +23,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 className="p-2 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                aria-label="Previous page"
+                aria-label="Предыдущая страница"
             >
                 &lt;
             </button>
@@ -47,13 +47,13 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage >= totalPages}
                 className="p-2 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                aria-label="Next page"
+                aria-label="Следующая страница"
             >
                 &gt;
             </button>
 
             <span className="ml-4 text-slate-500 text-sm font-mono">
-                of {totalPages}
+                из {totalPages}
             </span>
         </div>
     );

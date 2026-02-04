@@ -88,9 +88,9 @@ const CompaniesPage = () => {
         return (
             <div className="min-h-[80vh] flex items-center justify-center">
                 <div className="text-center">
-                    <h2 className="text-2xl font-bold text-white mb-2">Oops! Something went wrong</h2>
+                    <h2 className="text-2xl font-bold text-white mb-2">Упс, что-то пошло не так</h2>
                     <p className="text-text-muted mb-6">{error}</p>
-                    <Button onClick={() => window.location.reload()}>Try Again</Button>
+                    <Button onClick={() => window.location.reload()}>Попробовать снова</Button>
                 </div>
             </div>
         );
@@ -109,10 +109,10 @@ const CompaniesPage = () => {
                 >
                     <motion.div variants={fadeInUp} className="mb-8">
                         <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
-                            Top <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">Tech Companies</span>
+                            Лучшие <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">IT‑компании</span>
                         </h1>
                         <p className="text-lg text-text-muted max-w-2xl">
-                            Discover the best engineering teams in Kazakhstan. From fast-growing startups to established tech giants.
+                            Найдите сильные инженерные команды в Казахстане — от быстрорастущих стартапов до крупных компаний.
                         </p>
                     </motion.div>
 
@@ -124,7 +124,7 @@ const CompaniesPage = () => {
                                     <div className="absolute inset-0 bg-primary/20 blur-lg group-hover:bg-primary/30 transition-all"></div>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-text-muted font-medium">Active Companies</p>
+                                    <p className="text-sm text-text-muted font-medium">Активные компании</p>
                                     <p className="text-2xl font-bold text-white">{stats.totalCompanies}</p>
                                 </div>
                             </div>
@@ -134,10 +134,7 @@ const CompaniesPage = () => {
                             <div className="flex items-center gap-4">
                                 <div className="p-3 bg-secondary/10 rounded-xl relative overflow-hidden group">
                                     <Briefcase className="text-secondary relative z-10" />
-                                    <div className="absolute inset-0 bg-secondary/20 blur-lg group-hover:secondary/30 transition-all"></div>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-text-muted font-medium">Total Opportunities</p>
+                                    <p className="text-sm text-text-muted font-medium">Открытые вакансии</p>
                                     <p className="text-2xl font-bold text-white">{stats.totalVacancies}</p>
                                 </div>
                             </div>
@@ -150,7 +147,7 @@ const CompaniesPage = () => {
                                     <div className="absolute inset-0 bg-emerald-500/20 blur-lg group-hover:bg-emerald-500/30 transition-all"></div>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-text-muted font-medium">Actively Hiring</p>
+                                    <p className="text-sm text-text-muted font-medium">Нанимают сейчас</p>
                                     <p className="text-2xl font-bold text-white">{stats.topHiring}</p>
                                 </div>
                             </div>
@@ -161,7 +158,7 @@ const CompaniesPage = () => {
                     <motion.div variants={fadeInUp} className="flex flex-col md:flex-row gap-4 justify-between items-center bg-surface/30 p-2 rounded-2xl border border-white/5 backdrop-blur-sm">
                         <div className="w-full md:w-96">
                             <Input
-                                placeholder="Search companies..."
+                                placeholder="Поиск по компаниям…"
                                 icon={Search}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -174,14 +171,14 @@ const CompaniesPage = () => {
                                 size="sm"
                                 onClick={() => setSortBy('active')}
                             >
-                                Most Active
+                                По активности
                             </Button>
                             <Button
                                 variant={sortBy === 'name' ? 'primary' : 'ghost'}
                                 size="sm"
                                 onClick={() => setSortBy('name')}
                             >
-                                A-Z
+                                По алфавиту
                             </Button>
                         </div>
                     </motion.div>
@@ -225,7 +222,7 @@ const CompaniesPage = () => {
                                     </div>
                                     {company.vacancy_count >= 5 && (
                                         <Badge variant="success" className="shadow-lg shadow-emerald-500/20">
-                                            Top Hiring
+                                            Активно нанимают
                                         </Badge>
                                     )}
                                 </div>
@@ -237,7 +234,7 @@ const CompaniesPage = () => {
                                     <div className="flex items-center gap-2 text-text-muted text-sm mb-6">
                                         <Briefcase size={14} />
                                         <span className="font-medium text-white">{company.vacancy_count}</span>
-                                        <span>open positions</span>
+                                        <span>открытых вакансий</span>
                                     </div>
                                 </div>
 
@@ -246,7 +243,7 @@ const CompaniesPage = () => {
                                         className="flex-1"
                                         onClick={() => handleViewJobs(company.name)}
                                     >
-                                        View Jobs
+                                        Смотреть вакансии
                                     </Button>
                                     {company.site_url && (
                                         <a
@@ -270,8 +267,8 @@ const CompaniesPage = () => {
                         <div className="inline-block p-4 rounded-full bg-surface border border-border mb-4">
                             <Search className="text-text-muted" size={32} />
                         </div>
-                        <h3 className="text-xl font-bold text-white mb-2">No companies found</h3>
-                        <p className="text-text-muted">Try adjusting your search terms</p>
+                        <h3 className="text-xl font-bold text-white mb-2">Компании не найдены</h3>
+                        <p className="text-text-muted">Попробуйте изменить запрос</p>
                     </div>
                 )}
             </div>

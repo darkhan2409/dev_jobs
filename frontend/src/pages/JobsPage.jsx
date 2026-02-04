@@ -107,7 +107,7 @@ const JobsPage = () => {
                             className="w-full flex items-center justify-center gap-2 bg-slate-900 border border-slate-800 p-3 rounded-xl text-white font-medium"
                         >
                             <Menu size={20} />
-                            {isMobileMenuOpen ? 'Hide Filters' : 'Show Filters'}
+                            {isMobileMenuOpen ? 'Скрыть фильтры' : 'Показать фильтры'}
                         </button>
                     </div>
 
@@ -127,25 +127,25 @@ const JobsPage = () => {
                         <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
                                 <h1 className="text-3xl font-bold text-white mb-2">
-                                    Browse Vacancies
+                                    Каталог вакансий
                                 </h1>
                                 <p className="text-slate-400">
-                                    Found <span className="text-violet-400 font-mono font-bold">{pagination.total}</span> open positions
+                                    Найдено <span className="text-violet-400 font-mono font-bold">{pagination.total}</span> вакансий
                                 </p>
                             </div>
 
                             {/* Sort Dropdown */}
                             <div className="flex items-center gap-2">
-                                <span className="text-slate-500 text-sm">Sort by:</span>
+                                <span className="text-slate-500 text-sm">Сортировка:</span>
                                 <select
                                     value={filters.sort || 'newest'}
                                     onChange={(e) => handleFilterChange({ ...filters, sort: e.target.value })}
                                     className="bg-slate-900 border border-slate-700 text-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-violet-500 cursor-pointer"
                                 >
-                                    <option value="newest">Newest</option>
-                                    <option value="oldest">Oldest</option>
-                                    <option value="salary_desc">Salary (High to Low)</option>
-                                    <option value="salary_asc">Salary (Low to High)</option>
+                                    <option value="newest">Сначала новые</option>
+                                    <option value="oldest">Сначала старые</option>
+                                    <option value="salary_desc">Зарплата: по убыванию</option>
+                                    <option value="salary_asc">Зарплата: по возрастанию</option>
                                 </select>
                             </div>
                         </div>

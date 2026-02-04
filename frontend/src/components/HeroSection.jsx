@@ -5,7 +5,7 @@ import { fadeInUp } from '../utils/animations';
 import Input from './ui/Input';
 import Button from './ui/Button';
 
-const QUICK_TAGS = ['React', 'Python', 'Go', 'Remote', 'Senior'];
+const QUICK_TAGS = ['React', 'Python', 'Go', 'Удалённо', 'Senior'];
 
 const HeroSection = ({ onSearchApply, totalJobs }) => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -37,19 +37,19 @@ const HeroSection = ({ onSearchApply, totalJobs }) => {
                             <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-primary/50 opacity-50"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                         </span>
-                        {totalJobs ? `${totalJobs.toLocaleString()} IT vacancies in Kazakhstan` : 'Loading vacancies...'}
+                        {totalJobs ? `${totalJobs.toLocaleString()} IT‑вакансий в Казахстане` : 'Загружаем вакансии...'}
                     </div>
                 </motion.div>
 
                 {/* Title */}
                 <motion.h1 variants={fadeInUp} className="text-5xl md:text-7xl font-bold text-text-main tracking-tight mb-6 leading-tight">
-                    Find your next <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">commit</span>.
+                    Найдите свой следующий <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">коммит</span>.
                 </motion.h1>
 
                 {/* Subtitle */}
                 <motion.p variants={fadeInUp} className="text-xl text-text-muted max-w-2xl mx-auto mb-10 leading-relaxed">
-                    The platform built for developers, by developers. <br className="hidden sm:block" />
-                    No recruiters, no noise. Just code.
+                    Платформа для разработчиков — от разработчиков. <br className="hidden sm:block" />
+                    Без рекрутеров и шума. Только код.
                 </motion.p>
 
                 {/* Search Input */}
@@ -63,7 +63,7 @@ const HeroSection = ({ onSearchApply, totalJobs }) => {
                                 id="search"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="e.g. React Developer, Python..."
+                                placeholder="например: React‑разработчик, Python…"
                                 icon={Search}
                                 className="h-12 bg-surface/90 backdrop-blur-xl border-border hover:border-border text-lg"
                             />
@@ -82,7 +82,7 @@ const HeroSection = ({ onSearchApply, totalJobs }) => {
 
                 {/* Quick Tags */}
                 <motion.div variants={fadeInUp} className="flex flex-wrap gap-2 justify-center mb-12">
-                    <span className="text-text-muted text-sm self-center">Popular:</span>
+                    <span className="text-text-muted text-sm self-center">Популярное:</span>
                     {QUICK_TAGS.map((tag) => (
                         <Button
                             key={tag}

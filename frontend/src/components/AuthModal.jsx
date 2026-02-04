@@ -37,7 +37,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
             onClose();
             resetForm();
         } catch (err) {
-            setError(err.response?.data?.detail || 'Login failed. Please try again.');
+            setError(err.response?.data?.detail || 'Не удалось войти. Попробуйте ещё раз.');
         } finally {
             setIsLoading(false);
         }
@@ -48,12 +48,12 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
         setError('');
 
         if (password !== confirmPassword) {
-            setError('Passwords do not match');
+            setError('Пароли не совпадают');
             return;
         }
 
         if (password.length < 6) {
-            setError('Password must be at least 6 characters');
+            setError('Пароль должен быть не короче 6 символов');
             return;
         }
 
@@ -61,7 +61,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
 
         try {
             await register(email, password);
-            setSuccessMessage('Account created! You can now log in.');
+            setSuccessMessage('Аккаунт создан. Теперь можно войти.');
             setTimeout(() => {
                 setActiveTab('login');
                 setSuccessMessage('');
@@ -69,7 +69,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
                 setConfirmPassword('');
             }, 1500);
         } catch (err) {
-            setError(err.response?.data?.detail || 'Registration failed. Please try again.');
+            setError(err.response?.data?.detail || 'Не удалось зарегистрироваться. Попробуйте ещё раз.');
         } finally {
             setIsLoading(false);
         }
@@ -96,7 +96,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
                     {/* Header */}
                     <div className="flex items-center justify-between p-6 border-b border-slate-800">
                         <h2 className="text-xl font-bold text-white">
-                            {activeTab === 'login' ? 'Welcome Back' : 'Create Account'}
+                            {activeTab === 'login' ? 'С возвращением' : 'Создать аккаунт'}
                         </h2>
                         <button
                             onClick={onClose}
@@ -115,7 +115,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
                                     : 'text-slate-400 hover:text-slate-300'
                                 }`}
                         >
-                            Log In
+                            Войти
                         </button>
                         <button
                             onClick={() => handleTabChange('register')}
@@ -124,7 +124,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
                                     : 'text-slate-400 hover:text-slate-300'
                                 }`}
                         >
-                            Sign Up
+                            Регистрация
                         </button>
                     </div>
 
@@ -147,7 +147,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
 
                         {/* Email */}
                         <div className="space-y-2">
-                            <label className="text-sm text-slate-400">Email</label>
+                            <label className="text-sm text-slate-400">Эл. почта</label>
                             <div className="relative">
                                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                                 <input
@@ -163,7 +163,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
 
                         {/* Password */}
                         <div className="space-y-2">
-                            <label className="text-sm text-slate-400">Password</label>
+                            <label className="text-sm text-slate-400">Пароль</label>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                                 <input
@@ -181,7 +181,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
                         {/* Confirm Password (Register only) */}
                         {activeTab === 'register' && (
                             <div className="space-y-2">
-                                <label className="text-sm text-slate-400">Confirm Password</label>
+                                <label className="text-sm text-slate-400">Повторите пароль</label>
                                 <div className="relative">
                                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                                     <input
@@ -206,10 +206,10 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
                             {isLoading ? (
                                 <>
                                     <Loader2 className="animate-spin" size={18} />
-                                    {activeTab === 'login' ? 'Logging in...' : 'Creating account...'}
+                                    {activeTab === 'login' ? 'Входим…' : 'Создаём аккаунт…'}
                                 </>
                             ) : (
-                                activeTab === 'login' ? 'Log In' : 'Create Account'
+                                activeTab === 'login' ? 'Войти' : 'Создать аккаунт'
                             )}
                         </button>
                     </form>

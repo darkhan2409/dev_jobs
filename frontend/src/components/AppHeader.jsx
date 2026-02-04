@@ -82,13 +82,16 @@ const AppHeader = () => {
 
                         <nav className="hidden md:flex items-center gap-1">
                             <NavLink to="/jobs" className={navLinkClass}>
-                                Vacancies
+                                Вакансии
                             </NavLink>
                             <NavLink to="/companies" className={navLinkClass}>
-                                Companies
+                                Компании
+                            </NavLink>
+                            <NavLink to="/career" className={navLinkClass}>
+                                Карьерный тест
                             </NavLink>
                             <NavLink to="/about" className={navLinkClass}>
-                                About Us
+                                О нас
                             </NavLink>
                         </nav>
 
@@ -124,7 +127,7 @@ const AppHeader = () => {
                                                 className="absolute right-0 mt-2 w-48 bg-surface border border-border rounded-xl shadow-xl overflow-hidden"
                                             >
                                                 <div className="p-3 border-b border-border">
-                                                    <p className="text-xs text-text-muted">Signed in as</p>
+                                                    <p className="text-xs text-text-muted">Вы вошли как</p>
                                                     <p className="text-sm text-white truncate">{user?.email}</p>
                                                 </div>
                                                 <div className="p-1">
@@ -134,14 +137,14 @@ const AppHeader = () => {
                                                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-muted hover:text-white hover:bg-white/5 rounded-lg transition-colors"
                                                     >
                                                         <User size={14} />
-                                                        My Profile
+                                                        Мой профиль
                                                     </Link>
                                                     <button
                                                         onClick={handleLogout}
                                                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-muted hover:text-white hover:bg-white/5 rounded-lg transition-colors"
                                                     >
                                                         <LogOut size={14} />
-                                                        Log Out
+                                                        Выйти
                                                     </button>
                                                 </div>
                                             </motion.div>
@@ -156,7 +159,7 @@ const AppHeader = () => {
                                         onClick={openLogin}
                                         className="hidden sm:inline-flex"
                                     >
-                                        Log In
+                                        Войти
                                     </Button>
                                     <Button
                                         variant="primary"
@@ -164,7 +167,7 @@ const AppHeader = () => {
                                         icon={Code2}
                                         as={motion.button}
                                     >
-                                        Sign Up
+                                        Регистрация
                                     </Button>
                                 </>
                             )}

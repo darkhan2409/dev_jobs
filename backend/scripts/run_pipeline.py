@@ -3,7 +3,6 @@ import logging
 import sys
 import os
 import random
-import time
 from datetime import datetime
 
 # Setup paths
@@ -114,7 +113,7 @@ async def execute_full_cycle(deep_scrape: bool = False, dry_run_cleaner: bool = 
                 # Delay between roles
                 delay = random.uniform(*role_delay)
                 logger.info(f"Waiting {delay:.1f}s before next role...")
-                time.sleep(delay)
+                await asyncio.sleep(delay)
                 
             except Exception as e:
                 logger.error(f"Failed to scrape role {role['name']}: {e}", exc_info=True)
@@ -138,7 +137,7 @@ async def execute_full_cycle(deep_scrape: bool = False, dry_run_cleaner: bool = 
                 
                 logger.info(f"Stats for '{query}': +{query_stats.get('added',0)} new, ~{query_stats.get('updated',0)} upd")
                 
-                time.sleep(random.uniform(*query_delay))
+                await asyncio.sleep(random.uniform(*query_delay))
                 
             except Exception as e:
                 logger.error(f"Failed to scrape query '{query}': {e}", exc_info=True)

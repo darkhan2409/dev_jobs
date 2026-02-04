@@ -17,5 +17,6 @@ openai
 tqdm>=4.66.0
 slowapi>=0.1.9
 passlib[bcrypt]>=1.7.4
+bcrypt==4.0.1  # pinned for passlib compatibility
 python-jose[cryptography]>=3.3.0
 python-multipart>=0.0.6
