@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import FilterSidebar from '../components/FilterSidebar';
 import VacancyCard, { VacancySkeleton } from '../features/vacancies/VacancyCard';
 import EmptyState from '../components/EmptyState';
-import axiosClient from '../api/axiosClient';
+import { vacanciesApi } from '../api/vacanciesApi';
 import { Menu } from 'lucide-react';
 import { fadeInUp, pageVariants } from '../utils/animations';
 import Pagination from '../components/ui/Pagination';
@@ -21,7 +21,7 @@ const JobsPage = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Read filters from URL
-    const filters = {
+    const filters = React.useMemo(() => ({
         search: searchParams.get('search') || '',
         grade: searchParams.get('grade') || '',
         location: searchParams.get('location') || '',
@@ -30,29 +30,24 @@ const JobsPage = () => {
         sort: searchParams.get('sort') || 'newest',
         minSalary: searchParams.get('minSalary') || '',
         page: parseInt(searchParams.get('page')) || 1
-    };
+    }), [searchParams]);
 
-    useEffect(() => {
-        fetchVacancies();
-        window.scrollTo(0, 0); // Scroll to top on page or filter change
-    }, [searchParams]);
-
-    const fetchVacancies = async () => {
+    const fetchVacancies = React.useCallback(async (currentFilters) => {
         setLoading(true);
         try {
             const params = {
-                page: filters.page,
+                page: currentFilters.page,
                 per_page: 21,
-                search: filters.search,
-                grade: filters.grade,
-                location: filters.location,
-                stack: filters.stack,
-                company: filters.company,
-                sort: filters.sort,
-                min_salary: filters.minSalary || undefined
+                search: currentFilters.search,
+                grade: currentFilters.grade,
+                location: currentFilters.location,
+                stack: currentFilters.stack,
+                company: currentFilters.company,
+                sort: currentFilters.sort,
+                min_salary: currentFilters.minSalary || undefined
             };
 
-            const response = await axiosClient.get('/vacancies', { params });
+            const response = await vacanciesApi.getAll(params);
             setVacancies(response.data.items);
             setPagination({
                 page: response.data.page,
@@ -64,7 +59,12 @@ const JobsPage = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchVacancies(filters);
+        window.scrollTo(0, 0);
+    }, [filters, fetchVacancies]);
 
     const handlePageChange = (newPage) => {
         const newParams = new URLSearchParams(searchParams);

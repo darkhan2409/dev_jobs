@@ -146,8 +146,9 @@ class LLMInterpreter:
                                 "ПРАВИЛА:\n"
                                 "1. Используй ТОЛЬКО предоставленные описания ролей и сигналов. Не выдумывай новые качества.\n"
                                 "2. Пиши на профессиональном русском языке, избегай воды.\n"
-                                "3. Каждая секция объяснения не должна превышать 3-4 предложения.\n"
-                                "4. Всегда возвращай ответ ТОЛЬКО в формате JSON."
+                                "3. Каждая секция объяснения должна быть разбита на абзацы. Используй \\n\\n между абзацами для читаемости.\n"
+                                "4. Пиши короткими абзацами по 2-3 предложения максимум.\n"
+                                "5. Всегда возвращай ответ ТОЛЬКО в формате JSON."
                             )
                         },
                         {
@@ -265,8 +266,10 @@ class LLMInterpreter:
     ) -> InterpretationResult:
         """Parse JSON response from LLM."""
         import json
+        logger.info(f"LLM raw response: {interpretation_text}")
         try:
             data = json.loads(interpretation_text)
+            logger.info(f"Parsed explanation: {data.get('explanation', '')[:200]}...")
             
             return InterpretationResult(
                 primary_recommendation=data.get("primary_recommendation", ranked_roles[0][0]),

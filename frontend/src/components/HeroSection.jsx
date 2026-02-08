@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { ArrowRight, Search } from 'lucide-react';
+import { ArrowRight, Search, CheckCircle2, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeInUp } from '../utils/animations';
 import Input from './ui/Input';
 import Button from './ui/Button';
 
-const QUICK_TAGS = ['React', 'Python', 'Go', 'Удалённо', 'Senior'];
+
+const TECH_FILTERS = ['React', 'Python', 'Go'];
+const CONTEXT_FILTERS = ['Разработка', 'Аналитика', 'Инфраструктура'];
 
 const HeroSection = ({ onSearchApply, totalJobs }) => {
     const [searchTerm, setSearchTerm] = useState('');
+    // const navigate = useNavigate(); // Removed unused
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -16,6 +19,7 @@ const HeroSection = ({ onSearchApply, totalJobs }) => {
             onSearchApply({ search: searchTerm });
         }
     };
+
     return (
         <div className="relative overflow-visible border-b border-white/5 pb-20 pt-32">
             <motion.div
@@ -30,7 +34,7 @@ const HeroSection = ({ onSearchApply, totalJobs }) => {
                     }
                 }}
             >
-                {/* Badge */}
+                {/* Block 1. HERO - Social Proof Badge */}
                 <motion.div variants={fadeInUp} className="flex justify-center mb-6">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary-light text-xs font-mono">
                         <span className="relative flex h-2 w-2">
@@ -41,21 +45,19 @@ const HeroSection = ({ onSearchApply, totalJobs }) => {
                     </div>
                 </motion.div>
 
-                {/* Title */}
-                <motion.h1 variants={fadeInUp} className="text-5xl md:text-7xl font-bold text-text-main tracking-tight mb-6 leading-tight">
-                    Найдите свой следующий <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">коммит</span>.
+                {/* Block 1. HERO - Headline */}
+                <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl font-extrabold text-text-main tracking-tight mb-6 leading-tight">
+                    IT‑вакансии с <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">понятным контекстом</span>
                 </motion.h1>
 
-                {/* Subtitle */}
-                <motion.p variants={fadeInUp} className="text-xl text-text-muted max-w-2xl mx-auto mb-10 leading-relaxed">
-                    Платформа для разработчиков — от разработчиков. <br className="hidden sm:block" />
-                    Без рекрутеров и шума. Только код.
+                {/* Block 1. HERO - Subheadline (Shortened) */}
+                <motion.p variants={fadeInUp} className="text-lg md:text-xl text-text-muted max-w-2xl mx-auto mb-10 leading-relaxed">
+                    Понимайте роли и требования, а не просто читайте описания.
                 </motion.p>
 
-                {/* Search Input */}
-                <motion.div variants={fadeInUp} className="max-w-xl mx-auto mb-6 relative z-20">
-                    <form onSubmit={handleSubmit} className="relative group flex gap-2">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-2xl opacity-20 group-hover:opacity-40 blur transition duration-500"></div>
+                {/* Block 1. HERO - Search Input (Simplified button, no accent blur) */}
+                <motion.div variants={fadeInUp} className="max-w-xl mx-auto mb-8 relative z-20">
+                    <form onSubmit={handleSubmit} className="relative flex gap-2">
                         <div className="relative flex-1">
                             <Input
                                 type="text"
@@ -63,33 +65,33 @@ const HeroSection = ({ onSearchApply, totalJobs }) => {
                                 id="search"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="например: React‑разработчик, Python…"
+                                placeholder="Технологии или роль (React, Аналитика)"
                                 icon={Search}
-                                className="h-12 bg-surface/90 backdrop-blur-xl border-border hover:border-border text-lg"
+                                className="h-14 bg-surface/90 backdrop-blur-xl border-border hover:border-border text-lg"
                             />
                         </div>
                         <div className="relative">
                             <Button
                                 type="submit"
                                 size="lg"
-                                className="h-12 w-12 p-0 rounded-lg shrink-0"
+                                className="h-14 w-14 p-0 rounded-xl shrink-0 bg-surface border border-border hover:border-primary/50 text-text-muted hover:text-primary-light shadow-none"
                             >
-                                <ArrowRight size={20} />
+                                <ArrowRight size={24} />
                             </Button>
                         </div>
                     </form>
                 </motion.div>
 
-                {/* Quick Tags */}
+                {/* Block 3. Quick filters (Tech only in Hero) */}
                 <motion.div variants={fadeInUp} className="flex flex-wrap gap-2 justify-center mb-12">
-                    <span className="text-text-muted text-sm self-center">Популярное:</span>
-                    {QUICK_TAGS.map((tag) => (
+                    <span className="text-text-muted text-xs uppercase tracking-wider font-semibold self-center mr-2">Популярное:</span>
+                    {TECH_FILTERS.map((tag) => (
                         <Button
                             key={tag}
                             variant="outline"
                             size="sm"
                             onClick={() => onSearchApply({ search: tag })}
-                            className="text-xs border-border bg-surface/50 hover:border-primary/50 hover:bg-primary/5 hover:text-primary-light"
+                            className="text-xs border-border bg-surface/50 hover:border-primary/50 hover:bg-primary/5 hover:text-primary-light px-4 py-1.5"
                         >
                             {tag}
                         </Button>
@@ -102,3 +104,4 @@ const HeroSection = ({ onSearchApply, totalJobs }) => {
 };
 
 export default HeroSection;
+

@@ -8,10 +8,18 @@ from .aggregation_engine import (
     IncompleteSessionError,
     RoleScoreResult
 )
+from .stage_aggregation_engine import (
+    StageAggregationEngine,
+    StageAggregationEngineError,
+    StageScoreComputeResult
+)
 
 __all__ = [
     'AggregationEngine',
     'AggregationEngineError',
     'IncompleteSessionError',
-    'RoleScoreResult'
+    'RoleScoreResult',
+    'StageAggregationEngine',
+    'StageAggregationEngineError',
+    'StageScoreComputeResult',
 ]

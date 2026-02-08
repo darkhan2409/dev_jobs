@@ -1,0 +1,231 @@
+{
+  "version": "1.1",
+  "stages": [
+    {
+      "id": "idea_and_need",
+      "name": "Идея и потребность",
+      "summary": "Блок 1: Дискавери и Стратегия. Решается, принесет ли продукт деньги и нужен ли он рынку.",
+      "typical_outputs": [
+        "Vision document",
+        "Customer research",
+        "Business requirements"
+      ],
+      "primary_vacancy_filters": {
+        "roles": [
+          "product_manager",
+          "product_analyst",
+          "business_analyst"
+        ],
+        "keywords": [
+          "product manager",
+          "product analyst",
+          "business analyst",
+          "market research"
+        ]
+      }
+    },
+    {
+      "id": "planning",
+      "name": "Планирование и управление",
+      "summary": "Управление сроками, ресурсами и коммуникацией.",
+      "typical_outputs": [
+        "Roadmap",
+        "Backlog",
+        "Project plan"
+      ],
+      "primary_vacancy_filters": {
+        "roles": [
+          "product_manager",
+          "project_manager"
+        ],
+        "keywords": [
+          "project manager",
+          "scrum master",
+          "backlog",
+          "planning"
+        ]
+      }
+    },
+    {
+      "id": "design",
+      "name": "Проектирование интерфейсов",
+      "summary": "Блок 2: Дизайн. Перевод идей в визуальные макеты и логику взаимодействия.",
+      "typical_outputs": [
+        "User Flow",
+        "Wireframes",
+        "UI Kit"
+      ],
+      "primary_vacancy_filters": {
+        "roles": [
+          "ux_designer",
+          "ui_designer"
+        ],
+        "keywords": [
+          "UX designer",
+          "UI designer",
+          "Figma",
+          "user journey"
+        ]
+      }
+    },
+    {
+      "id": "architecture",
+      "name": "Архитектура и логика",
+      "summary": "Проектирование технической структуры: базы данных, API и интеграции.",
+      "typical_outputs": [
+        "DB Schema",
+        "API Specs",
+        "System architecture"
+      ],
+      "primary_vacancy_filters": {
+        "roles": [
+          "system_analyst",
+          "systems_architect",
+          "data_engineer"
+        ],
+        "keywords": [
+          "системный аналитик",
+          "architect",
+          "database design",
+          "API design"
+        ]
+      }
+    },
+    {
+      "id": "development",
+      "name": "Разработка",
+      "summary": "Блок 3: Создание работающего кода.",
+      "typical_outputs": [
+        "Working code",
+        "Pull requests",
+        "Release notes"
+      ],
+      "primary_vacancy_filters": {
+        "roles": [
+          "backend_developer",
+          "frontend_developer",
+          "mobile_developer",
+          "ml_engineer",
+          "llm_engineer"
+        ],
+        "keywords": [
+          "backend",
+          "frontend",
+          "mobile developer",
+          "swift",
+          "kotlin",
+          "fastapi",
+          "react",
+          "LLM",
+          "machine learning"
+        ]
+      }
+    },
+    {
+      "id": "testing",
+      "name": "Верификация",
+      "summary": "Блок 4: Поиск багов и проверка качества.",
+      "typical_outputs": [
+        "Bug reports",
+        "Automation scripts",
+        "Test plan"
+      ],
+      "primary_vacancy_filters": {
+        "roles": [
+          "manual_qa",
+          "qa_automation"
+        ],
+        "keywords": [
+          "QA",
+          "тестировщик",
+          "manual testing",
+          "autotests",
+          "selenium",
+          "pytest"
+        ]
+      }
+    },
+    {
+      "id": "security",
+      "name": "Безопасность",
+      "summary": "Проверка системы на уязвимости и защита данных.",
+      "typical_outputs": [
+        "Pentest report",
+        "Security audit"
+      ],
+      "primary_vacancy_filters": {
+        "roles": [
+          "security_engineer"
+        ],
+        "keywords": [
+          "security",
+          "пентест",
+          "информационная безопасность",
+          "cybersecurity"
+        ]
+      }
+    },
+    {
+      "id": "deployment",
+      "name": "Релиз и эксплуатация",
+      "summary": "Блок 5: Запуск и поддержание работоспособности.",
+      "typical_outputs": [
+        "CI/CD pipelines",
+        "Monitoring dashboards"
+      ],
+      "primary_vacancy_filters": {
+        "roles": [
+          "devops_engineer",
+          "sre"
+        ],
+        "keywords": [
+          "devops",
+          "SRE",
+          "kubernetes",
+          "docker",
+          "ci/cd"
+        ]
+      }
+    },
+    {
+      "id": "documentation",
+      "name": "Документация",
+      "summary": "Написание руководств и документации для разработчиков.",
+      "typical_outputs": [
+        "API Docs",
+        "User guides"
+      ],
+      "primary_vacancy_filters": {
+        "roles": [
+          "technical_writer"
+        ],
+        "keywords": [
+          "technical writer",
+          "технический писатель",
+          "documentation"
+        ]
+      }
+    },
+    {
+      "id": "analytics",
+      "name": "Аналитика",
+      "summary": "Сбор данных и поиск инсайтов для развития продукта.",
+      "typical_outputs": [
+        "Dashboards",
+        "Analytic reports"
+      ],
+      "primary_vacancy_filters": {
+        "roles": [
+          "data_analyst",
+          "product_analyst"
+        ],
+        "keywords": [
+          "SQL",
+          "data analysis",
+          "BI",
+          "analytics"
+        ]
+      }
+    }
+  ]
+}

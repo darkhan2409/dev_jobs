@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, MapPin, Briefcase, Save, Loader2, FileText, LayoutDashboard } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { User, MapPin, Briefcase, Save, Loader2, FileText, LayoutDashboard, Shield } from 'lucide-react';
+import { Link } from 'react-router-dom';
+// import { useAuth } from '../context/AuthContext'; // Removed unused import
 import axiosClient from '../api/axiosClient';
 import SkillTagInput from '../components/SkillTagInput';
 
 const GRADES = ["Junior", "Middle", "Senior", "Lead"];
 
 const ProfilePage = () => {
-    const { user: authUser } = useAuth();
+    // const { user: authUser } = useAuth(); // Removed unused authUser
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
@@ -89,11 +90,20 @@ const ProfilePage = () => {
                 className="max-w-2xl mx-auto"
             >
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-white mb-2">Мой профиль</h1>
-                    <p className="text-slate-400">
-                        Заполните профиль, чтобы получать более точные рекомендации.
-                    </p>
+                <div className="mb-8 flex items-start justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold text-white mb-2">Мой профиль</h1>
+                        <p className="text-slate-400">
+                            Заполните профиль, чтобы получать более точные рекомендации.
+                        </p>
+                    </div>
+                    <Link
+                        to="/security"
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-slate-300 hover:text-white transition-colors"
+                    >
+                        <Shield size={18} />
+                        <span className="hidden sm:inline">Безопасность</span>
+                    </Link>
                 </div>
 
                 {/* Status Message */}
@@ -102,8 +112,8 @@ const ProfilePage = () => {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         className={`p-4 rounded-xl mb-6 text-sm font-medium ${message.type === 'success'
-                                ? 'bg-green-500/10 border border-green-500/20 text-green-400'
-                                : 'bg-red-500/10 border border-red-500/20 text-red-400'
+                            ? 'bg-green-500/10 border border-green-500/20 text-green-400'
+                            : 'bg-red-500/10 border border-red-500/20 text-red-400'
                             }`}
                     >
                         {message.text}

@@ -24,14 +24,21 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
     const dropdownRef = useRef(null);
 
     // Sync local filters with URL filters on mount and when URL changes
+    // Sync local filters with URL filters on mount and when URL changes
     useEffect(() => {
-        setLocalFilters({
+        const newFilters = {
             search: filters.search || '',
             minSalary: filters.minSalary || '',
             location: filters.location || '',
             grade: filters.grade || '',
             stack: filters.stack || ''
-        });
+        };
+
+        // Only update if changed
+        if (JSON.stringify(newFilters) !== JSON.stringify(localFilters)) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setLocalFilters(newFilters);
+        }
     }, [filters.search, filters.minSalary, filters.location, filters.grade, filters.stack]);
 
     useEffect(() => {
@@ -170,174 +177,173 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto space-y-6 py-4 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
 
-            {/* Search Filter */}
-            <div className="space-y-3">
-                <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                    <Briefcase size={14} />
-                    Должность
-                </h4>
-                <div className="relative">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                    <input
-                        type="text"
-                        placeholder="например: React‑разработчик, Python…"
-                        value={localFilters.search}
-                        onChange={(e) => handleSearchChange(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                applyFilters();
-                            }
-                        }}
-                        className="w-full bg-slate-900 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20"
-                    />
+                {/* Search Filter */}
+                <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                        <Briefcase size={14} />
+                        Должность
+                    </h4>
+                    <div className="relative">
+                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                        <input
+                            type="text"
+                            placeholder="например: React‑разработчик, Python…"
+                            value={localFilters.search}
+                            onChange={(e) => handleSearchChange(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    applyFilters();
+                                }
+                            }}
+                            className="w-full bg-slate-900 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20"
+                        />
+                    </div>
                 </div>
-            </div>
 
-            {/* Salary Filter */}
-            <div className="space-y-3">
-                <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                    <DollarSign size={14} />
-                    Зарплата
-                </h4>
-                <div className="space-y-2">
-                    <input
-                        type="number"
-                        min="0"
-                        placeholder="Зарплата от (₸)"
-                        value={localFilters.minSalary}
-                        onChange={(e) => handleSalaryChange(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20"
-                    />
-                    <p className="text-xs text-slate-500">Можно оставить пустым</p>
+                {/* Salary Filter */}
+                <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                        <DollarSign size={14} />
+                        Зарплата
+                    </h4>
+                    <div className="space-y-2">
+                        <input
+                            type="number"
+                            min="0"
+                            placeholder="Зарплата от (₸)"
+                            value={localFilters.minSalary}
+                            onChange={(e) => handleSalaryChange(e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20"
+                        />
+                        <p className="text-xs text-slate-500">Можно оставить пустым</p>
+                    </div>
                 </div>
-            </div>
 
-            {/* Location Filter - Dropdown */}
-            <div className="space-y-3">
-                <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Город</h4>
-                <div className="relative" ref={dropdownRef}>
-                    <button
-                        onClick={() => setIsLocationOpen(!isLocationOpen)}
-                        className="w-full flex items-center justify-between bg-slate-900 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-slate-200 hover:border-violet-500/50 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500/20"
-                    >
-                        <span className="truncate">
-                            {localFilters.location || 'Все города'}
-                        </span>
-                        <ChevronDown size={16} className={`text-slate-500 transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} />
-                    </button>
+                {/* Location Filter - Dropdown */}
+                <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Город</h4>
+                    <div className="relative" ref={dropdownRef}>
+                        <button
+                            onClick={() => setIsLocationOpen(!isLocationOpen)}
+                            className="w-full flex items-center justify-between bg-slate-900 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-slate-200 hover:border-violet-500/50 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                        >
+                            <span className="truncate">
+                                {localFilters.location || 'Все города'}
+                            </span>
+                            <ChevronDown size={16} className={`text-slate-500 transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} />
+                        </button>
 
-                    <AnimatePresence>
-                        {isLocationOpen && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 5 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 5 }}
-                                className="absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 max-h-60 flex flex-col"
-                            >
-                                <div className="p-2 border-b border-slate-700/50 sticky top-0 bg-slate-900">
-                                    <div className="relative">
-                                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                                        <input
-                                            type="text"
-                                            placeholder="Поиск города…"
-                                            value={locationSearch}
-                                            onChange={(e) => setLocationSearch(e.target.value)}
-                                            className="w-full bg-slate-800 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 border-none focus:ring-1 focus:ring-violet-500/50"
-                                            autoFocus
-                                        />
+                        <AnimatePresence>
+                            {isLocationOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 5 }}
+                                    className="absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 max-h-60 flex flex-col"
+                                >
+                                    <div className="p-2 border-b border-slate-700/50 sticky top-0 bg-slate-900">
+                                        <div className="relative">
+                                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                                            <input
+                                                type="text"
+                                                placeholder="Поиск города…"
+                                                value={locationSearch}
+                                                onChange={(e) => setLocationSearch(e.target.value)}
+                                                className="w-full bg-slate-800 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 border-none focus:ring-1 focus:ring-violet-500/50"
+                                                autoFocus
+                                            />
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="overflow-y-auto p-1 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
-                                    <button
-                                        onClick={() => handleLocationSelect('')}
-                                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between group ${!localFilters.location ? 'bg-violet-500/10 text-violet-300' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-                                            }`}
-                                    >
-                                        <span>Все города</span>
-                                        {!localFilters.location && <Check size={14} />}
-                                    </button>
-
-                                    {filteredLocations.map(loc => (
+                                    <div className="overflow-y-auto p-1 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
                                         <button
-                                            key={loc}
-                                            onClick={() => handleLocationSelect(loc)}
-                                            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between group ${localFilters.location === loc ? 'bg-violet-500/10 text-violet-300' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                                            onClick={() => handleLocationSelect('')}
+                                            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between group ${!localFilters.location ? 'bg-violet-500/10 text-violet-300' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
                                                 }`}
                                         >
-                                            <span>{loc}</span>
-                                            {localFilters.location === loc && <Check size={14} />}
+                                            <span>Все города</span>
+                                            {!localFilters.location && <Check size={14} />}
                                         </button>
-                                    ))}
 
-                                    {filteredLocations.length === 0 && (
-                                        <div className="px-3 py-4 text-center text-xs text-slate-500">
-                                            Города не найдены
-                                        </div>
-                                    )}
+                                        {filteredLocations.map(loc => (
+                                            <button
+                                                key={loc}
+                                                onClick={() => handleLocationSelect(loc)}
+                                                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between group ${localFilters.location === loc ? 'bg-violet-500/10 text-violet-300' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                                                    }`}
+                                            >
+                                                <span>{loc}</span>
+                                                {localFilters.location === loc && <Check size={14} />}
+                                            </button>
+                                        ))}
+
+                                        {filteredLocations.length === 0 && (
+                                            <div className="px-3 py-4 text-center text-xs text-slate-500">
+                                                Города не найдены
+                                            </div>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                </div>
+
+                {/* Grade Filter (Multi-select) */}
+                <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Грейд</h4>
+                    <div className="space-y-2">
+                        {grades.map(grade => (
+                            <label key={grade} className="flex items-center gap-3 cursor-pointer group">
+                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isGradeSelected(grade)
+                                    ? 'bg-violet-600 border-violet-600'
+                                    : 'border-slate-700 group-hover:border-slate-500 bg-slate-900'
+                                    }`}>
+                                    {isGradeSelected(grade) && <Check size={12} className="text-white" />}
                                 </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                                <input
+                                    type="checkbox"
+                                    className="hidden"
+                                    checked={isGradeSelected(grade)}
+                                    onChange={() => handleGradeChange(grade)}
+                                />
+                                <span className={`text-sm transition-colors ${isGradeSelected(grade) ? 'text-white font-medium' : 'text-slate-400 group-hover:text-slate-300'
+                                    }`}>
+                                    {grade}
+                                </span>
+                            </label>
+                        ))}
+                    </div>
                 </div>
-            </div>
 
-            {/* Grade Filter (Multi-select) */}
-            <div className="space-y-3">
-                <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Грейд</h4>
-                <div className="space-y-2">
-                    {grades.map(grade => (
-                        <label key={grade} className="flex items-center gap-3 cursor-pointer group">
-                            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isGradeSelected(grade)
-                                ? 'bg-violet-600 border-violet-600'
-                                : 'border-slate-700 group-hover:border-slate-500 bg-slate-900'
-                                }`}>
-                                {isGradeSelected(grade) && <Check size={12} className="text-white" />}
-                            </div>
-                            <input
-                                type="checkbox"
-                                className="hidden"
-                                checked={isGradeSelected(grade)}
-                                onChange={() => handleGradeChange(grade)}
-                            />
-                            <span className={`text-sm transition-colors ${isGradeSelected(grade) ? 'text-white font-medium' : 'text-slate-400 group-hover:text-slate-300'
-                                }`}>
-                                {grade}
-                            </span>
-                        </label>
-                    ))}
+                {/* Tech Stack Filter */}
+                <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Стек</h4>
+                    <div className="flex flex-wrap gap-2">
+                        {technologies.map(tech => (
+                            <button
+                                key={tech}
+                                onClick={() => handleTechChange(tech)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all border ${localFilters.stack === tech
+                                    ? 'bg-violet-500/20 border-violet-500/50 text-violet-200'
+                                    : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200'
+                                    }`}
+                            >
+                                {tech}
+                            </button>
+                        ))}
+                    </div>
                 </div>
-            </div>
-
-            {/* Tech Stack Filter */}
-            <div className="space-y-3">
-                <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Стек</h4>
-                <div className="flex flex-wrap gap-2">
-                    {technologies.map(tech => (
-                        <button
-                            key={tech}
-                            onClick={() => handleTechChange(tech)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all border ${localFilters.stack === tech
-                                ? 'bg-violet-500/20 border-violet-500/50 text-violet-200'
-                                : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200'
-                                }`}
-                        >
-                            {tech}
-                        </button>
-                    ))}
-                </div>
-            </div>
             </div>
 
             {/* Apply Button */}
             <div className="pt-4 border-t border-slate-800/50 shrink-0">
                 <button
                     onClick={applyFilters}
-                    className={`w-full py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
-                        hasChanges
-                            ? 'bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-500/20'
-                            : 'bg-violet-600 hover:bg-violet-500 text-white'
-                    }`}
+                    className={`w-full py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${hasChanges
+                        ? 'bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-500/20'
+                        : 'bg-violet-600 hover:bg-violet-500 text-white'
+                        }`}
                 >
                     <Search size={18} />
                     Применить фильтры

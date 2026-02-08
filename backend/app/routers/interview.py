@@ -8,6 +8,24 @@ from pydantic import BaseModel, Field
 
 from app.interview import ITCareerTestOrchestrator
 from app.config import settings
+from app.schemas import (
+    QuestionResponse,
+    AnswerOptionResponse,
+    StartTestResponse,
+    SubmitAnswerRequest,
+    TestResultResponse,
+    RoleScoreResponse,
+    InterpretationResponse,
+    TestStageScoreResponse,
+    TestStageRecommendationResponse,
+    StageResponse,
+    StageWithRolesResponse,
+    StageDetailResponse,
+    PrimaryVacancyFiltersResponse,
+    StageRoleMapResponse,
+    StageRecommendationResponse,
+    StageScoreResponse
+)
 
 logger = logging.getLogger(__name__)
 
@@ -34,54 +52,7 @@ def get_orchestrator() -> ITCareerTestOrchestrator:
     return _orchestrator
 
 
-# --- Pydantic Response Models ---
 
-class AnswerOptionResponse(BaseModel):
-    """Answer option for a question."""
-    id: str
-    text: str
-
-
-class QuestionResponse(BaseModel):
-    """Question with answer options."""
-    id: str
-    text: str
-    thematic_block: str
-    answer_options: List[AnswerOptionResponse]
-
-
-class StartTestResponse(BaseModel):
-    """Response when starting a new test."""
-    session_id: str
-
-
-class SubmitAnswerRequest(BaseModel):
-    """Request body for submitting an answer."""
-    question_id: str = Field(..., description="Question ID")
-    answer_option_id: str = Field(..., description="Selected answer option ID")
-
-
-class InterpretationResponse(BaseModel):
-    """LLM interpretation of test results."""
-    primary_recommendation: str
-    explanation: str
-    signal_analysis: str
-    alternative_roles: List[str]
-    differentiation_criteria: str
-
-
-class RoleScoreResponse(BaseModel):
-    """Role with its score."""
-    role_id: str
-    score: float
-
-
-class TestResultResponse(BaseModel):
-    """Complete test results."""
-    session_id: str
-    ranked_roles: List[RoleScoreResponse]
-    signal_profile: dict
-    interpretation: Optional[InterpretationResponse] = None
 
 
 # --- API Endpoints ---
@@ -155,7 +126,8 @@ async def complete_test(session_id: str, skip_llm: bool = False):
         skip_llm: Skip LLM interpretation (faster, no API call)
 
     Returns:
-        Complete test results with ranked roles, signal profile, and interpretation.
+        Complete test results with ranked roles, signal profile, interpretation,
+        and stage recommendation.
     """
     orchestrator = get_orchestrator()
 
@@ -173,6 +145,33 @@ async def complete_test(session_id: str, skip_llm: bool = False):
                 differentiation_criteria=result.interpretation.differentiation_criteria
             )
 
+        # Compute stage recommendation based on signal profile
+        ranked_stages = None
+        stage_recommendation = None
+        try:
+            stage_engine = get_stage_engine()
+            stage_result = stage_engine.compute_stage_scores(result.signal_profile)
+            rec = stage_result.recommendation
+
+            ranked_stages = [
+                TestStageScoreResponse(
+                    stage_id=s.stage_id,
+                    stage_name=s.stage_name,
+                    score=s.score
+                )
+                for s in rec.ranked_stages
+            ]
+
+            stage_recommendation = TestStageRecommendationResponse(
+                primary_stage_id=rec.primary_stage_id,
+                primary_stage_name=rec.primary_stage_name,
+                what_user_will_see=rec.what_user_will_see,
+                related_roles=rec.related_roles
+            )
+        except Exception as stage_error:
+            logger.warning(f"Failed to compute stage recommendation: {stage_error}")
+            # Continue without stage recommendation - it's optional
+
         return TestResultResponse(
             session_id=result.session_id,
             ranked_roles=[
@@ -180,7 +179,9 @@ async def complete_test(session_id: str, skip_llm: bool = False):
                 for role_id, score in result.ranked_roles
             ],
             signal_profile=result.signal_profile,
-            interpretation=interpretation
+            interpretation=interpretation,
+            ranked_stages=ranked_stages,
+            stage_recommendation=stage_recommendation
         )
     except Exception as e:
         logger.error(f"Error completing test: {e}")
@@ -229,3 +230,152 @@ async def get_role_details(role_id: str):
     if not role:
         raise HTTPException(status_code=404, detail="Role not found")
     return role
+
+
+# --- Product Stages Endpoints ---
+
+from app.interview.storage.stage_manager import StageManager
+from app.interview.aggregation.stage_aggregation_engine import StageAggregationEngine
+
+_stage_manager: Optional[StageManager] = None
+_stage_engine: Optional[StageAggregationEngine] = None
+
+
+def get_stage_manager() -> StageManager:
+    """Get or create the stage manager singleton."""
+    global _stage_manager
+    if _stage_manager is None:
+        _stage_manager = StageManager()
+    return _stage_manager
+
+
+def get_stage_engine() -> StageAggregationEngine:
+    """Get or create the stage aggregation engine singleton."""
+    global _stage_engine
+    if _stage_engine is None:
+        _stage_engine = StageAggregationEngine(get_stage_manager())
+    return _stage_engine
+
+
+
+
+
+@router.get("/stages", response_model=List[StageResponse], summary="Get all product stages")
+async def get_all_stages():
+    """
+    Get all 10 stages of IT product creation process.
+
+    Returns stages in canonical order from idea to documentation.
+    """
+    manager = get_stage_manager()
+    stages = manager.get_all_stages()
+
+    return [
+        StageResponse(
+            id=stage.id,
+            name=stage.name,
+            summary=stage.summary
+        )
+        for stage in stages
+    ]
+
+
+@router.get("/stages/{stage_id}", response_model=StageWithRolesResponse, summary="Get stage details")
+async def get_stage_details(stage_id: str):
+    """
+    Get detailed information about a specific stage including associated roles.
+
+    Args:
+        stage_id: Stage identifier (e.g., 'development', 'testing')
+    """
+    manager = get_stage_manager()
+    stage = manager.get_stage(stage_id)
+
+    if not stage:
+        raise HTTPException(status_code=404, detail=f"Stage '{stage_id}' not found")
+
+    role_maps = manager.get_roles_for_stage(stage_id)
+
+    return StageWithRolesResponse(
+        stage=StageDetailResponse(
+            id=stage.id,
+            name=stage.name,
+            summary=stage.summary,
+            typical_outputs=stage.typical_outputs,
+            common_mistakes=stage.common_mistakes,
+            primary_vacancy_filters=PrimaryVacancyFiltersResponse(
+                roles=stage.primary_vacancy_filters.roles,
+                keywords=stage.primary_vacancy_filters.keywords
+            )
+        ),
+        roles=[
+            StageRoleMapResponse(
+                stage_id=rm.stage_id,
+                role_id=rm.role_id,
+                why_here=rm.why_here,
+                how_it_connects_to_vacancies=rm.how_it_connects_to_vacancies,
+                importance=rm.importance
+            )
+            for rm in role_maps
+        ]
+    )
+
+
+@router.get("/stages/{stage_id}/keywords", summary="Get vacancy keywords for stage")
+async def get_stage_vacancy_keywords(stage_id: str):
+    """
+    Get vacancy search keywords for a specific stage.
+
+    Useful for filtering vacancies by product creation stage.
+    """
+    manager = get_stage_manager()
+    stage = manager.get_stage(stage_id)
+
+    if not stage:
+        raise HTTPException(status_code=404, detail=f"Stage '{stage_id}' not found")
+
+    return {
+        "stage_id": stage_id,
+        "stage_name": stage.name,
+        "keywords": stage.primary_vacancy_filters.keywords,
+        "roles": stage.primary_vacancy_filters.roles
+    }
+
+
+@router.post("/stages/recommend", response_model=StageRecommendationResponse, summary="Get stage recommendation")
+async def get_stage_recommendation(signal_profile: dict):
+    """
+    Get stage recommendation based on signal profile from test.
+
+    This endpoint computes which product creation stage best matches
+    the user's cognitive profile from the career test.
+
+    Args:
+        signal_profile: Dict of signal_id -> count from test results
+    """
+    engine = get_stage_engine()
+
+    try:
+        result = engine.compute_stage_scores(signal_profile)
+        rec = result.recommendation
+
+        return StageRecommendationResponse(
+            primary_stage_id=rec.primary_stage_id,
+            primary_stage_name=rec.primary_stage_name,
+            what_user_will_see=rec.what_user_will_see,
+            related_roles=rec.related_roles,
+            ranked_stages=[
+                StageScoreResponse(
+                    stage_id=s.stage_id,
+                    stage_name=s.stage_name,
+                    score=s.score
+                )
+                for s in rec.ranked_stages
+            ]
+        )
+    except Exception as e:
+        logger.error(f"Error computing stage recommendation: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )

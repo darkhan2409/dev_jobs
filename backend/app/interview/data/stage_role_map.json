@@ -1,0 +1,149 @@
+{
+  "version": "1.1",
+  "mappings": [
+    {
+      "stage_id": "idea_and_need",
+      "role_id": "product_manager",
+      "why_here": "Формирует видение продукта и приоритизирует фичи.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "idea_and_need",
+      "role_id": "product_analyst",
+      "why_here": "Просчитывает продуктовые гипотезы и метрики.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "idea_and_need",
+      "role_id": "business_analyst",
+      "why_here": "Описывает бизнес-процессы и требования заказчика.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "planning",
+      "role_id": "product_manager",
+      "why_here": "Управляет бэклогом и дорожной картой.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "planning",
+      "role_id": "project_manager",
+      "why_here": "Следит за сроками, ресурсами и коммуникацией в команде.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "design",
+      "role_id": "ux_designer",
+      "why_here": "Проектирует логику (User Flow) и удобство интерфейса.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "design",
+      "role_id": "ui_designer",
+      "why_here": "Рисует визуальный стиль и графические компоненты.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "architecture",
+      "role_id": "system_analyst",
+      "why_here": "Проектирует структуру таблиц БД и схемы интеграций (API).",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "architecture",
+      "role_id": "systems_architect",
+      "why_here": "Проектирует общую техническую архитектуру всей системы.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "architecture",
+      "role_id": "data_engineer",
+      "why_here": "Проектирует пути сбора и очистки данных.",
+      "importance": "secondary"
+    },
+    {
+      "stage_id": "development",
+      "role_id": "backend_developer",
+      "why_here": "Пишет серверную логику и работу с БД.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "development",
+      "role_id": "frontend_developer",
+      "why_here": "Верстает интерфейс на основе макетов.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "development",
+      "role_id": "mobile_developer",
+      "why_here": "Разрабатывает приложения для смартфонов.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "development",
+      "role_id": "ml_engineer",
+      "why_here": "Занимается машинным обучением и алгоритмами данных.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "development",
+      "role_id": "llm_engineer",
+      "why_here": "Интегрирует ИИ-модели и RAG-системы.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "development",
+      "role_id": "data_engineer",
+      "why_here": "Строит пайплайны данных.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "testing",
+      "role_id": "manual_qa",
+      "why_here": "Проверяет продукт вручную на наличие багов.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "testing",
+      "role_id": "qa_automation",
+      "why_here": "Пишет автотесты для автоматической проверки кода.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "security",
+      "role_id": "security_engineer",
+      "why_here": "Проверяет систему на уязвимости и защищает данные.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "deployment",
+      "role_id": "devops_engineer",
+      "why_here": "Настраивает серверы и CI/CD процессы.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "deployment",
+      "role_id": "sre",
+      "why_here": "Следит за надежностью и выносливостью нагруженных систем.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "analytics",
+      "role_id": "product_analyst",
+      "why_here": "Анализирует поведение пользователей и эффективность фич.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "analytics",
+      "role_id": "data_analyst",
+      "why_here": "Работает с данными для поиска инсайтов.",
+      "importance": "primary"
+    },
+    {
+      "stage_id": "documentation",
+      "role_id": "technical_writer",
+      "why_here": "Пишет техническую документацию для разработчиков.",
+      "importance": "primary"
+    }
+  ]
+}

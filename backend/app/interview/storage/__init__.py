@@ -13,6 +13,7 @@ from .user_response_store import (
     InvalidReferenceError,
     SessionCompleteError,
 )
+from .stage_manager import StageManager
 
 __all__ = [
     'RoleProfileManager',
@@ -24,4 +25,5 @@ __all__ = [
     'QuestionAlreadyAnsweredError',
     'InvalidReferenceError',
     'SessionCompleteError',
+    'StageManager',
 ]

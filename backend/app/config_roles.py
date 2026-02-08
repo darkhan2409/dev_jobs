@@ -16,14 +16,16 @@ ROLES = [
     {"id": 107, "name": "Project Manager"},
     {"id": 73,  "name": "Product Manager"},
     {"id": 104, "name": "Team Lead"},
-    {"id": 125, "name": "CTO"},
     {"id": 113, "name": "System Administrator"},
-    {"id": 121, "name": "Technical Support"},
+    {"id": 34,  "name": "UI/UX Designer"},
+    {"id": 25,  "name": "Game Designer"},
+    {"id": 116, "name": "Security Engineer"},
+    {"id": 126, "name": "Technical Writer"},
 ]
 
 # Special search queries for technology-specific searches
 SPECIAL_QUERIES = [
-    "Backend", "Frontend", "Fullstack", "DevOps",
+    "Backend", "Frontend", "Fullstack", "DevOps", "Architect", "Mobile",
     "Android", "iOS", "Flutter", "React", "Python", "Java", "Go", "C++",
     "Data Scientist", "Machine Learning", "AI", "LLM", "Data Engineer"
 ]

@@ -5,7 +5,7 @@ import MetricsSection from '../components/MetricsSection';
 import VacancyShowcase from '../features/vacancies/VacancyShowcase';
 import RecommendedSection from '../features/vacancies/RecommendedSection';
 import BackToTop from '../components/BackToTop';
-import { AnimatePresence } from 'framer-motion';
+// import { AnimatePresence } from 'framer-motion'; // Removed unused import
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
 
@@ -33,19 +33,17 @@ const HomePage = () => {
     };
 
     return (
-        <AnimatePresence>
-            <main className="flex-grow font-sans text-slate-100 overflow-x-hidden relative selection:bg-violet-500/30">
-                <HeroSection
-                    onSearchApply={handleSearch}
-                    totalJobs={totalJobs}
-                />
-                <RecommendedSection />
-                <VacancyShowcase />
-                <MetricsSection />
-                <InfoSection />
-                <BackToTop />
-            </main>
-        </AnimatePresence>
+        <main className="flex-grow font-sans text-slate-100 overflow-x-hidden relative selection:bg-violet-500/30">
+            <HeroSection
+                onSearchApply={handleSearch}
+                totalJobs={totalJobs}
+            />
+            <RecommendedSection />
+            <VacancyShowcase />
+            <MetricsSection />
+            <InfoSection />
+            <BackToTop />
+        </main>
     );
 };
 

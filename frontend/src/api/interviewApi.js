@@ -18,5 +18,12 @@ export const interviewApi = {
     getCareerGraph: () => axiosClient.get('/interview/career/graph'),
     getRoleClusters: () => axiosClient.get('/interview/career/clusters'),
     getNextSteps: (roleId) => axiosClient.get(`/interview/career/roles/${roleId}/next`),
-    getRoleDetails: (roleId) => axiosClient.get(`/interview/roles/${roleId}`)
+    getRoleDetails: (roleId) => axiosClient.get(`/interview/roles/${roleId}`),
+
+    // Product Stages Endpoints
+    getStages: () => axiosClient.get('/interview/stages'),
+    getStageDetails: (stageId) => axiosClient.get(`/interview/stages/${stageId}`),
+    getStageKeywords: (stageId) => axiosClient.get(`/interview/stages/${stageId}/keywords`),
+    getStageRecommendation: (signalProfile) =>
+        axiosClient.post('/interview/stages/recommend', signalProfile)
 };

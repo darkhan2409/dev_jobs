@@ -30,7 +30,7 @@ class TestCareerPipelineManager:
         """Test cluster retrieval."""
         cluster = manager.get_cluster_for_role("backend_developer")
         assert cluster is not None
-        assert cluster["cluster"] == "Engineering Core"
+        assert cluster["cluster"] == "Ядро разработки"
         assert "backend_developer" in cluster["roles"]
         
     def test_get_transition_details(self, manager):
@@ -38,7 +38,7 @@ class TestCareerPipelineManager:
         details = manager.get_transition_details("frontend_developer", "fullstack_developer")
         assert details is not None
         assert details["difficulty"] == "medium"
-        assert "Backend Language" in str(details["required_upskill"])
+        assert "Backend-языки" in str(details["required_upskill"])
 
     def test_invalid_role(self, manager):
         """Test behavior with invalid role."""

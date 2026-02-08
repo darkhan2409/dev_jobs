@@ -87,7 +87,7 @@ const MetricsSection = () => {
                         Топ городов
                     </h3>
                     <div className="space-y-4">
-                        {Object.entries(metrics.top_locations).map(([city, count], idx) => (
+                        {Object.entries(metrics.top_locations).map(([city, count]) => (
                             <div key={city} className="flex flex-col gap-1">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-slate-300 font-medium">{city}</span>
@@ -140,7 +140,7 @@ const MetricsSection = () => {
                             })}
                         </div>
                         <div className="flex justify-between mt-2 text-xs text-slate-500 px-1">
-                            {Object.entries(metrics.grade_distribution).map(([grade, count]) => (
+                            {Object.entries(metrics.grade_distribution).map(([grade]) => (
                                 <span key={grade} className="capitalize">{grade}</span>
                             ))}
                         </div>

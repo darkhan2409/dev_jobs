@@ -6,7 +6,34 @@ import { interviewApi } from '../../api/interviewApi';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
 import SignalChart from './SignalChart';
+import StageResultCard from './StageResultCard';
 import { fadeInUp, staggerContainer } from '../../utils/animations';
+
+// Helper function to split text into readable paragraphs
+const splitIntoParagraphs = (text) => {
+    if (!text) return [];
+
+    // First try splitting by double newlines
+    if (text.includes('\n\n')) {
+        return text.split('\n\n').map(p => p.trim()).filter(Boolean);
+    }
+
+    // Try splitting by single newlines
+    if (text.includes('\n')) {
+        return text.split('\n').map(p => p.trim()).filter(Boolean);
+    }
+
+    // Split by sentences - each sentence becomes a paragraph for better readability
+    const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim());
+
+    // If only 1 sentence, return as is
+    if (sentences.length <= 1) {
+        return [text];
+    }
+
+    // Return each sentence as separate paragraph
+    return sentences;
+};
 
 const roleNames = {
     backend_developer: 'Backend-разработчик',
@@ -28,7 +55,7 @@ const roleNames = {
 };
 
 const ResultsScreen = ({ results, onRestart }) => {
-    const { ranked_roles, signal_profile, interpretation } = results;
+    const { ranked_roles, signal_profile, interpretation, ranked_stages, stage_recommendation } = results;
     const [roleDetails, setRoleDetails] = useState(null);
     const [nextSteps, setNextSteps] = useState([]);
 
@@ -121,9 +148,11 @@ const ResultsScreen = ({ results, onRestart }) => {
                             <Sparkles className="w-5 h-5 text-violet-400" />
                             Почему это ваш выбор
                         </h3>
-                        <p className="text-slate-300 leading-relaxed mb-4">
-                            {interpretation.explanation}
-                        </p>
+                        <div className="text-slate-300 leading-relaxed mb-4 space-y-3">
+                            {splitIntoParagraphs(interpretation.explanation).map((paragraph, idx) => (
+                                <p key={idx}>{paragraph}</p>
+                            ))}
+                        </div>
                         {roleDetails?.entry_difficulty && (
                             <div className="mt-4 pt-4 border-t border-slate-800">
                                 <span className="text-sm text-slate-500">Сложность входа: </span>
@@ -241,6 +270,14 @@ const ResultsScreen = ({ results, onRestart }) => {
                     </motion.div>
                 )}
             </div>
+
+            {/* Stage Recommendation */}
+            {stage_recommendation && (
+                <StageResultCard
+                    stageRecommendation={stage_recommendation}
+                    rankedStages={ranked_stages}
+                />
+            )}
 
             {/* Alternative Variants */}
             {alternativeRoles.length > 0 && (

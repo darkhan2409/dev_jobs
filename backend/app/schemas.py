@@ -1,23 +1,10 @@
 from datetime import datetime
 from enum import Enum
 from typing import Optional, Any, List, Dict
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, Field, EmailStr
 
-
-class GradeEnum(str, Enum):
-    """Allowed grade values for filtering vacancies."""
-    junior = "Junior"
-    middle = "Middle"
-    senior = "Senior"
-    lead = "Lead"
-
-
-class SortEnum(str, Enum):
-    """Allowed sort options for vacancies."""
-    newest = "newest"
-    oldest = "oldest"
-    salary_desc = "salary_desc"
-    salary_asc = "salary_asc"
+from app.core.enums import GradeEnum, SortEnum
+from app.utils.password_validator import validate_password_strength
 
 class VacancyResponse(BaseModel):
     id: int
@@ -73,12 +60,37 @@ class CompanyDetailResponse(BaseModel):
 
 # Auth Schemas
 class UserCreate(BaseModel):
-    email: str
-    password: str
+    username: str = Field(
+        ..., 
+        min_length=3, 
+        max_length=30, 
+        description="Username can contain letters, numbers, dots, underscores, and hyphens"
+    )
+    email: EmailStr
+    password: str = Field(..., min_length=7, max_length=100)
+
+    @field_validator('password')
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        """Validate password strength using shared utility."""
+        is_valid, error_msg = validate_password_strength(v)
+        if not is_valid:
+            raise ValueError(error_msg)
+        return v
+
+    @field_validator('username')
+    @classmethod
+    def validate_username(cls, v: str) -> str:
+        """Validate username format."""
+        import re
+        if not re.match(r'^[a-zA-Zа-яА-ЯёЁ0-9._-]+$', v):
+            raise ValueError('Логин может содержать только буквы (латиница/кириллица), цифры, точки, тире и подчеркивания')
+        return v
 
 
 class UserOut(BaseModel):
     id: int
+    username: str
     email: str
     is_active: bool
 
@@ -88,7 +100,64 @@ class UserOut(BaseModel):
 
 class Token(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+
+class ChangePasswordRequest(BaseModel):
+    old_password: str
+    new_password: str = Field(..., min_length=7, max_length=100)
+
+    @field_validator('new_password')
+    @classmethod
+    def validate_new_password(cls, v: str) -> str:
+        """Validate new password strength using shared utility."""
+        is_valid, error_msg = validate_password_strength(v)
+        if not is_valid:
+            raise ValueError(error_msg)
+        return v
+
+
+class VerifyEmailRequest(BaseModel):
+    token: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str = Field(..., min_length=7, max_length=100)
+
+    @field_validator('new_password')
+    @classmethod
+    def validate_reset_password(cls, v: str) -> str:
+        """Validate new password strength using shared utility."""
+        is_valid, error_msg = validate_password_strength(v)
+        if not is_valid:
+            raise ValueError(error_msg)
+        return v
+
+
+class SessionOut(BaseModel):
+    id: int
+    device_info: Optional[str]
+    ip_address: Optional[str]
+    created_at: datetime
+    last_used_at: Optional[datetime]
+    is_current: bool
+
+    class Config:
+        from_attributes = True
+
+
+class DeleteAccountRequest(BaseModel):
+    password: str
 
 
 # User Profile Schemas
@@ -115,8 +184,136 @@ class UserProfileUpdate(BaseModel):
 
 
 class UserProfileOut(UserOut):
+    role: str
+    email_verified: bool
+    email_verified_at: Optional[datetime] = None
     full_name: Optional[str] = None
     location: Optional[str] = None
     grade: Optional[str] = None
     skills: List[str] = []
     bio: Optional[str] = None
+
+
+# --- Interview Schemas ---
+
+class AnswerOptionResponse(BaseModel):
+    """Answer option for a question."""
+    id: str
+    text: str
+
+
+class QuestionResponse(BaseModel):
+    """Question with answer options."""
+    id: str
+    text: str
+    thematic_block: str
+    answer_options: List[AnswerOptionResponse]
+
+
+class StartTestResponse(BaseModel):
+    """Response when starting a new test."""
+    session_id: str
+
+
+class SubmitAnswerRequest(BaseModel):
+    """Request body for submitting an answer."""
+    question_id: str = Field(..., description="Question ID")
+    answer_option_id: str = Field(..., description="Selected answer option ID")
+
+
+class InterpretationResponse(BaseModel):
+    """LLM interpretation of test results."""
+    primary_recommendation: str
+    explanation: str
+    signal_analysis: str
+    alternative_roles: List[str]
+    differentiation_criteria: str
+
+
+class RoleScoreResponse(BaseModel):
+    """Role with its score."""
+    role_id: str
+    score: float
+
+
+class TestStageScoreResponse(BaseModel):
+    """Stage score in test results."""
+    stage_id: str
+    stage_name: str
+    score: float
+
+
+class TestStageRecommendationResponse(BaseModel):
+    """Stage recommendation in test results."""
+    primary_stage_id: str
+    primary_stage_name: str
+    what_user_will_see: str
+    related_roles: List[str]
+
+
+class TestResultResponse(BaseModel):
+    """Complete test results."""
+    session_id: str
+    ranked_roles: List[RoleScoreResponse]
+    signal_profile: dict
+    interpretation: Optional[InterpretationResponse] = None
+    # Stage recommendation (NEW)
+    ranked_stages: Optional[List[TestStageScoreResponse]] = None
+    stage_recommendation: Optional[TestStageRecommendationResponse] = None
+
+
+# --- Stage Schemas ---
+
+class StageResponse(BaseModel):
+    """Stage summary for list view."""
+    id: str
+    name: str
+    summary: str
+
+
+class PrimaryVacancyFiltersResponse(BaseModel):
+    """Vacancy filters for a stage."""
+    roles: List[str]
+    keywords: List[str]
+    # Allow missing fields if necessary, but keep strict for now
+
+
+class StageDetailResponse(BaseModel):
+    """Detailed stage information."""
+    id: str
+    name: str
+    summary: str
+    typical_outputs: List[str]
+    common_mistakes: List[str]
+    primary_vacancy_filters: PrimaryVacancyFiltersResponse
+
+
+class StageRoleMapResponse(BaseModel):
+    """Stage-role mapping."""
+    stage_id: str
+    role_id: str
+    why_here: str
+    how_it_connects_to_vacancies: str
+    importance: str
+
+
+class StageWithRolesResponse(BaseModel):
+    """Stage with its associated roles."""
+    stage: StageDetailResponse
+    roles: List[StageRoleMapResponse]
+
+
+class StageScoreResponse(BaseModel):
+    """Stage score from test."""
+    stage_id: str
+    stage_name: str
+    score: float
+
+
+class StageRecommendationResponse(BaseModel):
+    """Stage recommendation based on test results."""
+    primary_stage_id: str
+    primary_stage_name: str
+    what_user_will_see: str
+    related_roles: List[str]
+    ranked_stages: List[StageScoreResponse]

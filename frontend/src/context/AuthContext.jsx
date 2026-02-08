@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import axiosClient from '../api/axiosClient';
+import { authApi } from '../api/authApi';
 
 const AuthContext = createContext(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
@@ -21,11 +22,14 @@ export const AuthProvider = ({ children }) => {
             const token = localStorage.getItem('access_token');
             if (token) {
                 try {
-                    const response = await axiosClient.get('/auth/me');
+                    const response = await authApi.getMe();
                     setUser(response.data);
-                } catch (error) {
+                    setupTokenRefresh();
+                } catch {
                     // Token invalid or expired
                     localStorage.removeItem('access_token');
+                    localStorage.removeItem('refresh_token');
+                    sessionStorage.removeItem('refresh_token');
                     setUser(null);
                 }
             }
@@ -45,36 +49,78 @@ export const AuthProvider = ({ children }) => {
         return () => window.removeEventListener('auth:logout', handleLogout);
     }, []);
 
-    const login = useCallback(async (email, password) => {
-        // OAuth2 form expects username field
-        const formData = new URLSearchParams();
-        formData.append('username', email);
-        formData.append('password', password);
+    // Auto-refresh token logic
+    const setupTokenRefresh = useCallback(() => {
+        // Refresh token 2 minutes before expiration (access token is 15 min)
+        const refreshInterval = setInterval(async () => {
+            const refreshToken = localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
 
-        const response = await axiosClient.post('/auth/token', formData, {
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        });
+            if (refreshToken) {
+                try {
+                    const response = await authApi.refresh(refreshToken);
+                    localStorage.setItem('access_token', response.data.access_token);
 
-        const { access_token } = response.data;
-        localStorage.setItem('access_token', access_token);
+                    // Token Rotation: Save new refresh token if provided
+                    if (response.data.refresh_token) {
+                        const storage = localStorage.getItem('refresh_token')
+                            ? localStorage
+                            : sessionStorage;
+                        storage.setItem('refresh_token', response.data.refresh_token);
+                    }
+                } catch (error) {
+                    console.error('Token refresh failed:', error);
+                    // Logout will be triggered by axios interceptor
+                }
+            }
+        }, 13 * 60 * 1000); // 13 minutes
 
-        // Fetch user info
-        const userResponse = await axiosClient.get('/auth/me');
-        setUser(userResponse.data);
-
-        return userResponse.data;
+        return () => clearInterval(refreshInterval);
     }, []);
 
-    const register = useCallback(async (email, password) => {
-        const response = await axiosClient.post('/auth/register', {
-            email,
-            password
-        });
+    const login = useCallback(async (email, password, rememberMe = false) => {
+        const response = await authApi.login(email, password);
+
+        const { access_token, refresh_token } = response.data;
+        localStorage.setItem('access_token', access_token);
+
+        // Store refresh token based on remember me preference
+        if (rememberMe) {
+            localStorage.setItem('refresh_token', refresh_token);
+        } else {
+            sessionStorage.setItem('refresh_token', refresh_token);
+        }
+
+        // Fetch user info
+        const userResponse = await authApi.getMe();
+        setUser(userResponse.data);
+
+        // Setup auto-refresh
+        setupTokenRefresh();
+
+        return userResponse.data;
+    }, [setupTokenRefresh]);
+
+    const register = useCallback(async (username, email, password) => {
+        const response = await authApi.register(username, email, password);
         return response.data;
     }, []);
 
-    const logout = useCallback(() => {
+    const logout = useCallback(async () => {
+        const refreshToken = localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
+
+        // Try to revoke refresh token on server
+        if (refreshToken) {
+            try {
+                await authApi.logout(refreshToken);
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        }
+
+        // Clear local storage
         localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        sessionStorage.removeItem('refresh_token');
         setUser(null);
     }, []);
 

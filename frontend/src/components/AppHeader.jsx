@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Terminal, Code2, LogOut, User, ChevronDown } from 'lucide-react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
@@ -11,7 +11,7 @@ const AppHeader = () => {
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [authModalTab, setAuthModalTab] = useState('login');
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-    const location = useLocation();
+
     const { user, isAuthenticated, logout, isLoading } = useAuth();
 
     useEffect(() => {
@@ -113,7 +113,7 @@ const AppHeader = () => {
                                             <User size={14} className="text-white" />
                                         </div>
                                         <span className="text-sm text-text-main hidden sm:inline max-w-[120px] truncate">
-                                            {user?.email?.split('@')[0]}
+                                            {user?.username || user?.email?.split('@')[0]}
                                         </span>
                                         <ChevronDown size={14} className={`text-text-muted transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                                     </button>
@@ -127,8 +127,8 @@ const AppHeader = () => {
                                                 className="absolute right-0 mt-2 w-48 bg-surface border border-border rounded-xl shadow-xl overflow-hidden"
                                             >
                                                 <div className="p-3 border-b border-border">
-                                                    <p className="text-xs text-text-muted">Вы вошли как</p>
-                                                    <p className="text-sm text-white truncate">{user?.email}</p>
+                                                    <p className="text-sm font-medium text-white truncate">{user?.username}</p>
+                                                    <p className="text-xs text-text-muted truncate">{user?.email}</p>
                                                 </div>
                                                 <div className="p-1">
                                                     <Link

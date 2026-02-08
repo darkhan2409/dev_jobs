@@ -5,23 +5,26 @@ import { formatSalary, formatDate } from '../utils/formatters';
 import { parseJobDescription } from '../utils/jobParser';
 import TableOfContents from '../components/job/TableOfContents';
 import {
-    MapPin, Building2, ExternalLink, Globe, Clock,
-    Briefcase, Award, Users, Calendar
+    MapPin, Building2, ExternalLink, Clock,
+    Briefcase, Award, Users
 } from 'lucide-react';
 import ErrorState from '../components/ui/ErrorState';
 import JobDetailsSkeleton from './JobDetailsSkeleton';
 
-const QuickStat = ({ icon: Icon, label, value }) => (
-    <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
-        <div className="p-2 rounded-md bg-slate-800 text-violet-400">
-            <Icon size={18} />
+const QuickStat = ({ icon, label, value }) => {
+    const Icon = icon;
+    return (
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
+            <div className="p-2 rounded-md bg-slate-800 text-violet-400">
+                <Icon size={18} />
+            </div>
+            <div>
+                <p className="text-xs text-slate-500">{label}</p>
+                <p className="text-sm font-medium text-slate-200">{value}</p>
+            </div>
         </div>
-        <div>
-            <p className="text-xs text-slate-500">{label}</p>
-            <p className="text-sm font-medium text-slate-200">{value}</p>
-        </div>
-    </div>
-);
+    );
+};
 
 const JobDetailsPage = () => {
     const { id } = useParams();

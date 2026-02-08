@@ -12,6 +12,9 @@ import ProfilePage from './pages/ProfilePage';
 import PostJobPage from './pages/PostJobPage';
 import NotFoundPage from './pages/NotFoundPage';
 import CareerPage from './pages/CareerPage';
+import SecuritySettingsPage from './pages/SecuritySettingsPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppHeader from './components/AppHeader';
 import AppFooter from './components/AppFooter';
@@ -31,6 +34,9 @@ const TitleUpdater = () => {
     else if (path === '/post-job') document.title = 'Работодателям | DevJobs';
     else if (path === '/companies') document.title = 'Компании | DevJobs';
     else if (path === '/career') document.title = 'Карьерный тест | DevJobs';
+    else if (path === '/security') document.title = 'Безопасность | DevJobs';
+    else if (path === '/forgot-password') document.title = 'Восстановление пароля | DevJobs';
+    else if (path === '/reset-password') document.title = 'Сброс пароля | DevJobs';
     // Note: Detail page title updates will happen in the page itself once data is loaded
   }, [location]);
 
@@ -73,6 +79,9 @@ function AnimatedRoutes() {
         {/* Legacy redirect: /vacancies/:id → /jobs/:id */}
         <Route path="/vacancies/:id" element={<VacancyRedirect />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/security" element={<SecuritySettingsPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AnimatePresence>
