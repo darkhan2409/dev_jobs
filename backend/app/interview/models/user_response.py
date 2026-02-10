@@ -61,6 +61,8 @@ class SessionModel(BaseModel):
     responses: List[UserResponse] = Field(default_factory=list, description="User responses (up to 25)")
     status: SessionStatus = Field(default=SessionStatus.IN_PROGRESS, description="Session status")
     locked_question_bank_version: Optional[str] = Field(None, description="Ensures question bank immutability")
+    created_at: datetime = Field(default_factory=datetime.now, description="Session creation time")
+    expires_at: Optional[datetime] = Field(default=None, description="Session expiration time")
     
     @field_validator('responses')
     @classmethod

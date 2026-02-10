@@ -3,7 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import desc, func, or_, select, asc
 from fastapi import HTTPException, status
 
-from app.models import Vacancy, GradeEnum
+from app.models import Vacancy
+from app.core.enums import GradeEnum
 from app.schemas import SortEnum
 
 class VacancyService:
@@ -30,8 +31,21 @@ class VacancyService:
         grades_query = result.all()
         grades = sorted([g[0] for g in grades_query if g[0]])
 
-        # Hardcoded popular techs (could be dynamic in future)
-        technologies = ["Python", "Java", "Go", "JS", "React", "C++", "C#", "PHP", "Rust", "Swift"]
+        # Dynamic popular techs from key_skills
+        tech = func.lower(func.trim(func.jsonb_array_elements_text(Vacancy.key_skills))).label("tech")
+        result = await db.execute(
+            select(tech, func.count().label("cnt"))
+            .filter(
+                Vacancy.is_active == True,
+                Vacancy.key_skills.isnot(None),
+                func.jsonb_array_length(Vacancy.key_skills) > 0
+            )
+            .group_by(tech)
+            .order_by(desc("cnt"))
+            .limit(30)
+        )
+        tech_rows = result.all()
+        technologies = [row.tech for row in tech_rows if row.tech]
 
         return {
             "locations": locations,

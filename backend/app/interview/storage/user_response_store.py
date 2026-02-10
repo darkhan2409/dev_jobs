@@ -8,10 +8,11 @@ Validates: Requirements 5.1, 5.2, 5.3, 5.4, 5.5
 """
 
 from typing import Dict, List, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 from ..models.user_response import UserResponse, SessionModel, SessionStatus
 from ..models.question import Question
 from .question_bank_manager import QuestionBankManager
+from app.config import settings
 
 
 class UserResponseStoreError(Exception):
@@ -56,6 +57,17 @@ class UserResponseStore:
         """
         self._sessions: Dict[str, SessionModel] = {}
         self._question_bank_manager = question_bank_manager
+
+    def _evict_expired_sessions(self, current_session_id: Optional[str] = None) -> None:
+        """Remove expired sessions from memory."""
+        now = datetime.now()
+        for session_id, session in list(self._sessions.items()):
+            if session.expires_at and now >= session.expires_at:
+                if session.status == SessionStatus.IN_PROGRESS:
+                    self._question_bank_manager.unlock_question_bank(session_id)
+                del self._sessions[session_id]
+                if current_session_id and session_id == current_session_id:
+                    raise SessionNotFoundError("Session expired")
     
     def create_session(self) -> SessionModel:
         """
@@ -68,8 +80,13 @@ class UserResponseStore:
             
         Validates: Requirements 5.1, 3.7
         """
+        self._evict_expired_sessions()
+
         # Generate unique session ID
         session_id = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
+
+        created_at = datetime.now()
+        expires_at = created_at + timedelta(minutes=settings.CAREER_SESSION_TTL_MINUTES)
         
         # Lock the question bank for this session
         question_bank_version = self._question_bank_manager.get_version()
@@ -80,7 +97,9 @@ class UserResponseStore:
             session_id=session_id,
             responses=[],
             status=SessionStatus.IN_PROGRESS,
-            locked_question_bank_version=question_bank_version
+            locked_question_bank_version=question_bank_version,
+            created_at=created_at,
+            expires_at=expires_at
         )
         
         self._sessions[session_id] = session
@@ -114,6 +133,8 @@ class UserResponseStore:
             
         Validates: Requirements 5.1, 5.2, 5.3, 5.4
         """
+        self._evict_expired_sessions(session_id)
+
         # Check session exists
         if session_id not in self._sessions:
             raise SessionNotFoundError(f"Session '{session_id}' does not exist")
@@ -184,6 +205,8 @@ class UserResponseStore:
             
         Validates: Requirements 5.1
         """
+        self._evict_expired_sessions(session_id)
+
         if session_id not in self._sessions:
             raise SessionNotFoundError(f"Session '{session_id}' does not exist")
         
@@ -204,6 +227,8 @@ class UserResponseStore:
             
         Validates: Requirements 5.5
         """
+        self._evict_expired_sessions(session_id)
+
         if session_id not in self._sessions:
             raise SessionNotFoundError(f"Session '{session_id}' does not exist")
         
@@ -223,6 +248,8 @@ class UserResponseStore:
         Raises:
             SessionNotFoundError: If session does not exist
         """
+        self._evict_expired_sessions(session_id)
+
         if session_id not in self._sessions:
             raise SessionNotFoundError(f"Session '{session_id}' does not exist")
         
@@ -241,6 +268,8 @@ class UserResponseStore:
         Raises:
             SessionNotFoundError: If session does not exist
         """
+        self._evict_expired_sessions(session_id)
+
         if session_id not in self._sessions:
             raise SessionNotFoundError(f"Session '{session_id}' does not exist")
         
@@ -259,6 +288,7 @@ class UserResponseStore:
         Returns:
             List of all SessionModel instances
         """
+        self._evict_expired_sessions()
         return list(self._sessions.values())
     
     def delete_session(self, session_id: str) -> None:
@@ -271,6 +301,8 @@ class UserResponseStore:
         Raises:
             SessionNotFoundError: If session does not exist
         """
+        self._evict_expired_sessions(session_id)
+
         if session_id not in self._sessions:
             raise SessionNotFoundError(f"Session '{session_id}' does not exist")
         

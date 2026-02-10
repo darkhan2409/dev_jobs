@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { ScrollRestoration } from 'react-router-dom';
+import React, { lazy, Suspense } from 'react';
 import HomePage from './pages/HomePage';
 import JobsPage from './pages/JobsPage';
 import JobDetailsPage from './pages/JobDetailsPage';
@@ -21,45 +22,62 @@ import AppFooter from './components/AppFooter';
 import BackgroundEffect from './components/BackgroundEffect';
 import { AuthProvider } from './context/AuthContext';
 
+// Guide pages (lazy loaded — isolated educational section)
+const GuideLayout = lazy(() => import('./pages/guide/GuideLayout'));
+const GuidePipelinePage = lazy(() => import('./pages/guide/GuidePipelinePage'));
+const GuideStageDetailPage = lazy(() => import('./pages/guide/GuideStageDetailPage'));
+const GuideRoleProfilePage = lazy(() => import('./pages/guide/GuideRoleProfilePage'));
+const GuideArtifactPage = lazy(() => import('./pages/guide/GuideArtifactPage'));
+
 // Dynamic TitleUpdater component
 const TitleUpdater = () => {
   const location = useLocation();
 
   React.useEffect(() => {
     const path = location.pathname;
-    if (path === '/') document.title = 'DevJobs — IT‑вакансии в Казахстане';
-    else if (path === '/jobs') document.title = 'Каталог вакансий | DevJobs';
-    else if (path === '/about') document.title = 'О нас | DevJobs';
-    else if (path === '/privacy') document.title = 'Политика конфиденциальности | DevJobs';
-    else if (path === '/post-job') document.title = 'Работодателям | DevJobs';
-    else if (path === '/companies') document.title = 'Компании | DevJobs';
-    else if (path === '/career') document.title = 'Карьерный тест | DevJobs';
-    else if (path === '/security') document.title = 'Безопасность | DevJobs';
-    else if (path === '/forgot-password') document.title = 'Восстановление пароля | DevJobs';
-    else if (path === '/reset-password') document.title = 'Сброс пароля | DevJobs';
-    // Note: Detail page title updates will happen in the page itself once data is loaded
+    if (path === '/') document.title = 'GitJob — IT‑вакансии в Казахстане';
+    else if (path === '/jobs') document.title = 'Каталог вакансий | GitJob';
+    else if (path === '/about') document.title = 'О нас | GitJob';
+    else if (path === '/privacy') document.title = 'Политика конфиденциальности | GitJob';
+    else if (path === '/post-job') document.title = 'Работодателям | GitJob';
+    else if (path === '/companies') document.title = 'Компании | GitJob';
+    else if (path === '/career') document.title = 'Карьерный тест | GitJob';
+    else if (path === '/security') document.title = 'Безопасность | GitJob';
+    else if (path === '/forgot-password') document.title = 'Восстановление пароля | GitJob';
+    else if (path === '/reset-password') document.title = 'Сброс пароля | GitJob';
+    else if (path.startsWith('/guide')) document.title = 'Как создаются IT-продукты | GitJob';
   }, [location]);
 
   return null;
 };
 
 const ScrollToTop = () => {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
 
   React.useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    // Small delay to let users see the content change before scrolling
+    const timer = setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [pathname, search]);
 
   return null;
 };
-
-import React from 'react';
 
 // Redirect component for legacy /vacancies/:id URLs
 const VacancyRedirect = () => {
   const { id } = useParams();
   return <Navigate to={`/jobs/${id}`} replace />;
 };
+
+// Loading fallback for guide pages
+const GuideLoadingFallback = () => (
+  <div className="min-h-screen bg-[#020617] flex items-center justify-center">
+    <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
+  </div>
+);
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -82,6 +100,22 @@ function AnimatedRoutes() {
         <Route path="/security" element={<SecuritySettingsPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        {/* Guide — educational section within main layout */}
+        <Route
+          path="/guide/*"
+          element={
+            <Suspense fallback={<GuideLoadingFallback />}>
+              <Routes>
+                <Route element={<GuideLayout />}>
+                  <Route index element={<GuidePipelinePage />} />
+                  <Route path=":stageId" element={<GuideStageDetailPage />} />
+                  <Route path="role/:roleId" element={<GuideRoleProfilePage />} />
+                  <Route path="artifact/:artifactId" element={<GuideArtifactPage />} />
+                </Route>
+              </Routes>
+            </Suspense>
+          }
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AnimatePresence>

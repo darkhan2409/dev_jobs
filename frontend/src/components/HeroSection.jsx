@@ -34,26 +34,30 @@ const HeroSection = ({ onSearchApply, totalJobs }) => {
                     }
                 }}
             >
-                {/* Block 1. HERO - Social Proof Badge */}
-                <motion.div variants={fadeInUp} className="flex justify-center mb-6">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary-light text-xs font-mono">
+                <motion.div variants={fadeInUp} className="text-center max-w-3xl mx-auto px-4 mt-10 mb-12">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-6 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
                         <span className="relative flex h-2 w-2">
-                            <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-primary/50 opacity-50"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                         </span>
-                        {totalJobs ? `${totalJobs.toLocaleString()} IT‑вакансий в Казахстане` : 'Загружаем вакансии...'}
+                        <span className="text-sm font-medium text-gray-300">
+                            {totalJobs ? `${totalJobs.toLocaleString()} IT вакансий в Казахстане` : 'Загружаем вакансии...'}
+                        </span>
                     </div>
+
+                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
+                        Твой навигатор по <br className="md:hidden" />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+                            IT-вакансиям
+                        </span>
+                    </h1>
+
+                    <p className="text-slate-400 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+                        Запутался в профессиях? Мы разложили всё по этапам разработки:{' '}
+                        <br className="hidden md:block" />
+                        <span className="text-slate-300">от идеи до запуска</span>
+                    </p>
                 </motion.div>
-
-                {/* Block 1. HERO - Headline */}
-                <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl font-extrabold text-text-main tracking-tight mb-6 leading-tight">
-                    IT‑вакансии с <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">понятным контекстом</span>
-                </motion.h1>
-
-                {/* Block 1. HERO - Subheadline (Shortened) */}
-                <motion.p variants={fadeInUp} className="text-lg md:text-xl text-text-muted max-w-2xl mx-auto mb-10 leading-relaxed">
-                    Понимайте роли и требования, а не просто читайте описания.
-                </motion.p>
 
                 {/* Block 1. HERO - Search Input (Simplified button, no accent blur) */}
                 <motion.div variants={fadeInUp} className="max-w-xl mx-auto mb-8 relative z-20">

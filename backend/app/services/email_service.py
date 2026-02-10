@@ -68,7 +68,7 @@ class EmailService:
 
     async def send_verification_email(self, user: User, token: str):
         """Send email verification code to user."""
-        subject = "Подтвердите email - DevJobs"
+        subject = "Подтвердите email - GitJob"
         body = f"""
 Здравствуйте!
 
@@ -76,11 +76,11 @@ class EmailService:
 
 Код действителен в течение 24 часов.
 
-Если вы не регистрировались на DevJobs, проигнорируйте это письмо.
+Если вы не регистрировались на GitJob, проигнорируйте это письмо.
 
 ---
 С уважением,
-Команда DevJobs
+Команда GitJob
         """.strip()
 
         await self.send_email(user.email, subject, body)
@@ -90,11 +90,11 @@ class EmailService:
         from app.config import settings
         reset_link = f"{settings.FRONTEND_URL}/reset-password?token={token}"
 
-        subject = "Сброс пароля - DevJobs"
+        subject = "Сброс пароля - GitJob"
         body = f"""
 Здравствуйте!
 
-Вы запросили сброс пароля для вашего аккаунта DevJobs.
+Вы запросили сброс пароля для вашего аккаунта GitJob.
 
 Перейдите по ссылке для создания нового пароля:
 {reset_link}
@@ -105,7 +105,7 @@ class EmailService:
 
 ---
 С уважением,
-Команда DevJobs
+Команда GitJob
         """.strip()
 
         await self.send_email(user.email, subject, body)

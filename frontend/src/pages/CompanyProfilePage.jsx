@@ -5,8 +5,10 @@ import { ArrowLeft, Building2, Briefcase, Globe, ExternalLink } from 'lucide-rea
 import axiosClient from '../api/axiosClient';
 import { pageVariants, fadeInUp } from '../utils/animations';
 import VacancyCard, { VacancySkeleton } from '../features/vacancies/VacancyCard';
+import Pagination from '../components/ui/Pagination';
 
 const formatVacanciesCount = (count) => {
+    if (!count) return '0 вакансий';
     const mod10 = count % 10;
     const mod100 = count % 100;
     if (mod10 === 1 && mod100 !== 11) return `${count} вакансия`;
@@ -20,15 +22,32 @@ const CompanyProfilePage = () => {
     const [vacancies, setVacancies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [pagination, setPagination] = useState({
+        page: 1,
+        per_page: 20,
+        total: 0
+    });
 
     useEffect(() => {
         const fetchCompanyData = async () => {
             try {
                 setLoading(true);
                 // Fetch company details
-                const response = await axiosClient.get(`/companies/${encodeURIComponent(companyName)}`);
+                const response = await axiosClient.get(
+                    `/companies/${encodeURIComponent(companyName)}`,
+                    {
+                        params: {
+                            page: pagination.page,
+                            per_page: pagination.per_page
+                        }
+                    }
+                );
                 setCompany(response.data.company);
                 setVacancies(response.data.vacancies || []);
+                setPagination((prev) => ({
+                    ...prev,
+                    total: response.data.total ?? 0
+                }));
                 setError(null);
             } catch (err) {
                 console.error('Failed to fetch company:', err);
@@ -41,14 +60,18 @@ const CompanyProfilePage = () => {
         if (companyName) {
             fetchCompanyData();
         }
+    }, [companyName, pagination.page, pagination.per_page]);
+
+    useEffect(() => {
+        setPagination((prev) => ({ ...prev, page: 1 }));
     }, [companyName]);
 
     useEffect(() => {
         if (company) {
-            document.title = `${company.name} | DevJobs`;
+            document.title = `${company.name} | GitJob`;
         }
         return () => {
-            document.title = 'DevJobs — IT‑вакансии в Казахстане';
+            document.title = 'GitJob — IT‑вакансии в Казахстане';
         };
     }, [company]);
 
@@ -164,7 +187,7 @@ const CompanyProfilePage = () => {
                             <div className="flex flex-wrap items-center gap-4 text-slate-400 mb-4">
                                 <div className="flex items-center gap-2">
                                     <Briefcase size={16} />
-                                    <span>{formatVacanciesCount(vacancies.length)}</span>
+                                    <span>{formatVacanciesCount(pagination.total)}</span>
                                 </div>
                             </div>
 
@@ -192,11 +215,19 @@ const CompanyProfilePage = () => {
                     </h2>
 
                     {vacancies.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {vacancies.map((vacancy) => (
-                                <VacancyCard key={vacancy.id} vacancy={vacancy} />
-                            ))}
-                        </div>
+                        <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {vacancies.map((vacancy) => (
+                                    <VacancyCard key={vacancy.id} vacancy={vacancy} />
+                                ))}
+                            </div>
+
+                            <Pagination
+                                currentPage={pagination.page}
+                                totalPages={Math.ceil(pagination.total / pagination.per_page)}
+                                onPageChange={(newPage) => setPagination((prev) => ({ ...prev, page: newPage }))}
+                            />
+                        </>
                     ) : (
                         <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-8 text-center">
                             <p className="text-slate-400">Сейчас нет активных вакансий.</p>

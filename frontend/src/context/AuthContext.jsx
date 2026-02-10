@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { authApi } from '../api/authApi';
 
 const AuthContext = createContext(null);
@@ -15,44 +15,18 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const refreshIntervalRef = useRef(null);
 
-    // Session restoration on page load
-    useEffect(() => {
-        const restoreSession = async () => {
-            const token = localStorage.getItem('access_token');
-            if (token) {
-                try {
-                    const response = await authApi.getMe();
-                    setUser(response.data);
-                    setupTokenRefresh();
-                } catch {
-                    // Token invalid or expired
-                    localStorage.removeItem('access_token');
-                    localStorage.removeItem('refresh_token');
-                    sessionStorage.removeItem('refresh_token');
-                    setUser(null);
-                }
-            }
-            setIsLoading(false);
-        };
-
-        restoreSession();
+    const stopRefreshTimer = useCallback(() => {
+        if (refreshIntervalRef.current) {
+            clearInterval(refreshIntervalRef.current);
+            refreshIntervalRef.current = null;
+        }
     }, []);
 
-    // Listen for 401 logout events from axiosClient
-    useEffect(() => {
-        const handleLogout = () => {
-            setUser(null);
-        };
-
-        window.addEventListener('auth:logout', handleLogout);
-        return () => window.removeEventListener('auth:logout', handleLogout);
-    }, []);
-
-    // Auto-refresh token logic
-    const setupTokenRefresh = useCallback(() => {
-        // Refresh token 2 minutes before expiration (access token is 15 min)
-        const refreshInterval = setInterval(async () => {
+    const startRefreshTimer = useCallback(() => {
+        stopRefreshTimer();
+        refreshIntervalRef.current = setInterval(async () => {
             const refreshToken = localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
 
             if (refreshToken) {
@@ -73,9 +47,92 @@ export const AuthProvider = ({ children }) => {
                 }
             }
         }, 13 * 60 * 1000); // 13 minutes
+    }, [stopRefreshTimer]);
 
-        return () => clearInterval(refreshInterval);
-    }, []);
+    // Session restoration on page load
+    useEffect(() => {
+        const restoreSession = async () => {
+            const accessToken = localStorage.getItem('access_token');
+            const refreshToken = localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
+
+            const clearSession = () => {
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                sessionStorage.removeItem('refresh_token');
+                stopRefreshTimer();
+                setUser(null);
+            };
+
+            const fetchMe = async () => {
+                const response = await authApi.getMe();
+                setUser(response.data);
+                startRefreshTimer();
+            };
+
+            const tryRefresh = async () => {
+                if (!refreshToken) return false;
+                const response = await authApi.refresh(refreshToken);
+                localStorage.setItem('access_token', response.data.access_token);
+
+                if (response.data.refresh_token) {
+                    const storage = localStorage.getItem('refresh_token')
+                        ? localStorage
+                        : sessionStorage;
+                    storage.setItem('refresh_token', response.data.refresh_token);
+                }
+                return true;
+            };
+
+            try {
+                if (accessToken) {
+                    await fetchMe();
+                } else if (refreshToken) {
+                    const refreshed = await tryRefresh();
+                    if (refreshed) {
+                        await fetchMe();
+                    } else {
+                        clearSession();
+                    }
+                }
+            } catch {
+                if (refreshToken) {
+                    try {
+                        const refreshed = await tryRefresh();
+                        if (refreshed) {
+                            await fetchMe();
+                        } else {
+                            clearSession();
+                        }
+                    } catch {
+                        clearSession();
+                    }
+                } else {
+                    clearSession();
+                }
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        restoreSession();
+    }, [startRefreshTimer, stopRefreshTimer]);
+
+    // Listen for 401 logout events from axiosClient
+    useEffect(() => {
+        const handleLogout = () => {
+            setUser(null);
+            stopRefreshTimer();
+        };
+
+        window.addEventListener('auth:logout', handleLogout);
+        return () => window.removeEventListener('auth:logout', handleLogout);
+    }, [stopRefreshTimer]);
+
+    useEffect(() => {
+        return () => {
+            stopRefreshTimer();
+        };
+    }, [stopRefreshTimer]);
 
     const login = useCallback(async (email, password, rememberMe = false) => {
         const response = await authApi.login(email, password);
@@ -95,10 +152,10 @@ export const AuthProvider = ({ children }) => {
         setUser(userResponse.data);
 
         // Setup auto-refresh
-        setupTokenRefresh();
+        startRefreshTimer();
 
         return userResponse.data;
-    }, [setupTokenRefresh]);
+    }, [startRefreshTimer]);
 
     const register = useCallback(async (username, email, password) => {
         const response = await authApi.register(username, email, password);
@@ -121,8 +178,9 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         sessionStorage.removeItem('refresh_token');
+        stopRefreshTimer();
         setUser(null);
-    }, []);
+    }, [stopRefreshTimer]);
 
     const value = {
         user,

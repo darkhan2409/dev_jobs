@@ -92,10 +92,10 @@ async def run_ai_cleaning_job(dry_run: bool = False):
                         if not dry_run:
                             vacancy.is_ai_checked = True
                 
-                # Commit batch
+                # GitJob batch
                 if not dry_run and batch_num % 5 == 0:
                     db.commit()
-                    logger.info(f"--- Committed batch {batch_num} ---")
+                    logger.info(f"--- GitJobted batch {batch_num} ---")
             
             # Final commit
             if not dry_run:

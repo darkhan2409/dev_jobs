@@ -4,6 +4,7 @@ import axiosClient from '../api/axiosClient';
 import { formatSalary, formatDate } from '../utils/formatters';
 import { parseJobDescription } from '../utils/jobParser';
 import TableOfContents from '../components/job/TableOfContents';
+import JobDescription from '../components/job/JobDescription';
 import {
     MapPin, Building2, ExternalLink, Clock,
     Briefcase, Award, Users
@@ -49,10 +50,10 @@ const JobDetailsPage = () => {
 
     useEffect(() => {
         if (vacancy) {
-            document.title = `${vacancy.title} | DevJobs`;
+            document.title = `${vacancy.title} | GitJob`;
         }
         return () => {
-            document.title = 'DevJobs — IT‑вакансии в Казахстане';
+            document.title = 'GitJob — IT‑вакансии в Казахстане';
         };
     }, [vacancy]);
 
@@ -74,9 +75,9 @@ const JobDetailsPage = () => {
     }
 
     return (
-        <div className="min-h-screen text-slate-200 font-sans pb-24 lg:pb-12 bg-slate-950">
+        <div className="min-h-screen text-slate-200 font-sans pb-24 lg:pb-12">
             {/* Header / Hero Section */}
-            <div className="bg-gradient-to-b from-slate-900 to-slate-950 border-b border-white/5 pt-24 pb-12">
+            <div className="border-b border-white/5 pt-24 pb-12">
                 <main className="max-w-7xl mx-auto px-4">
                     {/* Breadcrumbs */}
                     <div className="flex items-center gap-2 text-sm text-slate-500 mb-8">
@@ -167,7 +168,7 @@ const JobDetailsPage = () => {
                         </div>
 
                         {/* Sections */}
-                        <div className="space-y-12">
+                        <div className="space-y-6">
                             {sections.map((section, index) => (
                                 <section
                                     key={section.id}
@@ -177,15 +178,7 @@ const JobDetailsPage = () => {
                                     <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-3">
                                         {section.title}
                                     </h3>
-                                    <div
-                                        className="prose prose-invert prose-slate prose-lg max-w-none 
-                                        prose-blockquote:border-l-violet-500 prose-blockquote:bg-slate-900/50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg
-                                        prose-li:marker:text-violet-500 prose-a:text-violet-400"
-                                        dangerouslySetInnerHTML={{ __html: section.content }}
-                                    />
-                                    {index < sections.length - 1 && (
-                                        <div className="h-px bg-slate-800/50 w-full mt-12" />
-                                    )}
+                                    <JobDescription htmlContent={section.content} />
                                 </section>
                             ))}
                         </div>

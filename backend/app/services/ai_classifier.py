@@ -27,7 +27,7 @@ class AIClassifier:
             for v in vacancies
         ])
 
-        system_prompt = """You are an HR Tech Recruiter for an IT Job Board (DevJobs). 
+        system_prompt = """You are an HR Tech Recruiter for an IT Job Board (GitJob). 
 Filter out ONLY clearly NON-IT roles.
 
 CONTEXT: We want ALL IT-related roles including developers, QA, DevOps, data, managers, analysts, and support.

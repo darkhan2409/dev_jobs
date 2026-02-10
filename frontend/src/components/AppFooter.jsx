@@ -10,7 +10,7 @@ const AppFooter = () => {
                     {/* 1. Brand & Vision */}
                     <div className="space-y-6">
                         <div className="text-2xl font-bold font-mono text-slate-100 tracking-tight">
-                            &lt;DevJobs /&gt;
+                            &lt;GitJob /&gt;
                         </div>
                         <p className="text-slate-400 text-sm leading-relaxed max-w-md">
                             Открытая доска вакансий для разработчиков — от разработчиков.
@@ -53,7 +53,7 @@ const AppFooter = () => {
 
                 <div className="pt-8 border-t border-slate-900 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-600 font-mono">
                     <div>
-                        © {new Date().getFullYear()} DevJobs KZ. Открытый код.
+                        © {new Date().getFullYear()} GitJob KZ. Открытый код.
                     </div>
                     <div className="flex items-center gap-2">
                         <span>Сделано с</span>

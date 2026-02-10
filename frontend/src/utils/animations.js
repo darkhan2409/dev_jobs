@@ -100,3 +100,25 @@ export const cardHoverVariants = {
         }
     }
 };
+
+// Pipeline Guide animations
+export const pipelinePulse = {
+    animate: {
+        scale: [1, 1.12, 1],
+        boxShadow: [
+            "0 0 0 0 rgba(124, 58, 237, 0)",
+            "0 0 0 12px rgba(124, 58, 237, 0.25)",
+            "0 0 0 0 rgba(124, 58, 237, 0)"
+        ],
+        transition: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+    }
+};
+
+export const drawLine = {
+    hidden: { pathLength: 0, opacity: 0 },
+    visible: {
+        pathLength: 1,
+        opacity: 1,
+        transition: { duration: 0.8, ease: easeOutExpo }
+    }
+};

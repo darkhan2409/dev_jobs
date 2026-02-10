@@ -159,9 +159,9 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
     const filterUI = (
         <div className="flex flex-col h-full max-h-[calc(100vh-140px)]">
             {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800/50 shrink-0">
-                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                    <Filter size={20} className="text-violet-500" />
+            <div className="flex items-center justify-between pb-4 border-b border-white/5 shrink-0">
+                <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2 uppercase tracking-wider">
+                    <Filter size={16} className="text-purple-500" />
                     Фильтры
                 </h3>
                 {hasActiveFilters && (
@@ -178,9 +178,9 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
             <div className="flex-1 overflow-y-auto space-y-6 py-4 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
 
                 {/* Search Filter */}
-                <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                        <Briefcase size={14} />
+                <div className="space-y-2">
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                        <Briefcase size={12} />
                         Должность
                     </h4>
                     <div className="relative">
@@ -195,15 +195,15 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
                                     applyFilters();
                                 }
                             }}
-                            className="w-full bg-slate-900 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20"
+                            className="w-full bg-[#0B0C10] border border-gray-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500/50 transition-colors"
                         />
                     </div>
                 </div>
 
                 {/* Salary Filter */}
-                <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                        <DollarSign size={14} />
+                <div className="space-y-2">
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                        <DollarSign size={12} />
                         Зарплата
                     </h4>
                     <div className="space-y-2">
@@ -213,19 +213,19 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
                             placeholder="Зарплата от (₸)"
                             value={localFilters.minSalary}
                             onChange={(e) => handleSalaryChange(e.target.value)}
-                            className="w-full bg-slate-900 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20"
+                            className="w-full bg-[#0B0C10] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500/50 transition-colors"
                         />
-                        <p className="text-xs text-slate-500">Можно оставить пустым</p>
+                        <p className="text-xs text-slate-600">Можно оставить пустым</p>
                     </div>
                 </div>
 
                 {/* Location Filter - Dropdown */}
-                <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Город</h4>
+                <div className="space-y-2">
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Город</h4>
                     <div className="relative" ref={dropdownRef}>
                         <button
                             onClick={() => setIsLocationOpen(!isLocationOpen)}
-                            className="w-full flex items-center justify-between bg-slate-900 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-slate-200 hover:border-violet-500/50 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                            className="w-full flex items-center justify-between bg-[#0B0C10] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 hover:border-purple-500/50 transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500"
                         >
                             <span className="truncate">
                                 {localFilters.location || 'Все города'}
@@ -290,14 +290,14 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
                 </div>
 
                 {/* Grade Filter (Multi-select) */}
-                <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Грейд</h4>
+                <div className="space-y-2">
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Грейд</h4>
                     <div className="space-y-2">
                         {grades.map(grade => (
                             <label key={grade} className="flex items-center gap-3 cursor-pointer group">
                                 <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isGradeSelected(grade)
-                                    ? 'bg-violet-600 border-violet-600'
-                                    : 'border-slate-700 group-hover:border-slate-500 bg-slate-900'
+                                    ? 'bg-purple-600 border-purple-600'
+                                    : 'border-gray-800 group-hover:border-gray-600 bg-[#0B0C10]'
                                     }`}>
                                     {isGradeSelected(grade) && <Check size={12} className="text-white" />}
                                 </div>
@@ -317,16 +317,16 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
                 </div>
 
                 {/* Tech Stack Filter */}
-                <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Стек</h4>
+                <div className="space-y-2">
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Стек</h4>
                     <div className="flex flex-wrap gap-2">
                         {technologies.map(tech => (
                             <button
                                 key={tech}
                                 onClick={() => handleTechChange(tech)}
                                 className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all border ${localFilters.stack === tech
-                                    ? 'bg-violet-500/20 border-violet-500/50 text-violet-200'
-                                    : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200'
+                                    ? 'bg-purple-500/20 border-purple-500/50 text-purple-200'
+                                    : 'bg-[#0B0C10] border-gray-800 text-slate-400 hover:border-purple-500/30 hover:text-slate-200'
                                     }`}
                             >
                                 {tech}
@@ -337,12 +337,12 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
             </div>
 
             {/* Apply Button */}
-            <div className="pt-4 border-t border-slate-800/50 shrink-0">
+            <div className="pt-4 border-t border-white/5 shrink-0">
                 <button
                     onClick={applyFilters}
                     className={`w-full py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${hasChanges
-                        ? 'bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-500/20'
-                        : 'bg-violet-600 hover:bg-violet-500 text-white'
+                        ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-500/20'
+                        : 'bg-purple-600/80 hover:bg-purple-600 text-white'
                         }`}
                 >
                     <Search size={18} />
@@ -356,7 +356,7 @@ const FilterSidebar = ({ filters, onFilterChange, className = '' }) => {
         <>
             {/* Desktop Sidebar */}
             <aside className={`hidden md:block w-72 flex-shrink-0 relative ${className}`}>
-                <div className="sticky top-24 bg-slate-900/50 border border-slate-800/50 backdrop-blur-xl rounded-2xl p-6 shadow-xl">
+                <div className="sticky top-24 p-1">
                     {filterUI}
                 </div>
             </aside>

@@ -14,3 +14,12 @@ The React Compiler is not enabled on this template because of its impact on dev 
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+## Security Notes
+
+This frontend stores access tokens in `localStorage` and refresh tokens in `localStorage` or `sessionStorage`. This is convenient for development, but it increases exposure to XSS.
+
+Recommendations for production:
+- Prefer `httpOnly` cookies for refresh tokens and keep access tokens in memory.
+- Enforce a strict Content Security Policy (CSP).
+- Avoid unsafe HTML injection and keep sanitization in place (e.g., DOMPurify for job descriptions).

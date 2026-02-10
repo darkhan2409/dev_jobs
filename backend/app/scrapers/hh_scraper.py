@@ -35,10 +35,10 @@ class HHScraper:
                 ua = UserAgent()
                 self.user_agent = ua.random
             else:
-                self.user_agent = "DevJobsAggregator/1.0 (admin@devjobs.com)"
+                self.user_agent = "GitJobAggregator/1.0 (admin@devjobs.com)"
         except Exception as e:
             logger.warning(f"User-Agent generation failed: {e}")
-            self.user_agent = "DevJobsAggregator/1.0 (admin@devjobs.com)"
+            self.user_agent = "GitJobAggregator/1.0 (admin@devjobs.com)"
             
         self.headers["User-Agent"] = self.user_agent
         # Reduced concurrency to avoid rate limiting (was 5, now 2)

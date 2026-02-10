@@ -1,3 +1,4 @@
+import math
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import desc, func, select
@@ -64,6 +65,8 @@ async def get_companies(
 @router.get("/{company_name}", response_model=CompanyDetailResponse)
 async def get_company_detail(
     company_name: str,
+    page: int = Query(1, ge=1, description="Page number"),
+    per_page: int = Query(20, ge=1, le=100, description="Number of records per page"),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -77,7 +80,38 @@ async def get_company_detail(
     """
     decoded_name = unquote(company_name)
     
-    # Find all active vacancies for this company
+    # Count active vacancies for this company
+    count_result = await db.execute(
+        select(func.count(Vacancy.id))
+        .filter(
+            Vacancy.is_active == True,
+            Vacancy.company_name == decoded_name
+        )
+    )
+    total = count_result.scalar() or 0
+
+    if total == 0:
+        raise HTTPException(status_code=404, detail="Company not found or has no active vacancies")
+
+    total_pages = max(1, math.ceil(total / per_page))
+    if page > total_pages:
+        raise HTTPException(status_code=404, detail="Page out of range")
+
+    # Fetch one vacancy for company metadata
+    first_result = await db.execute(
+        select(Vacancy)
+        .filter(
+            Vacancy.is_active == True,
+            Vacancy.company_name == decoded_name
+        )
+        .order_by(desc(Vacancy.published_at))
+        .limit(1)
+    )
+    first_vacancy = first_result.scalar_one()
+
+    offset = (page - 1) * per_page
+
+    # Find paginated active vacancies for this company
     result = await db.execute(
         select(Vacancy)
         .filter(
@@ -85,17 +119,15 @@ async def get_company_detail(
             Vacancy.company_name == decoded_name
         )
         .order_by(desc(Vacancy.published_at))
+        .offset(offset)
+        .limit(per_page)
     )
     vacancies = result.scalars().all()
     
-    if not vacancies:
-        raise HTTPException(status_code=404, detail="Company not found or has no active vacancies")
-    
     # Build company info from first vacancy
-    first_vacancy = vacancies[0]
     company_info = {
         "name": decoded_name,
-        "vacancy_count": len(vacancies),
+        "vacancy_count": total,
         "logo_url": first_vacancy.company_logo
     }
     
@@ -106,5 +138,8 @@ async def get_company_detail(
     
     return CompanyDetailResponse(
         company=company_info,
-        vacancies=vacancies
+        vacancies=vacancies,
+        total=total,
+        page=page,
+        per_page=per_page
     )

@@ -46,7 +46,7 @@ const PostJobPage = () => {
                     <div className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 border border-amber-500/30 rounded-2xl p-6">
                         <h2 className="text-xl font-semibold text-white mb-3">В разработке</h2>
                         <p className="text-slate-300 leading-relaxed">
-                            Сейчас мы делаем кабинет работодателя. Пока DevJobs автоматически агрегирует
+                            Сейчас мы делаем кабинет работодателя. Пока GitJob автоматически агрегирует
                             вакансии с HH.ru. Скоро вы сможете размещать вакансии напрямую на платформе.
                         </p>
                     </div>
@@ -54,7 +54,7 @@ const PostJobPage = () => {
 
                 {/* Benefits */}
                 <motion.section variants={fadeInUp} className="mb-12">
-                    <h2 className="text-2xl font-bold text-white mb-6">Зачем размещаться на DevJobs?</h2>
+                    <h2 className="text-2xl font-bold text-white mb-6">Зачем размещаться на GitJob?</h2>
                     <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
                         <ul className="space-y-4">
                             {benefits.map((benefit, idx) => (
@@ -74,7 +74,7 @@ const PostJobPage = () => {
                         <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
                             <h3 className="text-lg font-semibold text-white mb-3">Разместить на HH.ru</h3>
                             <p className="text-slate-400 text-sm mb-4">
-                                Разместите IT‑вакансию на HeadHunter — и она автоматически появится на DevJobs.
+                                Разместите IT‑вакансию на HeadHunter — и она автоматически появится на GitJob.
                             </p>
                             <a
                                 href="https://hh.kz/employer"

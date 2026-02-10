@@ -79,29 +79,52 @@ async def login_for_access_token(
     OAuth2 compatible token login. Use email as username.
     Returns both access_token (15 min) and refresh_token (7 days).
     """
-    # Check for account lockout
-    is_locked, failed_count = await check_account_lockout(db, form_data.username)
-    
-    if is_locked:
-        remaining_time = await get_lockout_remaining_time(db, form_data.username)
-        minutes = remaining_time // 60
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=f"Account temporarily locked due to too many failed login attempts. Try again in {minutes} minutes."
-        )
-    
     # Get client info
-    client_ip = request.client.host if request.client else "unknown"
+    raw_ip = request.client.host if request.client else None
+    client_ip = raw_ip or "unknown"
+    ip_for_lockout = raw_ip if raw_ip and raw_ip != "unknown" else None
     user_agent = request.headers.get("user-agent", "unknown")
 
     # Find user by email or username
-    from sqlalchemy import or_
     result = await db.execute(
         select(User).filter(
             or_(User.email == form_data.username, User.username == form_data.username)
         )
     )
     user = result.scalar_one_or_none()
+
+    # Check for account lockout (by user_id if known, else by identifier + IP)
+    is_locked, _ = await check_account_lockout(
+        db,
+        user_id=user.id if user else None,
+        email=form_data.username,
+        ip=ip_for_lockout
+    )
+    
+    if is_locked:
+        remaining_time = await get_lockout_remaining_time(
+            db,
+            user_id=user.id if user else None,
+            email=form_data.username,
+            ip=ip_for_lockout
+        )
+        minutes = max(1, remaining_time // 60)
+
+        login_attempt = LoginAttempt(
+            user_id=user.id if user else None,
+            email=form_data.username,
+            ip_address=client_ip,
+            user_agent=user_agent,
+            success=False,
+            failure_reason="rate_limit"
+        )
+        db.add(login_attempt)
+        await db.commit()
+
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Account temporarily locked due to too many failed login attempts. Try again in {minutes} minutes."
+        )
 
     # Log failed attempt if user not found
     if not user:

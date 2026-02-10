@@ -20,7 +20,8 @@ class Settings(BaseSettings):
 
     # Security
     INTERNAL_SECRET: str
-    ALLOWED_ORIGINS: str = "*"  # Comma-separated list for production
+    ALLOWED_ORIGINS: str = "http://localhost:5173"  # Comma-separated list for production
+    ENV: str = "dev"
 
     # Email settings
     EMAIL_ENABLED: bool = False  # False for dev mode
@@ -38,6 +39,7 @@ class Settings(BaseSettings):
 
     # Cache settings
     CACHE_EXPIRE_SECONDS: int = 300  # 5 minutes
+    CAREER_SESSION_TTL_MINUTES: int = 120
 
     # AI/LLM settings
     OPENAI_API_KEY: Optional[str] = None

@@ -63,9 +63,9 @@ const AboutPage = () => {
                 {/* Hero Section */}
                 <motion.div variants={fadeInUp} className="text-center mb-16">
                     <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                        О <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">DevJobs</span>
+                        О <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">GitJob</span>
                     </h1>
-                    <p className="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
+                    <p className="text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
                         Открытая платформа вакансий для IT‑сообщества Казахстана.
                         Без шума — только возможности.
                     </p>
@@ -80,7 +80,7 @@ const AboutPage = () => {
                         </div>
                         <p className="text-slate-300 text-lg leading-relaxed">
                             Мы верим, что поиск работы в IT не должен быть «игрой в иголку в стоге сена».
-                            DevJobs агрегирует вакансии из разных источников, убирает нерелевантные роли с помощью AI
+                            GitJob агрегирует вакансии из разных источников, убирает нерелевантные роли с помощью AI
                             и показывает всё в чистом, developer‑friendly интерфейсе. Наша цель — соединять сильных
                             разработчиков в Казахстане с действительно интересными возможностями.
                         </p>
@@ -89,7 +89,7 @@ const AboutPage = () => {
 
                 {/* Features */}
                 <motion.section variants={fadeInUp} className="mb-16">
-                    <h2 className="text-2xl font-bold text-white mb-8 text-center">Почему DevJobs?</h2>
+                    <h2 className="text-2xl font-bold text-white mb-8 text-center">Почему GitJob?</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {features.map((feature, idx) => (
                             <div

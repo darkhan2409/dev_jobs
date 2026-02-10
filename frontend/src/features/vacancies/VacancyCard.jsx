@@ -91,6 +91,16 @@ const getIconClass = (skillName) => {
     return iconMap[skill] || null;
 };
 
+const getGradeVariant = (grade) => {
+    if (!grade) return 'default';
+    const g = grade.toLowerCase();
+    if (g.includes('junior') || g.includes('intern') || g.includes('стажёр')) return 'junior';
+    if (g.includes('senior') || g.includes('principal')) return 'senior';
+    if (g.includes('lead') || g.includes('team lead')) return 'lead';
+    if (g.includes('middle') || g.includes('mid')) return 'middle';
+    return 'default';
+};
+
 const VacancyCard = ({ vacancy }) => {
     const tags = vacancy.key_skills || [];
     const hasSalary = (vacancy.salary_from && vacancy.salary_from > 0) || (vacancy.salary_to && vacancy.salary_to > 0);
@@ -101,21 +111,14 @@ const VacancyCard = ({ vacancy }) => {
             variants={cardHoverVariants}
             whileHover="hover"
             initial="rest"
-            className="group relative flex flex-col h-full bg-surface border border-border rounded-xl osverflow-hidden cursor-pointer divide-y divide-border"
+            className="group relative flex flex-col h-full bg-[#1A1B26] border border-white/10 rounded-2xl overflow-hidden cursor-pointer hover:border-purple-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] transition-all duration-300"
         >
             <Link to={`/jobs/${vacancy.id}`} className="flex flex-col h-full relative z-10">
 
-                {/* 1. Header Section ("The Cap") */}
-                <div className="bg-white/[0.02] px-4 py-3 flex items-center justify-between gap-3">
+                {/* 1. Header Section */}
+                <div className="px-4 py-3 flex items-center justify-between gap-3 border-b border-white/5">
                     {/* Left: Company */}
-                    <div
-                        className="flex items-center gap-2 flex-1 min-w-0"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            // Future: navigate to company
-                        }}
-                    >
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
                         <div className="relative w-6 h-6 rounded-full overflow-hidden bg-white p-0.5 flex-shrink-0">
                             {vacancy.company_logo ? (
                                 <img
@@ -132,22 +135,22 @@ const VacancyCard = ({ vacancy }) => {
                                 {(vacancy.company_name || '—').charAt(0).toUpperCase()}
                             </div>
                         </div>
-                        <span className="font-medium text-text-muted text-sm truncate group-hover:text-text-main transition-colors" title={vacancy.company_name}>
+                        <span className="font-medium text-slate-400 text-sm truncate group-hover:text-slate-200 transition-colors" title={vacancy.company_name}>
                             {vacancy.company_name || 'Не указано'}
                         </span>
                     </div>
 
-                    {/* Right: Grade Badge */}
+                    {/* Right: Grade Badge (color-coded) */}
                     {vacancy.grade && (
-                        <Badge variant="success" className="uppercase tracking-wider font-semibold">
+                        <Badge variant={getGradeVariant(vacancy.grade)} className="uppercase tracking-wider font-semibold">
                             {vacancy.grade}
                         </Badge>
                     )}
                 </div>
 
-                {/* 2. Body Section (Main Info) */}
+                {/* 2. Body Section */}
                 <div className="p-4 flex flex-col gap-2 flex-1">
-                    <h3 className="text-lg font-bold text-white line-clamp-2 leading-tight group-hover:text-primary-light transition-colors">
+                    <h3 className="text-lg font-bold text-white line-clamp-2 leading-tight group-hover:text-purple-300 transition-colors">
                         {vacancy.title}
                     </h3>
 
@@ -157,31 +160,27 @@ const VacancyCard = ({ vacancy }) => {
                         </div>
                     )}
 
-                    <div className="flex items-center gap-1 text-xs text-text-muted mt-auto pt-2 font-mono">
+                    <div className="flex items-center gap-1 text-xs text-slate-500 mt-auto pt-2 font-mono">
                         <MapPin size={12} />
                         {location}
                     </div>
                 </div>
 
-                {/* 3. Footer Section (Tech Stack) */}
+                {/* 3. Footer Section (Tech Stack Pills) */}
                 {tags.length > 0 && (
-                    <div className="px-4 py-3 bg-white/[0.02]">
-                        <div className="flex items-center gap-2">
+                    <div className="px-4 py-3 border-t border-white/5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                             {tags.slice(0, 4).map((tech, index) => {
                                 const iconClass = getIconClass(tech);
-                                if (iconClass) {
-                                    return (
-                                        <i
-                                            key={index}
-                                            className={`${iconClass} colored text-lg opacity-80 group-hover:opacity-100 transition-opacity`}
-                                            title={tech}
-                                        ></i>
-                                    );
-                                }
-                                return null;
-                            }).filter(Boolean)}
+                                return (
+                                    <span key={index} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/5 text-xs text-slate-400 group-hover:bg-white/10 transition-colors" title={tech}>
+                                        {iconClass && <i className={`${iconClass} colored text-sm`}></i>}
+                                        {tech}
+                                    </span>
+                                );
+                            })}
                             {tags.length > 4 && (
-                                <span className="text-xs text-text-muted font-mono">+{tags.length - 4}</span>
+                                <span className="text-xs text-slate-500 font-mono">+{tags.length - 4}</span>
                             )}
                         </div>
                     </div>
@@ -193,26 +192,25 @@ const VacancyCard = ({ vacancy }) => {
 
 export const VacancySkeleton = () => {
     return (
-        <div className="p-5 rounded-xl border border-border bg-surface/30 animate-pulse flex flex-col h-[250px]">
-            <div className="flex items-center justify-between mb-4">
+        <div className="rounded-2xl border border-white/10 bg-[#1A1B26] animate-pulse flex flex-col h-[250px]">
+            <div className="px-4 py-3 flex items-center justify-between border-b border-white/5">
                 <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-border"></div>
-                    <div className="w-20 h-4 bg-border rounded"></div>
+                    <div className="w-6 h-6 rounded-full bg-white/10"></div>
+                    <div className="w-20 h-4 bg-white/10 rounded"></div>
                 </div>
-                <div className="w-16 h-5 bg-border rounded-full"></div>
+                <div className="w-16 h-5 bg-white/10 rounded-full"></div>
             </div>
 
-            <div className="w-3/4 h-6 bg-border rounded mb-2"></div>
-            <div className="w-1/2 h-6 bg-border rounded mb-4"></div>
-
-            <div className="mt-auto flex gap-2 mb-4">
-                <div className="w-20 h-4 bg-border rounded"></div>
+            <div className="p-4 flex-1">
+                <div className="w-3/4 h-5 bg-white/10 rounded mb-2"></div>
+                <div className="w-1/2 h-5 bg-white/10 rounded mb-4"></div>
+                <div className="w-24 h-4 bg-white/10 rounded mt-auto"></div>
             </div>
 
-            <div className="pt-3 mt-auto border-t border-slate-800/50 flex gap-2">
-                <div className="w-6 h-6 bg-border rounded-full"></div>
-                <div className="w-6 h-6 bg-border rounded-full"></div>
-                <div className="w-6 h-6 bg-border rounded-full"></div>
+            <div className="px-4 py-3 border-t border-white/5 flex gap-1.5">
+                <div className="w-16 h-5 bg-white/10 rounded-md"></div>
+                <div className="w-14 h-5 bg-white/10 rounded-md"></div>
+                <div className="w-12 h-5 bg-white/10 rounded-md"></div>
             </div>
         </div>
     );

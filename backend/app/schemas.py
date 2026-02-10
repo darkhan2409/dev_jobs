@@ -56,6 +56,9 @@ class CompaniesListResponse(BaseModel):
 class CompanyDetailResponse(BaseModel):
     company: CompanyResponse
     vacancies: List[VacancyResponse]
+    total: int
+    page: int
+    per_page: int
 
 
 # Auth Schemas

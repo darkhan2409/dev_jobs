@@ -1,4 +1,3 @@
-from typing import List
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -37,8 +36,8 @@ async def lifespan(app: FastAPI):
     sync_engine.dispose()
 
 app = FastAPI(
-    title="DevJobs API",
-    description="API for DevJobs KZ - Kazakhstan IT Job Board. Provides endpoints for vacancies, companies, and metrics.",
+    title="GitJob API",
+    description="API for GitJob KZ - Kazakhstan IT Job Board. Provides endpoints for vacancies, companies, and metrics.",
     version="1.0.0",
     lifespan=lifespan
 )
@@ -48,12 +47,25 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # CORS Setup
-allowed_origins = settings.ALLOWED_ORIGINS.split(",") if settings.ALLOWED_ORIGINS != "*" else ["*"]
+allowed_origins_raw = settings.ALLOWED_ORIGINS
+
+if settings.ENV != "dev" and allowed_origins_raw == "*":
+    raise RuntimeError("ALLOWED_ORIGINS='*' is not allowed in production.")
+
+if allowed_origins_raw == "*":
+    allowed_origins = ["*"]
+    allow_credentials = False
+    logging.getLogger("uvicorn.error").warning(
+        "CORS: ALLOWED_ORIGINS='*' enabled in dev; credentials are disabled."
+    )
+else:
+    allowed_origins = [origin.strip() for origin in allowed_origins_raw.split(",") if origin.strip()]
+    allow_credentials = True
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_credentials=True,
+    allow_credentials=allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -74,7 +86,7 @@ def health_check():
     return {
         "status": "ok",
         "timestamp": datetime.now().isoformat(),
-        "service": "DevJobs API"
+        "service": "GitJob API"
     }
 
 @app.exception_handler(Exception)
