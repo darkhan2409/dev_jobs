@@ -22,11 +22,24 @@ export const guideApi = {
     const stage = getGuideStage(guideStageId);
     if (!stage) return null;
 
-    // Запросить детали для каждого backend sub-stage параллельно
-    const detailPromises = stage.backendStageIds.map((id) =>
-      interviewApi.getStageDetails(id).then((res) => res.data).catch(() => null)
+    const detailResults = await Promise.allSettled(
+      stage.backendStageIds.map((id) => interviewApi.getStageDetails(id))
     );
-    const subStageDetails = (await Promise.all(detailPromises)).filter(Boolean);
+
+    const subStageDetails = detailResults
+      .filter((result) => result.status === 'fulfilled')
+      .map((result) => result.value.data);
+
+    const failedStageIds = detailResults
+      .map((result, index) => (result.status === 'rejected' ? stage.backendStageIds[index] : null))
+      .filter(Boolean);
+
+    if (subStageDetails.length === 0 && stage.backendStageIds.length > 0) {
+      const error = new Error(`Guide stage API returned no sub-stages for "${guideStageId}"`);
+      error.code = 'GUIDE_STAGE_DETAIL_EMPTY';
+      error.meta = { guideStageId, failedStageIds };
+      throw error;
+    }
 
     // Собрать уникальные роли из всех sub-stages
     const rolesMap = new Map();
@@ -50,6 +63,11 @@ export const guideApi = {
       subStages: subStageDetails,
       roles: Array.from(rolesMap.values()),
       artifacts,
+      apiMeta: {
+        failedStageIds,
+        loadedSubStages: subStageDetails.length,
+        totalSubStages: stage.backendStageIds.length,
+      },
     };
   },
 
@@ -57,22 +75,31 @@ export const guideApi = {
    * Получить профиль роли (API + RPG extras)
    */
   getGuideRoleProfile: async (roleId) => {
+    const extras = GUIDE_ROLE_EXTRAS[roleId] || null;
+
     try {
       const response = await interviewApi.getRoleDetails(roleId);
       const apiData = response.data;
-      const extras = GUIDE_ROLE_EXTRAS[roleId] || null;
 
       return {
         ...apiData,
         extras,
       };
-    } catch {
-      // Если API недоступен, вернуть только статику
-      const extras = GUIDE_ROLE_EXTRAS[roleId];
-      if (!extras) return null;
+    } catch (error) {
+      console.error(`Failed to load role profile for "${roleId}"`, error);
+
+      if (!extras) {
+        const roleError = new Error(`Guide role profile unavailable for "${roleId}"`);
+        roleError.code = 'GUIDE_ROLE_PROFILE_UNAVAILABLE';
+        roleError.cause = error;
+        throw roleError;
+      }
+
       return {
         role_id: roleId,
         extras,
+        _apiError: true,
+        _apiErrorMessage: 'Не удалось загрузить API-данные профиля роли.',
       };
     }
   },

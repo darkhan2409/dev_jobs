@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { GUIDE_STAGES } from '../../data/guideData';
 import { cn } from '../../utils/cn';
@@ -7,12 +7,15 @@ import * as LucideIcons from 'lucide-react';
 export default function MiniPipelineBar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   // Определяем активный этап из URL
   const pathParts = location.pathname.split('/');
   const currentStageId = pathParts[2] && !['role', 'artifact'].includes(pathParts[2])
     ? pathParts[2]
     : null;
+  const recommendedStageId = searchParams.get('recommendedStageId');
+  const stageQuery = recommendedStageId ? `?recommendedStageId=${recommendedStageId}` : '';
 
   return (
     <div
@@ -26,12 +29,13 @@ export default function MiniPipelineBar() {
       <div className="max-w-lg mx-auto flex items-center justify-between gap-2">
         {GUIDE_STAGES.map((stage) => {
           const isActive = currentStageId === stage.id;
+          const isRecommended = recommendedStageId === stage.id;
           const Icon = LucideIcons[stage.icon];
 
           return (
             <motion.button
               key={stage.id}
-              onClick={() => navigate(`/guide/${stage.id}`)}
+              onClick={() => navigate(`/guide/${stage.id}${stageQuery}`)}
               whileHover={{ scale: 1.15 }}
               whileTap={{ scale: 0.9 }}
               className="flex flex-col items-center gap-1 group relative"
@@ -42,7 +46,9 @@ export default function MiniPipelineBar() {
                   'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300',
                   isActive
                     ? 'bg-violet-500/20 border border-violet-500/50 shadow-lg shadow-violet-500/10'
-                    : 'bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 hover:border-slate-600'
+                    : isRecommended
+                      ? 'bg-emerald-500/15 border border-emerald-500/40 shadow-lg shadow-emerald-500/10'
+                      : 'bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 hover:border-slate-600'
                 )}
               >
                 {Icon && (
@@ -50,7 +56,11 @@ export default function MiniPipelineBar() {
                     size={18}
                     className={cn(
                       'transition-colors duration-300',
-                      isActive ? 'text-violet-400' : 'text-slate-500 group-hover:text-slate-300'
+                      isActive
+                        ? 'text-violet-400'
+                        : isRecommended
+                          ? 'text-emerald-300'
+                          : 'text-slate-500 group-hover:text-slate-300'
                     )}
                   />
                 )}
@@ -58,11 +68,20 @@ export default function MiniPipelineBar() {
               <span
                 className={cn(
                   'text-[10px] font-medium transition-colors duration-300',
-                  isActive ? 'text-violet-400' : 'text-slate-600 group-hover:text-slate-400'
+                  isActive
+                    ? 'text-violet-400'
+                    : isRecommended
+                      ? 'text-emerald-300'
+                      : 'text-slate-600 group-hover:text-slate-400'
                 )}
               >
                 {stage.order}
               </span>
+              {isRecommended && !isActive && (
+                <span className="absolute -top-1 -right-1 rounded-full bg-emerald-500 text-[9px] leading-none px-1 py-0.5 text-white">
+                  R
+                </span>
+              )}
               {isActive && (
                 <motion.div
                   layoutId="minibar-indicator"

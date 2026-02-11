@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, RefreshCw, Briefcase, Sparkles, AlertTriangle, TrendingUp, CheckCircle } from 'lucide-react';
+import { Trophy, RefreshCw, Briefcase, Sparkles, AlertTriangle, TrendingUp, CheckCircle, BookOpen, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { interviewApi } from '../../api/interviewApi';
 import Button from '../ui/Button';
@@ -58,30 +58,50 @@ const ResultsScreen = ({ results, onRestart }) => {
     const { ranked_roles, signal_profile, interpretation, ranked_stages, stage_recommendation } = results;
     const [roleDetails, setRoleDetails] = useState(null);
     const [nextSteps, setNextSteps] = useState([]);
+    const [isRoleDetailsLoading, setIsRoleDetailsLoading] = useState(false);
+    const [roleDetailsError, setRoleDetailsError] = useState(false);
+    const [nextStepsError, setNextStepsError] = useState(false);
 
     const primaryRoleId = ranked_roles?.[0]?.role_id;
 
     // Fallback name if API fails or loading
     const primaryRoleName = roleNames[primaryRoleId] || 'IT‑специалист';
 
-    // Fetch detailed info for the top role
-    useEffect(() => {
+    const fetchSupplementaryData = useCallback(async () => {
         if (!primaryRoleId) return;
 
-        const fetchData = async () => {
-            try {
-                const [roleRes, nextRes] = await Promise.all([
-                    interviewApi.getRoleDetails(primaryRoleId),
-                    interviewApi.getNextSteps(primaryRoleId)
-                ]);
-                setRoleDetails(roleRes.data);
-                setNextSteps(nextRes.data);
-            } catch (err) {
-                console.error("Failed to fetch role details:", err);
-            }
-        };
-        fetchData();
+        setIsRoleDetailsLoading(true);
+        setRoleDetailsError(false);
+        setNextStepsError(false);
+
+        const [roleRes, nextRes] = await Promise.allSettled([
+            interviewApi.getRoleDetails(primaryRoleId),
+            interviewApi.getNextSteps(primaryRoleId)
+        ]);
+
+        if (roleRes.status === 'fulfilled') {
+            setRoleDetails(roleRes.value.data);
+        } else {
+            setRoleDetails(null);
+            setRoleDetailsError(true);
+            console.error('Failed to fetch role details:', roleRes.reason);
+        }
+
+        if (nextRes.status === 'fulfilled') {
+            setNextSteps(nextRes.value.data);
+        } else {
+            setNextSteps([]);
+            setNextStepsError(true);
+            console.error('Failed to fetch next steps:', nextRes.reason);
+        }
+
+        setIsRoleDetailsLoading(false);
     }, [primaryRoleId]);
+
+    // Fetch detailed info for the top role
+    useEffect(() => {
+        fetchSupplementaryData();
+    }, [fetchSupplementaryData]);
 
     const topRoles = ranked_roles?.slice(0, 5) || [];
     const alternativeRoles = interpretation?.alternative_roles || [];
@@ -114,7 +134,58 @@ const ResultsScreen = ({ results, onRestart }) => {
                         {roleDetails.description}
                     </p>
                 )}
+                {!roleDetails?.description && isRoleDetailsLoading && (
+                    <p className="mt-6 text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
+                        Загружаем подробный профиль роли...
+                    </p>
+                )}
+                {roleDetailsError && (
+                    <p className="mt-6 text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
+                        Детальный профиль роли временно недоступен. Ниже доступны результаты теста и учебный следующий шаг.
+                    </p>
+                )}
             </motion.div>
+
+            {/* Learning First: What to Learn Next */}
+            {stage_recommendation && (
+                <div className="space-y-3">
+                    <motion.div variants={fadeInUp} className="text-center">
+                        <h2 className="text-2xl md:text-3xl font-semibold text-white">Что изучить дальше</h2>
+                        <p className="mt-2 text-slate-400 max-w-2xl mx-auto">
+                            Начните с рекомендованного этапа и соберите базу практики до перехода к поиску вакансий.
+                        </p>
+                    </motion.div>
+                    <StageResultCard
+                        stageRecommendation={stage_recommendation}
+                        rankedStages={ranked_stages}
+                    />
+                </div>
+            )}
+
+            {(roleDetailsError || nextStepsError) && (
+                <motion.div
+                    variants={fadeInUp}
+                    className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-100"
+                >
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <p className="text-sm">
+                            {roleDetailsError && nextStepsError
+                                ? 'Не удалось загрузить расширенные детали роли и карьерный рост. Базовые результаты сохранены.'
+                                : roleDetailsError
+                                    ? 'Не удалось загрузить расширенные детали роли. Базовые результаты сохранены.'
+                                    : 'Не удалось загрузить блок карьерного роста. Можно продолжить или повторить загрузку.'}
+                        </p>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={fetchSupplementaryData}
+                            isLoading={isRoleDetailsLoading}
+                        >
+                            Повторить загрузку
+                        </Button>
+                    </div>
+                </motion.div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* 1. Responsibilities */}
@@ -170,6 +241,35 @@ const ResultsScreen = ({ results, onRestart }) => {
                     </motion.div>
                 )}
             </div>
+
+            {/* Interpretation Methodology */}
+            <motion.div
+                variants={fadeInUp}
+                className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800"
+            >
+                <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-cyan-300" />
+                    Как интерпретировать результат
+                </h3>
+                <div className="space-y-3 text-slate-300 leading-relaxed">
+                    <p>
+                        Смотрите на топ ролей как на диапазон возможных направлений, а не как на единственный правильный выбор.
+                    </p>
+                    <p>
+                        Сопоставьте рекомендации с вашими интересами и попробуйте мини-практику: это лучший способ проверить гипотезу.
+                    </p>
+                    <p className="text-amber-200 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                        Важно: тест дает рекомендацию, не диагноз. Финальное решение лучше принимать после практических задач и изучения роли.
+                    </p>
+                </div>
+                <Link
+                    to="/guide"
+                    className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-cyan-300 hover:text-cyan-200 transition-colors"
+                >
+                    Открыть карту профессий
+                    <ArrowRight className="w-4 h-4" />
+                </Link>
+            </motion.div>
 
             {/* 3. Career Growth Path */}
             {nextSteps.length > 0 && (
@@ -271,14 +371,6 @@ const ResultsScreen = ({ results, onRestart }) => {
                 )}
             </div>
 
-            {/* Stage Recommendation */}
-            {stage_recommendation && (
-                <StageResultCard
-                    stageRecommendation={stage_recommendation}
-                    rankedStages={ranked_stages}
-                />
-            )}
-
             {/* Alternative Variants */}
             {alternativeRoles.length > 0 && (
                 <motion.div
@@ -310,10 +402,20 @@ const ResultsScreen = ({ results, onRestart }) => {
                     <RefreshCw className="w-4 h-4 mr-2" />
                     Пройти заново
                 </Button>
-                <Link to="/jobs">
-                    <Button variant="primary" className="px-8">
+            </motion.div>
+
+            {/* Optional Jobs Bridge */}
+            <motion.div
+                variants={fadeInUp}
+                className="p-6 rounded-2xl bg-slate-900/40 border border-slate-800 text-center"
+            >
+                <p className="text-slate-300">
+                    Когда будете готовы, можно посмотреть вакансии по этому направлению.
+                </p>
+                <Link to="/jobs" className="inline-block mt-4">
+                    <Button variant="outline" className="px-8">
                         <Briefcase className="w-4 h-4 mr-2" />
-                        Смотреть вакансии
+                        Посмотреть вакансии (опционально)
                     </Button>
                 </Link>
             </motion.div>

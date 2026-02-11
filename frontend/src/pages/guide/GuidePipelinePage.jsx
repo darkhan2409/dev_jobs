@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Lightbulb,
@@ -15,7 +15,29 @@ const ICON_MAP = { Lightbulb, PenTool, Code2, ShieldCheck, Rocket };
 
 export default function GuidePipelinePage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [hoveredId, setHoveredId] = useState(null);
+
+  const recommendedStageId = useMemo(() => {
+    const queryStageId = searchParams.get('recommendedStageId');
+    if (queryStageId && GUIDE_STAGES.some((stage) => stage.id === queryStageId)) {
+      return queryStageId;
+    }
+
+    const stateStageId = location.state?.recommendedStageId;
+    if (stateStageId && GUIDE_STAGES.some((stage) => stage.id === stateStageId)) {
+      return stateStageId;
+    }
+
+    return null;
+  }, [location.state, searchParams]);
+
+  const recommendedStage = recommendedStageId
+    ? GUIDE_STAGES.find((stage) => stage.id === recommendedStageId)
+    : null;
+
+  const stageQuery = recommendedStageId ? `?recommendedStageId=${recommendedStageId}` : '';
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
@@ -41,6 +63,15 @@ export default function GuidePipelinePage() {
         >
           Структурированное представление этапов и ролей
         </motion.p>
+
+        {recommendedStage && (
+          <motion.div
+            variants={fadeInUp}
+            className="mt-6 inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-200"
+          >
+            Рекомендованный этап: <span className="font-semibold">{recommendedStage.name}</span>
+          </motion.div>
+        )}
       </motion.div>
 
       {/* ── Pipeline ── */}
@@ -52,6 +83,8 @@ export default function GuidePipelinePage() {
           {GUIDE_STAGES.map((stage) => {
             const Icon = ICON_MAP[stage.icon];
             const isHovered = hoveredId === stage.id;
+            const isRecommended = recommendedStageId === stage.id;
+            const isHighlighted = isHovered || isRecommended;
 
             return (
               <div
@@ -62,22 +95,27 @@ export default function GuidePipelinePage() {
               >
                 {/* Card */}
                 <motion.button
-                  onClick={() => navigate(`/guide/${stage.id}`)}
+                  onClick={() => navigate(`/guide/${stage.id}${stageQuery}`)}
                   whileTap={{ scale: 0.95 }}
                   className={`
                     relative z-10 w-36 h-36 rounded-2xl flex items-center justify-center
                     bg-[#1F2833] backdrop-blur-sm border-2 cursor-pointer
                     transition-all duration-300
-                    ${isHovered
+                    ${isHighlighted
                       ? 'border-purple-500 shadow-[0_0_40px_rgba(168,85,247,0.5)] -translate-y-3'
                       : 'border-slate-700 hover:border-purple-500 hover:shadow-[0_0_40px_rgba(168,85,247,0.5)] hover:-translate-y-3'
                     }
                   `}
                 >
+                  {isRecommended && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full border border-emerald-400/40 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-100">
+                      Рекомендовано
+                    </span>
+                  )}
                   {Icon && (
                     <Icon
                       size={48}
-                      style={{ color: isHovered ? '#ffffff' : stage.color }}
+                      style={{ color: isHighlighted ? '#ffffff' : stage.color }}
                       className="transition-colors duration-300 group-hover:text-white"
                     />
                   )}
@@ -87,7 +125,7 @@ export default function GuidePipelinePage() {
                 <div className="mt-5 text-center">
                   <h3
                     className={`text-2xl font-bold transition-colors duration-300 ${
-                      isHovered ? 'text-white' : 'text-slate-200 group-hover:text-white'
+                      isHighlighted ? 'text-white' : 'text-slate-200 group-hover:text-white'
                     }`}
                   >
                     {stage.name}

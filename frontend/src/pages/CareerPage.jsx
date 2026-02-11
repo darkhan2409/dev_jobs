@@ -4,6 +4,7 @@ import { interviewApi } from '../api/interviewApi';
 import WelcomeScreen from '../components/career/WelcomeScreen';
 import QuestionCard from '../components/career/QuestionCard';
 import ResultsScreen from '../components/career/ResultsScreen';
+import ErrorState from '../components/ui/ErrorState';
 import { pageVariants } from '../utils/animations';
 
 const CareerPage = () => {
@@ -15,11 +16,17 @@ const CareerPage = () => {
     const [results, setResults] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState(null);
+    const [errorState, setErrorState] = useState(null);
+
+    const completeTestRequest = useCallback(async () => {
+        const completeRes = await interviewApi.completeTest(sessionId);
+        setResults(completeRes.data);
+        setScreen('results');
+    }, [sessionId]);
 
     const handleStart = useCallback(async () => {
         setIsLoading(true);
-        setError(null);
+        setErrorState(null);
         try {
             const [questionsRes, sessionRes] = await Promise.all([
                 interviewApi.getQuestions(),
@@ -29,7 +36,11 @@ const CareerPage = () => {
             setSessionId(sessionRes.data.session_id);
             setScreen('test');
         } catch (err) {
-            setError('Не удалось начать тест. Попробуйте позже.');
+            setErrorState({
+                title: 'Не удалось начать тест',
+                message: 'Сервис временно недоступен. Проверьте соединение и повторите запуск.',
+                retryAction: 'start'
+            });
             console.error('Start test error:', err);
         } finally {
             setIsLoading(false);
@@ -42,13 +53,19 @@ const CareerPage = () => {
             ...prev,
             [currentQuestion.id]: answerOptionId
         }));
-    }, [questions, currentIndex]);
+        if (errorState?.retryAction === 'submit') {
+            setErrorState(null);
+        }
+    }, [questions, currentIndex, errorState]);
 
     const handlePrev = useCallback(() => {
         if (currentIndex > 0) {
             setCurrentIndex(prev => prev - 1);
         }
-    }, [currentIndex]);
+        if (errorState) {
+            setErrorState(null);
+        }
+    }, [currentIndex, errorState]);
 
     const handleNext = useCallback(async () => {
         const currentQuestion = questions[currentIndex];
@@ -56,25 +73,82 @@ const CareerPage = () => {
 
         if (!selectedAnswerId) return;
 
+        setErrorState(null);
         setIsSubmitting(true);
+        if (currentIndex < questions.length - 1) {
+            try {
+                await interviewApi.submitAnswer(sessionId, currentQuestion.id, selectedAnswerId);
+                setCurrentIndex(prev => prev + 1);
+            } catch (err) {
+                setErrorState({
+                    title: 'Не удалось отправить ответ',
+                    message: 'Проверьте соединение и повторите отправку текущего ответа.',
+                    retryAction: 'submit'
+                });
+                console.error('Submit answer error:', err);
+            } finally {
+                setIsSubmitting(false);
+            }
+            return;
+        }
+
         try {
             await interviewApi.submitAnswer(sessionId, currentQuestion.id, selectedAnswerId);
-
-            if (currentIndex < questions.length - 1) {
-                setCurrentIndex(prev => prev + 1);
-            } else {
-                // Last question - complete the test
-                const completeRes = await interviewApi.completeTest(sessionId);
-                setResults(completeRes.data);
-                setScreen('results');
-            }
         } catch (err) {
-            setError('Ошибка при отправке ответа. Попробуйте ещё раз.');
-            console.error('Submit answer error:', err);
+            setErrorState({
+                title: 'Не удалось отправить финальный ответ',
+                message: 'Последний ответ не отправлен. Повторите попытку.',
+                retryAction: 'submit'
+            });
+            console.error('Final submit answer error:', err);
+            setIsSubmitting(false);
+            return;
+        }
+
+        try {
+            await completeTestRequest();
+        } catch (err) {
+            setErrorState({
+                title: 'Не удалось загрузить результаты',
+                message: 'Ответы сохранены, но результаты не загрузились. Повторите попытку.',
+                retryAction: 'complete'
+            });
+            console.error('Complete test error:', err);
         } finally {
             setIsSubmitting(false);
         }
-    }, [questions, currentIndex, answers, sessionId]);
+    }, [answers, completeTestRequest, currentIndex, questions, sessionId]);
+
+    const handleRetryError = useCallback(async () => {
+        if (!errorState?.retryAction) return;
+
+        if (errorState.retryAction === 'start') {
+            handleStart();
+            return;
+        }
+
+        if (errorState.retryAction === 'submit') {
+            handleNext();
+            return;
+        }
+
+        if (errorState.retryAction === 'complete') {
+            setErrorState(null);
+            setIsSubmitting(true);
+            try {
+                await completeTestRequest();
+            } catch (err) {
+                setErrorState({
+                    title: 'Не удалось загрузить результаты',
+                    message: 'Сервис временно недоступен. Повторите попытку через несколько секунд.',
+                    retryAction: 'complete'
+                });
+                console.error('Retry complete test error:', err);
+            } finally {
+                setIsSubmitting(false);
+            }
+        }
+    }, [completeTestRequest, errorState, handleNext, handleStart]);
 
     const handleRestart = useCallback(() => {
         setScreen('welcome');
@@ -83,7 +157,7 @@ const CareerPage = () => {
         setCurrentIndex(0);
         setAnswers({});
         setResults(null);
-        setError(null);
+        setErrorState(null);
     }, []);
 
     return (
@@ -95,10 +169,14 @@ const CareerPage = () => {
             exit="exit"
         >
             <div className="max-w-7xl mx-auto">
-                {error && (
-                    <div className="max-w-2xl mx-auto mb-8 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-center">
-                        {error}
-                    </div>
+                {errorState && (
+                    <ErrorState
+                        title={errorState.title}
+                        message={errorState.message}
+                        onRetry={handleRetryError}
+                        showHomeLink={screen === 'welcome'}
+                        className="py-8"
+                    />
                 )}
 
                 {screen === 'welcome' && (

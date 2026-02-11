@@ -13,6 +13,7 @@ import ProfilePage from './pages/ProfilePage';
 import PostJobPage from './pages/PostJobPage';
 import NotFoundPage from './pages/NotFoundPage';
 import CareerPage from './pages/CareerPage';
+import StartPage from './pages/StartPage';
 import SecuritySettingsPage from './pages/SecuritySettingsPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
@@ -42,6 +43,7 @@ const TitleUpdater = () => {
     else if (path === '/post-job') document.title = 'Работодателям | GitJob';
     else if (path === '/companies') document.title = 'Компании | GitJob';
     else if (path === '/career') document.title = 'Карьерный тест | GitJob';
+    else if (path === '/start') document.title = 'С чего начать | GitJob';
     else if (path === '/security') document.title = 'Безопасность | GitJob';
     else if (path === '/forgot-password') document.title = 'Восстановление пароля | GitJob';
     else if (path === '/reset-password') document.title = 'Сброс пароля | GitJob';
@@ -92,6 +94,7 @@ function AnimatedRoutes() {
         <Route path="/companies/:companyName" element={<CompanyProfilePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/career" element={<CareerPage />} />
+        <Route path="/start" element={<StartPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/post-job" element={<PostJobPage />} />
         {/* Legacy redirect: /vacancies/:id → /jobs/:id */}

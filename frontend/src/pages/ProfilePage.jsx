@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 // import { useAuth } from '../context/AuthContext'; // Removed unused import
 import axiosClient from '../api/axiosClient';
 import SkillTagInput from '../components/SkillTagInput';
+import { pageVariants } from '../utils/animations';
 
 const GRADES = ["Junior", "Middle", "Senior", "Lead"];
 
@@ -83,12 +84,14 @@ const ProfilePage = () => {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="max-w-2xl mx-auto"
-            >
+        <motion.div
+            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
+            variants={pageVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+        >
+            <div className="max-w-2xl mx-auto">
                 {/* Header */}
                 <div className="mb-8 flex items-start justify-between">
                     <div>
@@ -231,8 +234,8 @@ const ProfilePage = () => {
                         </button>
                     </div>
                 </form>
-            </motion.div>
-        </div>
+            </div>
+        </motion.div>
     );
 };
 

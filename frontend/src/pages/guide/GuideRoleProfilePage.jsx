@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
@@ -15,21 +15,118 @@ export default function GuideRoleProfilePage() {
   const navigate = useNavigate();
   const [roleData, setRoleData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isEmpty, setIsEmpty] = useState(false);
+  const [apiWarning, setApiWarning] = useState(false);
 
   const extras = GUIDE_ROLE_EXTRAS[roleId];
 
-  useEffect(() => {
+  const loadRoleProfile = useCallback(async () => {
     setLoading(true);
-    guideApi
-      .getGuideRoleProfile(roleId)
-      .then(setRoleData)
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    setError(null);
+    setIsEmpty(false);
+    setApiWarning(false);
+
+    try {
+      const data = await guideApi.getGuideRoleProfile(roleId);
+
+      if (!data) {
+        setRoleData(null);
+        setIsEmpty(true);
+        return;
+      }
+
+      setRoleData(data);
+      setApiWarning(Boolean(data._apiError));
+    } catch (loadError) {
+      setRoleData(null);
+      setError('Не удалось загрузить профиль роли. Проверьте соединение и повторите попытку.');
+      console.error(`Guide role profile loading failed for "${roleId}"`, loadError);
+    } finally {
+      setLoading(false);
+    }
   }, [roleId]);
+
+  useEffect(() => {
+    loadRoleProfile();
+  }, [loadRoleProfile]);
 
   if (!extras) {
     navigate('/guide');
     return null;
+  }
+
+  if (loading && !roleData) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <motion.button
+          onClick={() => navigate(-1)}
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-300 transition-colors mb-8"
+        >
+          <ArrowLeft size={16} />
+          Назад
+        </motion.button>
+
+        <div className="rounded-2xl border border-slate-700/40 bg-slate-900/80 p-8 text-center">
+          <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin mx-auto" />
+          <p className="mt-4 text-slate-300">Загружаем профиль роли...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <motion.button
+          onClick={() => navigate(-1)}
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-300 transition-colors mb-8"
+        >
+          <ArrowLeft size={16} />
+          Назад
+        </motion.button>
+
+        <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-6 text-red-100">
+          <p className="text-sm">{error}</p>
+          <button
+            onClick={loadRoleProfile}
+            className="mt-4 px-4 py-2 rounded-lg border border-red-400/40 bg-red-500/10 hover:bg-red-500/20 transition-colors text-sm font-medium"
+          >
+            Повторить
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isEmpty) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <motion.button
+          onClick={() => navigate(-1)}
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-300 transition-colors mb-8"
+        >
+          <ArrowLeft size={16} />
+          Назад
+        </motion.button>
+
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-6 text-amber-100">
+          <p className="text-sm">Профиль роли пока не содержит данных. Попробуйте обновить страницу позже.</p>
+          <button
+            onClick={loadRoleProfile}
+            className="mt-4 px-4 py-2 rounded-lg border border-amber-400/40 bg-amber-500/10 hover:bg-amber-500/20 transition-colors text-sm font-medium"
+          >
+            Обновить
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const Icon = LucideIcons[extras.icon];
@@ -73,6 +170,25 @@ export default function GuideRoleProfilePage() {
         </div>
 
         <div className="px-6 pb-8 space-y-8">
+          {apiWarning && (
+            <motion.div
+              variants={fadeInUp}
+              className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-100"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <p className="text-sm">
+                  API-данные роли временно недоступны. Показана учебная версия профиля.
+                </p>
+                <button
+                  onClick={loadRoleProfile}
+                  className="px-3 py-1.5 rounded-lg border border-amber-400/40 bg-amber-500/10 hover:bg-amber-500/20 transition-colors text-sm font-medium"
+                >
+                  Повторить
+                </button>
+              </div>
+            </motion.div>
+          )}
+
           {/* Attributes */}
           <motion.div variants={fadeInUp}>
             <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
@@ -134,10 +250,10 @@ export default function GuideRoleProfilePage() {
           >
             <div className="flex items-center gap-2 mb-3">
               <Sparkles size={16} className="text-amber-400" />
-              <span className="text-sm font-semibold text-slate-300">Интересно?</span>
+              <span className="text-sm font-semibold text-slate-300">Следующий шаг</span>
             </div>
             <p className="text-sm text-slate-500 mb-4">
-              Посмотри, что требуют работодатели для этой роли в реальных вакансиях.
+              Когда будете готовы, можно посмотреть вакансии по этому направлению.
             </p>
             <button
               onClick={() => navigate(`/jobs?search=${encodeURIComponent(extras.searchKeywords)}`)}
@@ -148,17 +264,11 @@ export default function GuideRoleProfilePage() {
                 'transition-all duration-200'
               )}
             >
-              Посмотреть, что требуют в вакансиях
+              Посмотреть вакансии по направлению
             </button>
           </motion.div>
         </div>
       </motion.div>
-
-      {loading && (
-        <div className="flex justify-center mt-6">
-          <div className="w-5 h-5 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
-        </div>
-      )}
     </div>
   );
 }

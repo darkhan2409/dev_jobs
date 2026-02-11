@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '../../utils/formatters';
-import { MapPin } from 'lucide-react';
+import { MapPin, Database, CalendarClock } from 'lucide-react';
 import Badge from '../../components/ui/Badge';
 import { motion } from 'framer-motion';
 import { cardHoverVariants } from '../../utils/animations';
+import { getVacancySourceShortLabel, formatVacancyUpdatedAt } from '../../utils/vacancyTrust';
 
 // Helper function to map skill names to Devicon classes
 const getIconClass = (skillName) => {
@@ -94,7 +95,7 @@ const getIconClass = (skillName) => {
 const getGradeVariant = (grade) => {
     if (!grade) return 'default';
     const g = grade.toLowerCase();
-    if (g.includes('junior') || g.includes('intern') || g.includes('стажёр')) return 'junior';
+    if (g.includes('junior') || g.includes('intern') || g.includes('СЃС‚Р°Р¶С‘СЂ')) return 'junior';
     if (g.includes('senior') || g.includes('principal')) return 'senior';
     if (g.includes('lead') || g.includes('team lead')) return 'lead';
     if (g.includes('middle') || g.includes('mid')) return 'middle';
@@ -105,6 +106,8 @@ const VacancyCard = ({ vacancy }) => {
     const tags = vacancy.key_skills || [];
     const hasSalary = (vacancy.salary_from && vacancy.salary_from > 0) || (vacancy.salary_to && vacancy.salary_to > 0);
     const location = vacancy.location || 'Удалённо';
+    const sourceShortLabel = getVacancySourceShortLabel(vacancy);
+    const updatedAtShort = formatVacancyUpdatedAt(vacancy, { short: true });
 
     return (
         <motion.div
@@ -132,11 +135,11 @@ const VacancyCard = ({ vacancy }) => {
                                 className="absolute inset-0 w-full h-full flex items-center justify-center text-[10px] font-bold text-slate-600 bg-white rounded-full"
                                 style={{ display: vacancy.company_logo ? 'none' : 'flex' }}
                             >
-                                {(vacancy.company_name || '—').charAt(0).toUpperCase()}
+                                {(vacancy.company_name || 'вЂ”').charAt(0).toUpperCase()}
                             </div>
                         </div>
                         <span className="font-medium text-slate-400 text-sm truncate group-hover:text-slate-200 transition-colors" title={vacancy.company_name}>
-                            {vacancy.company_name || 'Не указано'}
+                            {vacancy.company_name || 'РќРµ СѓРєР°Р·Р°РЅРѕ'}
                         </span>
                     </div>
 
@@ -166,9 +169,22 @@ const VacancyCard = ({ vacancy }) => {
                     </div>
                 </div>
 
+                <div className="px-4 py-2 border-t border-white/5 bg-black/10">
+                    <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
+                        <span className="inline-flex items-center gap-1">
+                            <Database size={12} />
+                            {sourceShortLabel}
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                            <CalendarClock size={12} />
+                            Обновлено {updatedAtShort}
+                        </span>
+                    </div>
+                </div>
+
                 {/* 3. Footer Section (Tech Stack Pills) */}
                 {tags.length > 0 && (
-                    <div className="px-4 py-3 border-t border-white/5">
+                    <div className="px-4 py-3">
                         <div className="flex items-center gap-1.5 flex-wrap">
                             {tags.slice(0, 4).map((tech, index) => {
                                 const iconClass = getIconClass(tech);
@@ -217,3 +233,5 @@ export const VacancySkeleton = () => {
 };
 
 export default VacancyCard;
+
+

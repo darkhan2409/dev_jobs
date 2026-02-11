@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { Compass, Clock, Target, Sparkles, Play, HelpCircle } from 'lucide-react';
+import { Compass, Clock, Target, Sparkles, Play, HelpCircle, ArrowRight, AlertCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import Button from '../ui/Button';
 import { fadeInUp, staggerContainer } from '../../utils/animations';
 
@@ -20,6 +21,12 @@ const WelcomeScreen = ({ onStart, isLoading }) => {
             title: 'Альтернативы',
             description: 'Откройте для себя смежные направления развития'
         }
+    ];
+
+    const methodologySteps = [
+        'Вы отвечаете на 25 вопросов о предпочтениях, стиле мышления и рабочих сценариях.',
+        'Система сопоставляет паттерны ответов с профилями IT-направлений и вычисляет ранжирование.',
+        'На выходе вы получаете рекомендацию по роли, альтернативы и ориентиры для следующего шага.'
     ];
 
     return (
@@ -99,6 +106,40 @@ const WelcomeScreen = ({ onStart, isLoading }) => {
                     </div>
                 ))}
             </motion.div>
+
+            {/* Methodology Block */}
+            <motion.section
+                variants={fadeInUp}
+                className="mt-8 p-6 rounded-2xl bg-slate-900/45 border border-slate-800 text-left"
+            >
+                <h2 className="text-xl font-semibold text-white mb-4">Как работает тест</h2>
+
+                <ol className="space-y-3">
+                    {methodologySteps.map((step, index) => (
+                        <li key={index} className="flex items-start gap-3 text-slate-300">
+                            <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-violet-500/20 text-violet-300 text-xs font-semibold">
+                                {index + 1}
+                            </span>
+                            <span>{step}</span>
+                        </li>
+                    ))}
+                </ol>
+
+                <div className="mt-5 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-100 flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-amber-300" />
+                    <p className="text-sm leading-relaxed">
+                        Результат теста — это рекомендация, а не диагноз. Используйте его как ориентир, затем сверяйте с практикой и личными интересами.
+                    </p>
+                </div>
+
+                <Link
+                    to="/guide"
+                    className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-violet-300 hover:text-violet-200 transition-colors"
+                >
+                    Как интерпретировать результат
+                    <ArrowRight className="w-4 h-4" />
+                </Link>
+            </motion.section>
         </motion.div>
     );
 };

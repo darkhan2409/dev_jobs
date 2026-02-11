@@ -2,6 +2,15 @@ import React from 'react';
 import { Github, Twitter, Linkedin, Mail, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+const footerPrimaryLinks = [
+    { to: '/start', label: 'С чего начать' },
+    { to: '/career', label: 'Карьерный тест' },
+    { to: '/guide', label: 'Карта профессий' },
+    { to: '/jobs', label: 'Вакансии', isPrimary: true },
+    { to: '/companies', label: 'Компании' },
+    { to: '/post-job', label: 'Работодателям' },
+];
+
 const AppFooter = () => {
     return (
         <footer className="border-t border-slate-800 bg-slate-950 mt-auto pt-12 pb-8">
@@ -32,11 +41,23 @@ const AppFooter = () => {
 
                     {/* 2. Quick Links & Contact */}
                     <div className="flex flex-col md:items-end space-y-6">
-                        <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm font-medium">
-                            <Link to="/jobs" className="text-slate-400 hover:text-violet-400 transition-colors">Вакансии</Link>
-                            <Link to="/companies" className="text-slate-400 hover:text-violet-400 transition-colors">Компании</Link>
-                            <Link to="/post-job" className="text-slate-400 hover:text-violet-400 transition-colors">Работодателям</Link>
-                            <Link to="/privacy" className="text-slate-400 hover:text-violet-400 transition-colors">Конфиденциальность</Link>
+                        <div className="flex flex-wrap md:justify-end gap-x-6 gap-y-2 text-sm font-medium">
+                            {footerPrimaryLinks.map((link) => (
+                                <Link
+                                    key={link.to}
+                                    to={link.to}
+                                    className={link.isPrimary
+                                        ? 'text-slate-100 hover:text-violet-300 transition-colors'
+                                        : 'text-slate-400 hover:text-violet-400 transition-colors'
+                                    }
+                                >
+                                    {link.label}
+                                </Link>
+                            ))}
+                        </div>
+
+                        <div className="flex flex-wrap md:justify-end gap-x-6 gap-y-2 text-sm">
+                            <Link to="/privacy" className="text-slate-500 hover:text-slate-300 transition-colors">Конфиденциальность</Link>
                         </div>
 
                         <div className="flex items-center gap-2 p-3 bg-slate-900/50 rounded-lg border border-slate-800/50">

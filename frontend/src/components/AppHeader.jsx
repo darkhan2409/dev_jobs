@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, User, ChevronDown, ClipboardList, Map, Menu, X } from 'lucide-react';
+import { LogOut, User, ChevronDown, Menu, X } from 'lucide-react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -10,7 +10,6 @@ const AppHeader = () => {
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [authModalTab, setAuthModalTab] = useState('login');
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-    const [isNavigatorOpen, setIsNavigatorOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const { user, isAuthenticated, logout, isLoading } = useAuth();
@@ -28,13 +27,12 @@ const AppHeader = () => {
     useEffect(() => {
         const handleClickOutside = () => {
             setIsUserMenuOpen(false);
-            setIsNavigatorOpen(false);
         };
-        if (isUserMenuOpen || isNavigatorOpen) {
+        if (isUserMenuOpen) {
             document.addEventListener('click', handleClickOutside);
             return () => document.removeEventListener('click', handleClickOutside);
         }
-    }, [isUserMenuOpen, isNavigatorOpen]);
+    }, [isUserMenuOpen]);
 
     const openLogin = () => {
         setAuthModalTab('login');
@@ -51,23 +49,42 @@ const AppHeader = () => {
         setIsUserMenuOpen(false);
     };
 
-    const navLinks = [
-        { to: '/', label: 'Главная', end: true },
-        { to: '/jobs', label: 'Вакансии' },
+    const primaryNavLinks = [
+        { to: '/start', label: 'С чего начать', source: 'header' },
+        { to: '/career', label: 'Карьерный тест' },
+        { to: '/guide', label: 'Карта профессий' },
+        { to: '/jobs', label: 'Вакансии', isPrimary: true },
         { to: '/companies', label: 'Компании' },
-        { to: '/about', label: 'О нас' },
+        { to: '/post-job', label: 'Работодателям' },
     ];
 
-    const NavLinkItem = ({ to, label, end }) => {
+    const NavLinkItem = ({ to, label, end, source, isPrimary = false }) => {
         const isActive = end
             ? location.pathname === to
             : location.pathname.startsWith(to);
+        const toValue = source ? { pathname: to, search: `?source=${source}` } : to;
+
+        if (isPrimary) {
+            return (
+                <NavLink
+                    to={toValue}
+                    end={end}
+                    className={`relative px-4 py-2 text-sm font-semibold rounded-full border transition-all duration-200 ${isActive
+                        ? 'bg-white text-[#0B0C10] border-white shadow-lg shadow-white/20'
+                        : 'bg-white/10 text-white border-white/20 hover:bg-white hover:text-[#0B0C10] hover:border-white'
+                        }`}
+                >
+                    {label}
+                </NavLink>
+            );
+        }
 
         return (
             <NavLink
-                to={to}
+                to={toValue}
                 end={end}
-                className="relative px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors group"
+                className={`relative px-4 py-2 text-sm font-medium transition-colors group ${isActive ? 'text-white' : 'text-gray-400 hover:text-white'
+                    }`}
             >
                 {label}
                 {/* Active indicator - glowing dot */}
@@ -89,8 +106,8 @@ const AppHeader = () => {
         <>
             <header
                 className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-                        ? 'bg-[#0B0C10]/80 backdrop-blur-md border-b border-gray-800/50'
-                        : 'bg-transparent'
+                        ? 'bg-[#0B0C10]/95 backdrop-blur-md border-b border-gray-800/50'
+                        : 'bg-[#0B0C10]/70 backdrop-blur-sm'
                     }`}
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -133,93 +150,9 @@ const AppHeader = () => {
 
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex items-center gap-2">
-                            {navLinks.map((link) => (
+                            {primaryNavLinks.map((link) => (
                                 <NavLinkItem key={link.to} {...link} />
                             ))}
-
-                            {/* Dropdown: Путь в IT */}
-                            <div
-                                className="relative"
-                                onMouseEnter={() => setIsNavigatorOpen(true)}
-                                onMouseLeave={() => setIsNavigatorOpen(false)}
-                            >
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setIsNavigatorOpen(!isNavigatorOpen);
-                                    }}
-                                    className={`relative px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1 ${location.pathname === '/career' || location.pathname.startsWith('/guide')
-                                            ? 'text-white'
-                                            : 'text-gray-400 hover:text-white'
-                                        }`}
-                                >
-                                    Путь в IT
-                                    <ChevronDown
-                                        size={14}
-                                        className={`transition-transform ${isNavigatorOpen ? 'rotate-180' : ''}`}
-                                    />
-                                    {/* Active indicator */}
-                                    {(location.pathname === '/career' || location.pathname.startsWith('/guide')) && (
-                                        <motion.span
-                                            layoutId="activeTab"
-                                            className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500"
-                                            style={{
-                                                boxShadow: '0 0 8px rgba(168, 85, 247, 0.8)'
-                                            }}
-                                            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                                        />
-                                    )}
-                                </button>
-
-                                <AnimatePresence>
-                                    {isNavigatorOpen && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 5 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: 5 }}
-                                            className="absolute left-0 mt-2 w-64 bg-[#0B0C10]/95 backdrop-blur-xl border border-gray-800 rounded-xl shadow-2xl overflow-hidden"
-                                        >
-                                            <div className="p-2">
-                                                <Link
-                                                    to="/career"
-                                                    onClick={() => setIsNavigatorOpen(false)}
-                                                    className="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all hover:bg-purple-500/10 border border-transparent hover:border-purple-500/30"
-                                                >
-                                                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
-                                                        <ClipboardList size={18} className="text-purple-400" />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <h4 className="text-sm font-semibold text-white group-hover:text-purple-300 transition-colors">
-                                                            Кто я в IT?
-                                                        </h4>
-                                                        <p className="text-xs text-gray-400 mt-0.5">
-                                                            Пройди тест
-                                                        </p>
-                                                    </div>
-                                                </Link>
-
-                                                <Link
-                                                    to="/guide"
-                                                    onClick={() => setIsNavigatorOpen(false)}
-                                                    className="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all hover:bg-blue-500/10 border border-transparent hover:border-blue-500/30 mt-1"
-                                                >
-                                                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
-                                                        <Map size={18} className="text-blue-400" />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <h4 className="text-sm font-semibold text-white group-hover:text-blue-300 transition-colors">
-                                                            Карта профессий
-                                                        </h4>
-                                                        <p className="text-xs text-gray-400 mt-0.5">
-                                                            Этапы разработки
-                                                        </p>
-                                                    </div>
-                                                </Link>
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
                         </nav>
 
                         {/* Right Side: Auth */}
@@ -304,6 +237,9 @@ const AppHeader = () => {
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             className="md:hidden p-2 text-gray-400 hover:text-white transition-colors"
+                            aria-label={isMobileMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
+                            aria-expanded={isMobileMenuOpen}
+                            aria-controls="mobile-main-nav"
                         >
                             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                         </button>
@@ -318,40 +254,29 @@ const AppHeader = () => {
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
                             className="md:hidden bg-[#0B0C10]/95 backdrop-blur-xl border-t border-gray-800"
+                            id="mobile-main-nav"
                         >
                             <div className="px-4 py-4 space-y-2">
-                                {navLinks.map((link) => (
+                                {primaryNavLinks.map((link) => (
                                     <NavLink
                                         key={link.to}
-                                        to={link.to}
+                                        to={link.source ? { pathname: link.to, search: `?source=${link.source}` } : link.to}
                                         end={link.end}
                                         onClick={() => setIsMobileMenuOpen(false)}
                                         className={({ isActive }) =>
-                                            `block px-4 py-2 text-sm font-medium rounded-lg transition-colors ${isActive
-                                                ? 'text-white bg-gray-800/50'
-                                                : 'text-gray-400 hover:text-white hover:bg-gray-800/30'
-                                            }`
+                                            `block w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/80 ${link.isPrimary
+                                                ? isActive
+                                                    ? 'bg-white text-[#0B0C10]'
+                                                    : 'bg-white/10 text-white hover:bg-white hover:text-[#0B0C10]'
+                                                : isActive
+                                                    ? 'text-white bg-gray-800/50'
+                                                    : 'text-gray-400 hover:text-white hover:bg-gray-800/30'
+                                                }`
                                         }
                                     >
                                         {link.label}
                                     </NavLink>
                                 ))}
-
-                                {/* Mobile Dropdown Items */}
-                                <Link
-                                    to="/career"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    className="block px-4 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg transition-colors"
-                                >
-                                    Кто я в IT?
-                                </Link>
-                                <Link
-                                    to="/guide"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    className="block px-4 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg transition-colors"
-                                >
-                                    Карта профессий
-                                </Link>
 
                                 {/* Mobile Auth */}
                                 {!isAuthenticated && (
@@ -361,7 +286,7 @@ const AppHeader = () => {
                                                 openLogin();
                                                 setIsMobileMenuOpen(false);
                                             }}
-                                            className="w-full px-4 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg transition-colors text-left"
+                                            className="w-full px-4 py-3 text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg transition-colors text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/80"
                                         >
                                             Войти
                                         </button>
@@ -370,7 +295,7 @@ const AppHeader = () => {
                                                 openRegister();
                                                 setIsMobileMenuOpen(false);
                                             }}
-                                            className="w-full px-4 py-2 bg-white text-black text-sm font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+                                            className="w-full px-4 py-3 bg-white text-black text-sm font-semibold rounded-lg hover:bg-gray-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/80"
                                         >
                                             Регистрация
                                         </button>
@@ -382,7 +307,7 @@ const AppHeader = () => {
                                         <Link
                                             to="/profile"
                                             onClick={() => setIsMobileMenuOpen(false)}
-                                            className="block px-4 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg transition-colors"
+                                            className="block px-4 py-3 text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/80"
                                         >
                                             Мой профиль
                                         </Link>
@@ -391,7 +316,7 @@ const AppHeader = () => {
                                                 handleLogout();
                                                 setIsMobileMenuOpen(false);
                                             }}
-                                            className="w-full px-4 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg transition-colors text-left"
+                                            className="w-full px-4 py-3 text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg transition-colors text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/80"
                                         >
                                             Выйти
                                         </button>

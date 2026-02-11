@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
 import { fadeInUp } from '../../utils/animations';
+import { findGuideStageByBackendId, getGuideStage } from '../../data/guideData';
 
 const roleNames = {
     backend_developer: 'Backend-разработчик',
@@ -37,6 +38,11 @@ const StageResultCard = ({ stageRecommendation, rankedStages }) => {
 
     // Show top 3 stages
     const topStages = rankedStages?.slice(0, 3) || [];
+    const mappedGuideStage = findGuideStageByBackendId(primary_stage_id) || getGuideStage(primary_stage_id);
+    const recommendedStageId = mappedGuideStage?.id || null;
+    const stageQuery = recommendedStageId ? `?recommendedStageId=${recommendedStageId}` : '';
+    const guideStageLink = recommendedStageId ? `/guide/${recommendedStageId}${stageQuery}` : '/guide';
+    const guideMapLink = recommendedStageId ? `/guide${stageQuery}` : '/guide';
 
     return (
         <motion.div
@@ -116,13 +122,20 @@ const StageResultCard = ({ stageRecommendation, rankedStages }) => {
                 </div>
             )}
 
-            {/* Action */}
-            <Link to={`/stages/${primary_stage_id}`}>
-                <Button variant="ghost" className="w-full justify-center">
-                    Узнать больше об этапе
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-            </Link>
+            {/* Actions */}
+            <div className="space-y-2">
+                <Link to={guideStageLink}>
+                    <Button variant="ghost" className="w-full justify-center">
+                        Узнать больше об этапе
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                </Link>
+                <Link to={guideMapLink}>
+                    <Button variant="outline" className="w-full justify-center">
+                        Открыть карту этапов
+                    </Button>
+                </Link>
+            </div>
         </motion.div>
     );
 };

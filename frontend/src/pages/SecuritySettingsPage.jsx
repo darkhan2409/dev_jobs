@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { authApi } from '../api/authApi';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer } from '../components/Toast';
+import { pageVariants } from '../utils/animations';
 
 const SecuritySettingsPage = () => {
     const { user, logout } = useAuth();
@@ -157,7 +158,13 @@ const SecuritySettingsPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-12 px-4">
+        <motion.div
+            className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-12 px-4"
+            variants={pageVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+        >
             <div className="max-w-4xl mx-auto space-y-6">
                 <h1 className="text-3xl font-bold text-white mb-8">Безопасность</h1>
 
@@ -381,7 +388,7 @@ const SecuritySettingsPage = () => {
 
             {/* Toast Notifications */}
             <ToastContainer toasts={toasts} removeToast={removeToast} />
-        </div>
+        </motion.div>
     );
 };
 
