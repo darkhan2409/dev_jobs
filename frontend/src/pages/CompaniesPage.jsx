@@ -116,6 +116,10 @@ const CompaniesPage = () => {
         };
     }, [companies]);
 
+    const handleOpenProfile = (companyId) => {
+        navigate(`/companies/${companyId}`);
+    };
+
     const handleViewJobs = (companyName) => {
         navigate(`/jobs?company=${encodeURIComponent(companyName)}`);
     };
@@ -273,6 +277,7 @@ const CompaniesPage = () => {
                                     >
                                         <CompanyCard
                                             company={company}
+                                            onOpenProfile={handleOpenProfile}
                                             onViewJobs={handleViewJobs}
                                         />
                                     </motion.div>

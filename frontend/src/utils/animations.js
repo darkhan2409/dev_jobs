@@ -7,22 +7,7 @@ export const springConfig = {
     mass: 1
 };
 
-export const softSpring = {
-    type: "spring",
-    stiffness: 50,
-    damping: 15,
-    mass: 1
-};
-
 export const easeOutExpo = [0.19, 1, 0.22, 1];
-
-export const duration = {
-    fast: 0.2,
-    medium: 0.4,
-    slow: 0.8
-};
-
-export const staggerDelay = 0.1;
 
 export const pageVariants = {
     initial: {
@@ -69,14 +54,6 @@ export const fadeInUp = {
     }
 };
 
-export const scaleOnHover = {
-    scale: 1.02,
-    transition: {
-        duration: 0.2,
-        ease: "easeOut"
-    }
-};
-
 export const staggerContainer = {
     hidden: { opacity: 0 },
     visible: {
@@ -98,27 +75,5 @@ export const cardHoverVariants = {
             stiffness: 400,
             damping: 25
         }
-    }
-};
-
-// Pipeline Guide animations
-export const pipelinePulse = {
-    animate: {
-        scale: [1, 1.12, 1],
-        boxShadow: [
-            "0 0 0 0 rgba(124, 58, 237, 0)",
-            "0 0 0 12px rgba(124, 58, 237, 0.25)",
-            "0 0 0 0 rgba(124, 58, 237, 0)"
-        ],
-        transition: { duration: 2, repeat: Infinity, ease: "easeInOut" }
-    }
-};
-
-export const drawLine = {
-    hidden: { pathLength: 0, opacity: 0 },
-    visible: {
-        pathLength: 1,
-        opacity: 1,
-        transition: { duration: 0.8, ease: easeOutExpo }
     }
 };

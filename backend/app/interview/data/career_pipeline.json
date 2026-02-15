@@ -1,89 +1,89 @@
 {
-    "version": "2.1",
-    "career_pipeline_graph": [
-        {
-            "from": "manual_qa",
-            "to": "qa_automation",
-            "reason": "Переход от ручного тестирования к написанию кода для автоматизации проверок.",
-            "avg_transition_years": "1-2",
-            "required_upskill": [
-                "Python/JS",
-                "Pytest/Selenium",
-                "CI/CD basics"
-            ],
-            "difficulty": "medium"
-        },
-        {
-            "from": "qa_automation",
-            "to": "backend_developer",
-            "reason": "Глубокое знание кода через тесты позволяет перейти в продуктовую разработку.",
-            "avg_transition_years": "2-3",
-            "required_upskill": [
-                "System Design",
-                "Frameworks (FastAPI/Django)",
-                "SQL Advanced"
-            ],
-            "difficulty": "hard"
-        },
-        {
-            "from": "ui_designer",
-            "to": "ux_designer",
-            "reason": "От рисования интерфейсов к проектированию логики и взаимодействий.",
-            "avg_transition_years": "1-2",
-            "required_upskill": [
-                "UX Research",
-                "User testing",
-                "Information Architecture"
-            ],
-            "difficulty": "medium"
-        },
-        {
-            "from": "business_analyst",
-            "to": "product_manager",
-            "reason": "Бизнес-аналитик уже знает требования, PM-у нужно добавить стратегию и управление бэклогом.",
-            "avg_transition_years": "2-3",
-            "required_upskill": [
-                "Product Vision",
-                "Market Research",
-                "Agile/Scrum"
-            ],
-            "difficulty": "medium"
-        },
-        {
-            "from": "devops_engineer",
-            "to": "sre",
-            "reason": "Специализация на надежности и автоматизации отказоустойчивых систем.",
-            "avg_transition_years": "2-3",
-            "required_upskill": [
-                "Incident Management",
-                "Error Budgets",
-                "Advanced Monitoring"
-            ],
-            "difficulty": "hard"
-        },
-        {
-            "from": "system_analyst",
-            "to": "systems_architect",
-            "reason": "От проектирования схем и API к проектированию всей технической стратегии проекта.",
-            "avg_transition_years": "3-5",
-            "required_upskill": [
-                "Cloud Architecture",
-                "Scalability Patters",
-                "Tech Leadership"
-            ],
-            "difficulty": "very_hard"
-        },
-        {
-            "from": "frontend_developer",
-            "to": "mobile_developer",
-            "reason": "Использование навыков верстки и JS/TS для разработки мобильных приложений.",
-            "avg_transition_years": "1-2",
-            "required_upskill": [
-                "React Native",
-                "Mobile Guidelines",
-                "Store Publishing"
-            ],
-            "difficulty": "medium"
-        }
-    ]
+  "version": "3.0",
+  "generated_at": "2026-02-14T10:45:03.786202Z",
+  "career_pipeline_graph": [
+    {
+      "from": "uiux_designer",
+      "to": "frontend_developer",
+      "reason": "UX/UI → желание делать интерактив в коде.",
+      "avg_transition_years": "1-2",
+      "required_upskill": [
+        "HTML/CSS",
+        "JS/TS",
+        "React/Vue",
+        "Design systems",
+        "Git"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "from": "frontend_developer",
+      "to": "backend_developer",
+      "reason": "Интерес к логике, данным и API.",
+      "avg_transition_years": "1-3",
+      "required_upskill": [
+        "HTTP",
+        "SQL",
+        "Backend framework",
+        "Testing",
+        "Basic system design"
+      ],
+      "difficulty": "hard"
+    },
+    {
+      "from": "backend_developer",
+      "to": "devops_engineer",
+      "reason": "Ответственность за прод и релизы → инфраструктура и автоматизация.",
+      "avg_transition_years": "2-4",
+      "required_upskill": [
+        "Linux",
+        "CI/CD",
+        "Docker",
+        "Cloud basics",
+        "Monitoring",
+        "IaC"
+      ],
+      "difficulty": "hard"
+    },
+    {
+      "from": "qa_engineer",
+      "to": "frontend_developer",
+      "reason": "Автотесты UI и дебаг → продуктовая разработка интерфейса.",
+      "avg_transition_years": "1-3",
+      "required_upskill": [
+        "JS/TS",
+        "Playwright/Cypress",
+        "Frontend basics",
+        "Debugging"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "from": "qa_engineer",
+      "to": "backend_developer",
+      "reason": "Разбор багов + автотесты → продуктовый backend.",
+      "avg_transition_years": "2-4",
+      "required_upskill": [
+        "Python/JS",
+        "SQL",
+        "Backend framework",
+        "CI/CD"
+      ],
+      "difficulty": "hard"
+    },
+    {
+      "from": "ai_data_engineer",
+      "to": "product_manager",
+      "reason": "Метрики/гипотезы → продуктовые решения и приоритизация.",
+      "avg_transition_years": "2-5",
+      "required_upskill": [
+        "Product sense",
+        "User research",
+        "Experiment design",
+        "Prioritization",
+        "Communication"
+      ],
+      "difficulty": "hard"
+    }
+  ]
 }

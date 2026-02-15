@@ -5,11 +5,13 @@ import { Menu, X } from 'lucide-react';
 import FilterSidebar from '../components/FilterSidebar';
 import VacancyCard from '../features/vacancies/VacancyCard';
 import { vacanciesApi } from '../api/vacanciesApi';
-import { fadeInUp, pageVariants } from '../utils/animations';
+import { pageVariants } from '../utils/animations';
 import Pagination from '../components/ui/Pagination';
 import ErrorState from '../components/ui/ErrorState';
 import LoadingState from '../components/ui/LoadingState';
 import EmptyState from '../components/ui/EmptyState';
+import { trackEvent } from '../utils/analytics';
+import { ANALYTICS_EVENTS } from '../constants/analyticsEvents';
 
 const JobsPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -24,6 +26,8 @@ const JobsPage = () => {
     const [pendingPage, setPendingPage] = useState(null);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const gridRef = useRef(null);
+    const activeRequestIdRef = useRef(0);
+    const abortControllerRef = useRef(null);
 
     const filters = useMemo(() => ({
         search: searchParams.get('search') || '',
@@ -37,6 +41,15 @@ const JobsPage = () => {
     }), [searchParams]);
 
     const fetchVacancies = useCallback(async (currentFilters) => {
+        const requestId = ++activeRequestIdRef.current;
+
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+
         setLoading(true);
         setError(null);
 
@@ -53,7 +66,8 @@ const JobsPage = () => {
                 min_salary: currentFilters.minSalary || undefined
             };
 
-            const response = await vacanciesApi.getAll(params);
+            const response = await vacanciesApi.getAll(params, { signal: controller.signal });
+            if (requestId !== activeRequestIdRef.current) return;
             setVacancies(response.data.items || []);
             setPagination({
                 page: response.data.page,
@@ -61,18 +75,26 @@ const JobsPage = () => {
                 total: response.data.total
             });
         } catch (loadError) {
+            if (loadError?.code === 'ERR_CANCELED') return;
+            if (requestId !== activeRequestIdRef.current) return;
             console.error('Failed to fetch vacancies:', loadError);
             setVacancies([]);
             setPagination((prev) => ({ ...prev, total: 0 }));
             setError('Не удалось загрузить вакансии. Проверьте соединение и попробуйте снова.');
         } finally {
-            setLoading(false);
+            if (requestId === activeRequestIdRef.current) {
+                setLoading(false);
+            }
         }
     }, []);
 
     useEffect(() => {
         fetchVacancies(filters);
     }, [filters, fetchVacancies]);
+
+    useEffect(() => () => {
+        abortControllerRef.current?.abort();
+    }, []);
 
     useEffect(() => {
         setPendingPage(null);
@@ -90,11 +112,17 @@ const JobsPage = () => {
     };
 
     const handleClearFilters = () => {
+        trackEvent(ANALYTICS_EVENTS.JOBS_FILTER_APPLY, {
+            source: 'jobs_page',
+            trigger: 'clear_all',
+            active_filters_count: 0,
+            filters: {},
+        });
         setSearchParams(new URLSearchParams());
         setIsMobileMenuOpen(false);
     };
 
-    const handleFilterChange = (newFilters) => {
+    const handleFilterChange = (newFilters, options = {}) => {
         const newParams = new URLSearchParams(searchParams);
 
         Object.entries(newFilters).forEach(([key, value]) => {
@@ -108,6 +136,35 @@ const JobsPage = () => {
 
         newParams.set('page', '1');
         setSearchParams(newParams);
+
+        const normalizedFilters = {
+            ...filters,
+            ...newFilters,
+            page: 1,
+        };
+        const activeFiltersCount = [
+            normalizedFilters.search,
+            normalizedFilters.grade,
+            normalizedFilters.location,
+            normalizedFilters.stack,
+            normalizedFilters.minSalary,
+            normalizedFilters.company,
+        ].filter(Boolean).length;
+
+        trackEvent(ANALYTICS_EVENTS.JOBS_FILTER_APPLY, {
+            source: 'jobs_page',
+            trigger: options.trigger || 'filter_change',
+            active_filters_count: activeFiltersCount,
+            filters: {
+                search: normalizedFilters.search || null,
+                grade: normalizedFilters.grade || null,
+                location: normalizedFilters.location || null,
+                stack: normalizedFilters.stack || null,
+                company: normalizedFilters.company || null,
+                minSalary: normalizedFilters.minSalary || null,
+                sort: normalizedFilters.sort || 'newest',
+            },
+        });
     };
 
     const activeFilterCount = [
@@ -118,12 +175,20 @@ const JobsPage = () => {
         filters.minSalary,
         filters.company
     ].filter(Boolean).length;
+    const filterSidebarKey = [
+        filters.search,
+        filters.company,
+        filters.minSalary,
+        filters.location,
+        filters.grade,
+        filters.stack,
+    ].join('|');
 
     const showInitialLoading = loading && vacancies.length === 0 && !error;
 
     return (
         <motion.div
-            className="min-h-screen pt-24 pb-12"
+            className="min-h-screen pt-28 pb-12"
             variants={pageVariants}
             initial="initial"
             animate="animate"
@@ -157,6 +222,7 @@ const JobsPage = () => {
                                 </button>
                             </div>
                             <FilterSidebar
+                                key={filterSidebarKey}
                                 filters={filters}
                                 onFilterChange={handleFilterChange}
                                 onFiltersApplied={() => setIsMobileMenuOpen(false)}
@@ -165,32 +231,19 @@ const JobsPage = () => {
                     </div>
 
                     <main className="flex-1" ref={gridRef}>
-                        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
-                                <h1 className="text-3xl font-bold text-white mb-2">Каталог вакансий</h1>
-                                <p className="text-slate-400">
-                                    Найдено <span className="text-purple-400 font-mono font-bold">{pagination.total}</span> вакансий
-                                </p>
-                                <p className="text-slate-500 text-sm mt-1 flex items-center gap-2">
-                                    Страница {pagination.page} из {totalPages}
-                                    {pendingPage && (
-                                        <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-violet-500/20 border border-violet-500/30 rounded-md text-violet-300 text-xs font-medium animate-pulse">
-                                            <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                            Переход на страницу {pendingPage}
-                                        </span>
-                                    )}
-                                </p>
-                                <p className="text-slate-500 text-xs mt-1">Источник данных: HeadHunter API (hh.kz)</p>
+                                <h1 className="text-3xl font-bold text-white">Каталог вакансий</h1>
+                                <span className="mt-2 inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-400">
+                                    Найдено {pagination.total} вакансий
+                                </span>
                             </div>
 
                             <div className="flex items-center gap-2">
                                 <span className="text-gray-500 text-sm">Сортировка:</span>
                                 <select
                                     value={filters.sort || 'newest'}
-                                    onChange={(e) => handleFilterChange({ sort: e.target.value })}
+                                    onChange={(e) => handleFilterChange({ sort: e.target.value }, { trigger: 'sort_select' })}
                                     className="bg-[#0B0C10] border border-gray-800 text-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 cursor-pointer transition-colors"
                                 >
                                     <option value="newest">Сначала новые</option>
@@ -218,16 +271,12 @@ const JobsPage = () => {
                                 <motion.div
                                     key={pagination.page}
                                     className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity duration-400 ${loading ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}
-                                    initial="hidden"
-                                    animate="visible"
-                                    variants={{
-                                        visible: { transition: { staggerChildren: 0.05 } }
-                                    }}
+                                    initial={false}
                                 >
                                     {vacancies.map((vacancy) => (
-                                        <motion.div key={vacancy.id} variants={fadeInUp}>
+                                        <div key={vacancy.id}>
                                             <VacancyCard vacancy={vacancy} />
-                                        </motion.div>
+                                        </div>
                                     ))}
                                 </motion.div>
 

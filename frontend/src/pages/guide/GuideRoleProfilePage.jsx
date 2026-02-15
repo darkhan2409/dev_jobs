@@ -9,6 +9,8 @@ import { guideApi } from '../../api/guideApi';
 import { GUIDE_ROLE_EXTRAS } from '../../data/guideData';
 import { fadeInUp, staggerContainer } from '../../utils/animations';
 import { cn } from '../../utils/cn';
+import { trackEvent } from '../../utils/analytics';
+import { ANALYTICS_EVENTS } from '../../constants/analyticsEvents';
 
 export default function GuideRoleProfilePage() {
   const { roleId } = useParams();
@@ -131,6 +133,17 @@ export default function GuideRoleProfilePage() {
 
   const Icon = LucideIcons[extras.icon];
   const roleName = roleData?.name || roleData?.role_id?.replace(/_/g, ' ') || roleId.replace(/_/g, ' ');
+  const roleSearchQuery = encodeURIComponent(extras.searchKeywords);
+
+  const handleOptionalJobsClick = () => {
+    trackEvent(ANALYTICS_EVENTS.OPTIONAL_JOBS_FROM_GUIDE_CLICK, {
+      source: 'guide_role_profile',
+      role_id: roleId,
+      role_name: roleName,
+      destination: '/jobs',
+    });
+    navigate(`/jobs?search=${roleSearchQuery}`);
+  };
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
@@ -256,7 +269,7 @@ export default function GuideRoleProfilePage() {
               Когда будете готовы, можно посмотреть вакансии по этому направлению.
             </p>
             <button
-              onClick={() => navigate(`/jobs?search=${encodeURIComponent(extras.searchKeywords)}`)}
+              onClick={handleOptionalJobsClick}
               className={cn(
                 'px-4 py-2 rounded-lg text-sm font-medium',
                 'border border-violet-500/30 text-violet-400',

@@ -1,65 +1,84 @@
 {
-  "version": "1.0",
-  "mappings": {
-    "idea_and_need": {
-      "strong_signals": ["user_empathy", "big_picture_thinking", "research_mindset"],
-      "weak_signals": ["communication_skills", "strategic_thinking", "creative_problem_solving"],
-      "anti_signals": ["technical_depth_preference", "detail_orientation", "automation_mindset"],
-      "what_user_will_see": "Вам близок этап формирования продукта. Вы умеете понимать потребности пользователей, видеть картину целиком и исследовать проблемы до их решения."
+  "version": "3.0",
+  "mappings": [
+    {
+      "stage_id": "research",
+      "strong_signals": [
+        "problem_framing",
+        "user_empathy",
+        "data_minded",
+        "experiment_minded"
+      ],
+      "weak_signals": [
+        "information_architecture"
+      ],
+      "anti_signals": [
+        "incident_response"
+      ],
+      "what_user_will_see": "Тебе ближе **Исследование**: понять проблему, пользователей и данные до реализации."
     },
-    "planning": {
-      "strong_signals": ["strategic_thinking", "big_picture_thinking", "process_orientation"],
-      "weak_signals": ["communication_skills", "systematic_approach", "risk_assessment"],
-      "anti_signals": ["creative_problem_solving", "experimental_approach", "visual_thinking"],
-      "what_user_will_see": "Вам близок этап планирования. Вы умеете выстраивать стратегию, приоритизировать задачи и координировать работу команды."
+    {
+      "stage_id": "design",
+      "strong_signals": [
+        "visual_thinking",
+        "information_architecture",
+        "ui_craft",
+        "user_empathy"
+      ],
+      "weak_signals": [
+        "stakeholder_alignment"
+      ],
+      "anti_signals": [
+        "incident_response"
+      ],
+      "what_user_will_see": "Тебе ближе **Проектирование**: продумывать сценарии и интерфейс до начала разработки."
     },
-    "design": {
-      "strong_signals": ["visual_thinking", "user_empathy", "creative_problem_solving"],
-      "weak_signals": ["detail_orientation", "communication_skills", "research_mindset"],
-      "anti_signals": ["technical_depth_preference", "automation_mindset", "data_driven_mindset"],
-      "what_user_will_see": "Вам близок этап дизайна. Вы мыслите визуально, понимаете пользователей и умеете находить креативные решения."
+    {
+      "stage_id": "development",
+      "strong_signals": [
+        "engineering_discipline",
+        "system_design",
+        "frontend_interactivity",
+        "data_minded"
+      ],
+      "weak_signals": [
+        "experiment_minded"
+      ],
+      "anti_signals": [
+        "bug_hunting"
+      ],
+      "what_user_will_see": "Тебе ближе **Разработка**: превращать решения в работающий код и данные."
     },
-    "architecture": {
-      "strong_signals": ["big_picture_thinking", "systematic_approach", "analytical_thinking"],
-      "weak_signals": ["technical_depth_preference", "strategic_thinking", "risk_assessment"],
-      "anti_signals": ["user_empathy", "visual_thinking", "communication_skills"],
-      "what_user_will_see": "Вам близок этап архитектуры. Вы видите систему целиком, мыслите структурно и умеете проектировать сложные решения."
+    {
+      "stage_id": "testing",
+      "strong_signals": [
+        "quality_rigor",
+        "bug_hunting",
+        "automation_mindset"
+      ],
+      "weak_signals": [
+        "engineering_discipline"
+      ],
+      "anti_signals": [
+        "visual_thinking"
+      ],
+      "what_user_will_see": "Тебе ближе **Тестирование**: находить слабые места и защищать качество."
     },
-    "development": {
-      "strong_signals": ["analytical_thinking", "technical_depth_preference", "systematic_approach"],
-      "weak_signals": ["detail_orientation", "creative_problem_solving", "automation_mindset"],
-      "anti_signals": ["big_picture_thinking", "communication_skills", "strategic_thinking"],
-      "what_user_will_see": "Вам близок этап разработки. Вы любите погружаться в технические детали, писать код и создавать работающие решения."
-    },
-    "testing": {
-      "strong_signals": ["detail_orientation", "critical_thinking", "systematic_approach"],
-      "weak_signals": ["process_orientation", "analytical_thinking", "risk_assessment"],
-      "anti_signals": ["creative_problem_solving", "big_picture_thinking", "experimental_approach"],
-      "what_user_will_see": "Вам близок этап тестирования. Вы внимательны к деталям, мыслите критически и умеете находить проблемы."
-    },
-    "deployment": {
-      "strong_signals": ["automation_mindset", "systematic_approach", "process_orientation"],
-      "weak_signals": ["technical_depth_preference", "risk_assessment", "analytical_thinking"],
-      "anti_signals": ["creative_problem_solving", "user_empathy", "visual_thinking"],
-      "what_user_will_see": "Вам близок этап эксплуатации. Вы любите автоматизировать процессы, строить надёжные системы и обеспечивать стабильность."
-    },
-    "security": {
-      "strong_signals": ["risk_assessment", "critical_thinking", "analytical_thinking"],
-      "weak_signals": ["detail_orientation", "systematic_approach", "technical_depth_preference"],
-      "anti_signals": ["creative_problem_solving", "user_empathy", "experimental_approach"],
-      "what_user_will_see": "Вам близок этап безопасности. Вы умеете оценивать риски, мыслите критически и находите уязвимости в системах."
-    },
-    "analytics": {
-      "strong_signals": ["data_driven_mindset", "analytical_thinking", "research_mindset"],
-      "weak_signals": ["detail_orientation", "communication_skills", "systematic_approach"],
-      "anti_signals": ["visual_thinking", "creative_problem_solving", "automation_mindset"],
-      "what_user_will_see": "Вам близок этап аналитики. Вы принимаете решения на основе данных, умеете исследовать и находить инсайты."
-    },
-    "documentation": {
-      "strong_signals": ["communication_skills", "detail_orientation", "systematic_approach"],
-      "weak_signals": ["user_empathy", "analytical_thinking", "process_orientation"],
-      "anti_signals": ["technical_depth_preference", "experimental_approach", "creative_problem_solving"],
-      "what_user_will_see": "Вам близок этап документации. Вы умеете структурировать информацию, объяснять сложное простым языком и помогать другим разобраться."
+    {
+      "stage_id": "launch_ops",
+      "strong_signals": [
+        "reliability_focus",
+        "automation_mindset",
+        "incident_response",
+        "engineering_discipline"
+      ],
+      "weak_signals": [
+        "system_design"
+      ],
+      "anti_signals": [
+        "ui_craft"
+      ],
+      "what_user_will_see": "Тебе ближе **Запуск и эксплуатация**: надежность, релизы и автоматизация."
     }
-  }
+  ]
 }

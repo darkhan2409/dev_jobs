@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { staggerContainer } from '../../utils/animations';
 import {
   Search,
   MessageCircle,
@@ -21,16 +22,6 @@ const fadeInUp = {
     opacity: 1,
     y: 0,
     transition: { duration: 0.5 }
-  }
-};
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
   }
 };
 
@@ -348,7 +339,7 @@ export default function DiscoveryStageContent() {
       >
         <button
           onClick={() => navigate('/guide/design')}
-          className="group flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40"
+          className="group flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 cursor-pointer"
         >
           <span className="text-lg">Перейти к этапу Проектирование</span>
           <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />

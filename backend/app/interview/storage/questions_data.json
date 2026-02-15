@@ -1,1492 +1,2315 @@
-﻿{
-  "version": "v1.1",
+{
+  "version": "3.0",
+  "generated_at": "2026-02-14T10:45:03.785736Z",
+  "roles": [
+    {
+      "id": "product_manager",
+      "title": "Product Manager",
+      "tagline": "Research / Planning"
+    },
+    {
+      "id": "uiux_designer",
+      "title": "UI/UX Designer",
+      "tagline": "Design without code"
+    },
+    {
+      "id": "frontend_developer",
+      "title": "Frontend Developer",
+      "tagline": "Visual code"
+    },
+    {
+      "id": "backend_developer",
+      "title": "Backend Developer",
+      "tagline": "Logic code"
+    },
+    {
+      "id": "ai_data_engineer",
+      "title": "AI/Data Engineer",
+      "tagline": "Math & Data"
+    },
+    {
+      "id": "qa_engineer",
+      "title": "QA Engineer",
+      "tagline": "Quality & Tests"
+    },
+    {
+      "id": "devops_engineer",
+      "title": "DevOps Engineer",
+      "tagline": "Infra & Automation"
+    }
+  ],
+  "stages": [
+    {
+      "id": "research",
+      "title": "Исследование",
+      "order": 1
+    },
+    {
+      "id": "design",
+      "title": "Проектирование",
+      "order": 2
+    },
+    {
+      "id": "development",
+      "title": "Разработка",
+      "order": 3
+    },
+    {
+      "id": "testing",
+      "title": "Тестирование",
+      "order": 4
+    },
+    {
+      "id": "launch_ops",
+      "title": "Запуск и эксплуатация",
+      "order": 5
+    }
+  ],
+  "signals": [
+    "automation_mindset",
+    "bug_hunting",
+    "data_minded",
+    "engineering_discipline",
+    "experiment_minded",
+    "frontend_interactivity",
+    "incident_response",
+    "information_architecture",
+    "problem_framing",
+    "quality_rigor",
+    "reliability_focus",
+    "stakeholder_alignment",
+    "system_design",
+    "ui_craft",
+    "user_empathy",
+    "visual_thinking"
+  ],
   "questions": [
     {
-      "id": "q1",
-      "text": "Когда вы сталкиваетесь со сложной проблемой, каков ваш первый порыв?",
-      "thematic_block": "Подход к решению проблем",
-      "answer_options": [
+      "id": "q01",
+      "type": "single_choice",
+      "prompt": "Представь, что ваша команда делает новую социальную сеть. Что бы ты взял на себя?",
+      "options": [
         {
-          "id": "q1_a1",
-          "text": "Разбить ее на более мелкие, управляемые части и решать их систематически",
-          "signal_associations": [
-            "analytical_thinking",
-            "systematic_approach"
-          ],
+          "id": "a",
+          "text": "Я буду проверять, чтобы сообщения отправлялись мгновенно, а лента новостей не висла.",
           "role_weights": {
-            "backend_developer": 2.0,
-            "data_engineer": 2.0,
-            "systems_architect": 1.5,
-            "qa_engineer": 1.5,
-            "devops_engineer": 1.5
-          }
+            "backend_developer": 3,
+            "devops_engineer": 2
+          },
+          "stage_weights": {
+            "development": 3,
+            "launch_ops": 3,
+            "testing": 1
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
         },
         {
-          "id": "q1_a2",
-          "text": "Искать креативные или нестандартные решения, которые другие могут не заметить",
-          "signal_associations": [
-            "creative_problem_solving",
-            "experimental_approach"
-          ],
+          "id": "b",
+          "text": "Я буду решать, какие новые функции добавить (например, \"истории\" или \"голосовые\"), чтобы людям было интересно.",
           "role_weights": {
-            "llm_engineer": 2.2,
-            "game_developer": 2.1,
-            "frontend_developer": 1.5,
-            "ui_ux_researcher": 1.5
-          }
+            "product_manager": 3,
+            "ai_data_engineer": 2
+          },
+          "stage_weights": {
+            "research": 5,
+            "design": 1,
+            "development": 1
+          },
+          "signal_associations": [
+            "problem_framing",
+            "stakeholder_alignment",
+            "user_empathy"
+          ]
         },
         {
-          "id": "q1_a3",
-          "text": "Оценить общую картину и то, как эта проблема вписывается в большую систему",
-          "signal_associations": [
-            "big_picture_thinking",
-            "strategic_thinking"
-          ],
+          "id": "c",
+          "text": "Я нарисую удобный интерфейс, выберу красивые цвета и сделаю так, чтобы кнопки были на своих местах.",
           "role_weights": {
-            "systems_architect": 2.6,
-            "product_manager": 2.1,
-            "devops_engineer": 1.0
-          }
-        },
-        {
-          "id": "q1_a4",
-          "text": "Изучить похожие проблемы и поучиться на существующих решениях",
-          "signal_associations": [
-            "research_mindset",
-            "systematic_approach"
-          ],
-          "role_weights": {
-            "technical_writer": 2.0,
-            "ui_ux_researcher": 2.0,
-            "ml_engineer": 1.5
-          }
-        }
-      ]
-    },
-    {
-      "id": "q2",
-      "text": "Как вы подходите к изучению чего-то совершенно нового?",
-      "thematic_block": "Подход к решению проблем",
-      "answer_options": [
-        {
-          "id": "q2_a1",
-          "text": "Погружаюсь в технические детали и разбираюсь, как это работает изнутри",
-          "signal_associations": [
-            "technical_depth_preference",
-            "analytical_thinking"
-          ],
-          "role_weights": {
-            "backend_developer": 2.2,
-            "ml_engineer": 2.1,
-            "data_engineer": 1.9,
-            "security_engineer": 1.5
-          }
-        },
-        {
-          "id": "q2_a2",
-          "text": "Экспериментирую на практике и учусь методом проб и ошибок",
-          "signal_associations": [
-            "experimental_approach",
-            "creative_problem_solving"
-          ],
-          "role_weights": {
-            "game_developer": 2.3,
-            "frontend_developer": 1.6,
-            "mobile_developer": 1.6,
-            "llm_engineer": 1.5
-          }
-        },
-        {
-          "id": "q2_a3",
-          "text": "Пытаюсь понять общий контекст и связь с тем, что я уже знаю",
-          "signal_associations": [
-            "big_picture_thinking",
-            "strategic_thinking"
-          ],
-          "role_weights": {
-            "systems_architect": 2.2,
-            "product_manager": 2.1,
-            "technical_writer": 1.0
-          }
-        },
-        {
-          "id": "q2_a4",
-          "text": "Следую структурированным учебникам и документации шаг за шагом",
-          "signal_associations": [
-            "systematic_approach",
-            "process_orientation"
-          ],
-          "role_weights": {
-            "qa_engineer": 2.0,
-            "devops_engineer": 1.5,
-            "technical_writer": 1.5
-          }
-        }
-      ]
-    },
-    {
-      "id": "q3",
-      "text": "При анализе данных или информации, что для вас важнее всего?",
-      "thematic_block": "Подход к решению проблем",
-      "answer_options": [
-        {
-          "id": "q3_a1",
-          "text": "Поиск закономерностей и инсайтов, ведущих к конкретным выводам",
-          "signal_associations": [
-            "data_driven_mindset",
-            "analytical_thinking"
-          ],
-          "role_weights": {
-            "data_engineer": 2.6,
-            "ml_engineer": 2.4,
-            "backend_developer": 1.0
-          }
-        },
-        {
-          "id": "q3_a2",
-          "text": "Выявление потенциальных рисков или уязвимостей безопасности",
-          "signal_associations": [
-            "critical_thinking",
-            "risk_assessment"
-          ],
-          "role_weights": {
-            "security_engineer": 2.6,
-            "qa_engineer": 1.6,
-            "devops_engineer": 1.0
-          }
-        },
-        {
-          "id": "q3_a3",
-          "text": "Понимание значения данных для пользователей и их опыта",
-          "signal_associations": [
-            "user_empathy",
-            "analytical_thinking"
-          ],
-          "role_weights": {
-            "ui_ux_researcher": 2.6,
-            "product_manager": 2.1,
-            "frontend_developer": 1.0
-          }
-        },
-        {
-          "id": "q3_a4",
-          "text": "Обеспечение точности и полноты информации",
-          "signal_associations": [
-            "detail_orientation",
-            "critical_thinking"
-          ],
-          "role_weights": {
-            "qa_engineer": 2.5,
-            "technical_writer": 2.0,
-            "data_engineer": 1.0
-          }
-        }
-      ]
-    },
-    {
-      "id": "q4",
-      "text": "Вы работаете над приложением для доставки еды. Какая задача вас больше всего увлечет?",
-      "thematic_block": "Подход к решению проблем",
-      "answer_options": [
-        {
-          "id": "q4_a1",
-          "text": "Ускорить загрузку карты ресторанов с 3 секунд до 0.5 секунды",
-          "signal_associations": [
-            "performance_optimization",
-            "technical_depth_preference"
-          ],
-          "role_weights": {
-            "game_developer": 2.8,
-            "backend_developer": 2.1,
-            "devops_engineer": 1.9,
-            "mobile_developer": 1.5
-          }
-        },
-        {
-          "id": "q4_a2",
-          "text": "Создать красивую анимацию добавления блюд в корзину с плавными переходами",
+            "uiux_designer": 3,
+            "frontend_developer": 2
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 1,
+            "development": 2
+          },
           "signal_associations": [
             "visual_thinking",
-            "user_empathy"
-          ],
-          "role_weights": {
-            "frontend_developer": 2.7,
-            "ui_ux_researcher": 2.6,
-            "mobile_developer": 2.1,
-            "game_developer": 1.5
-          }
+            "information_architecture",
+            "ui_craft"
+          ]
         },
         {
-          "id": "q4_a3",
-          "text": "Спроектировать систему, чтобы она выдерживала 10,000 заказов в час без сбоев",
+          "id": "d",
+          "text": "Я буду специально пробовать отправить пустое сообщение или очень длинный текст, чтобы найти ошибку.",
+          "role_weights": {
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
           "signal_associations": [
-            "systematic_approach",
-            "technical_depth_preference"
-          ],
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "q02",
+      "type": "single_choice",
+      "prompt": "Вы создаете мобильную игру про зомби. Твоя задача?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Я продумаю, как зомби должны выглядеть, и сделаю анимацию их движения плавной и красивой.",
           "role_weights": {
-            "systems_architect": 2.5,
-            "backend_developer": 2.0,
-            "data_engineer": 2.0
-          }
+            "uiux_designer": 3,
+            "frontend_developer": 2
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 1,
+            "development": 2
+          },
+          "signal_associations": [
+            "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
         },
         {
-          "id": "q4_a4",
-          "text": "Настроить автоматическое развертывание обновлений приложения без остановки сервиса",
+          "id": "b",
+          "text": "Я настрою серверы так, чтобы игра сохраняла прогресс, даже если у игрока пропал интернет.",
+          "role_weights": {
+            "backend_developer": 3,
+            "devops_engineer": 2
+          },
+          "stage_weights": {
+            "development": 3,
+            "launch_ops": 3,
+            "testing": 1
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
+        },
+        {
+          "id": "c",
+          "text": "Я буду искать способы \"обмануть\" игру: проходить сквозь стены или получать бесконечные патроны, чтобы найти дыры.",
+          "role_weights": {
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
+        },
+        {
+          "id": "d",
+          "text": "Я буду анализировать, на каком уровне игрокам становится скучно, и придумаю, как это исправить.",
+          "role_weights": {
+            "product_manager": 3,
+            "ai_data_engineer": 2
+          },
+          "stage_weights": {
+            "research": 5,
+            "design": 1,
+            "development": 1
+          },
+          "signal_associations": [
+            "problem_framing",
+            "stakeholder_alignment",
+            "user_empathy"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "q03",
+      "type": "single_choice",
+      "prompt": "Представь, что ты строишь дом. Кем бы ты был на стройке?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Архитектором, который рисует красивый фасад и планирует, где будет гостиная, чтобы жильцам было уютно.",
+          "role_weights": {
+            "uiux_designer": 3,
+            "frontend_developer": 2
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 1,
+            "development": 2
+          },
+          "signal_associations": [
+            "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
+        },
+        {
+          "id": "b",
+          "text": "Инженером, который рассчитывает фундамент, проводит трубы и электричество внутри стен (этого не видно, но это важно).",
+          "role_weights": {
+            "backend_developer": 3,
+            "devops_engineer": 2
+          },
+          "stage_weights": {
+            "development": 3,
+            "launch_ops": 3,
+            "testing": 1
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
+        },
+        {
+          "id": "c",
+          "text": "Прорабом, который следит за сроками, бюджетом и решает, нужен ли нам бассейн.",
+          "role_weights": {
+            "product_manager": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "design": 2
+          },
+          "signal_associations": [
+            "problem_framing",
+            "stakeholder_alignment",
+            "user_empathy"
+          ]
+        },
+        {
+          "id": "d",
+          "text": "Инспектором, который проверяет каждый кирпич на прочность и ищет трещины перед сдачей дома.",
+          "role_weights": {
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "q04",
+      "type": "single_choice",
+      "prompt": "Вы делаете приложение для доставки пиццы. Что тебе ближе?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Сделать так, чтобы меню с пиццами листалось плавно и аппетитно выглядело на экране телефона.",
+          "role_weights": {
+            "frontend_developer": 3,
+            "uiux_designer": 2
+          },
+          "stage_weights": {
+            "development": 3,
+            "design": 3,
+            "research": 1
+          },
+          "signal_associations": [
+            "frontend_interactivity",
+            "engineering_discipline",
+            "ui_craft"
+          ]
+        },
+        {
+          "id": "b",
+          "text": "Написать алгоритм, который рассчитывает время доставки и строит оптимальный маршрут для курьера.",
+          "role_weights": {
+            "backend_developer": 3,
+            "ai_data_engineer": 2
+          },
+          "stage_weights": {
+            "development": 4,
+            "launch_ops": 1,
+            "research": 2
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
+        },
+        {
+          "id": "c",
+          "text": "Проверить, что будет, если заказать пиццу на адрес в Антарктиде — не сломается ли приложение?",
+          "role_weights": {
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
+        },
+        {
+          "id": "d",
+          "text": "Обеспечить работу серверов в пятницу вечером, когда заказов в 10 раз больше обычного.",
+          "role_weights": {
+            "devops_engineer": 4
+          },
+          "stage_weights": {
+            "launch_ops": 4,
+            "testing": 2
+          },
           "signal_associations": [
             "automation_mindset",
-            "process_orientation"
-          ],
-          "role_weights": {
-            "devops_engineer": 2.9,
-            "qa_engineer": 1.5,
-            "backend_developer": 1.0
-          }
+            "reliability_focus",
+            "incident_response"
+          ]
         }
       ]
     },
     {
-      "id": "q5",
-      "text": "Как вы проверяете, что ваше решение действительно работает?",
-      "thematic_block": "Подход к решению проблем",
-      "answer_options": [
+      "id": "q05",
+      "type": "single_choice",
+      "prompt": "Твой друг жалуется, что у него \"тормозит\" компьютер. Твои действия?",
+      "options": [
         {
-          "id": "q5_a1",
-          "text": "Пишу всесторонние тесты для покрытия различных сценариев",
-          "signal_associations": [
-            "systematic_approach",
-            "detail_orientation"
-          ],
+          "id": "a",
+          "text": "Спрошу, что именно он делал перед этим, и попробую повторить его действия, чтобы понять причину.",
           "role_weights": {
-            "qa_engineer": 2.9,
-            "backend_developer": 1.5,
-            "devops_engineer": 1.0
-          }
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
         },
         {
-          "id": "q5_a2",
-          "text": "Тестирую с реальными пользователями и собираю их отзывы",
-          "signal_associations": [
-            "user_empathy",
-            "research_mindset"
-          ],
+          "id": "b",
+          "text": "Разберусь в системных настройках, почищу реестр и оптимизирую процессы, чтобы всё летало.",
           "role_weights": {
-            "ui_ux_researcher": 2.5,
-            "product_manager": 2.0,
-            "frontend_developer": 1.5
-          }
-        },
-        {
-          "id": "q5_a3",
-          "text": "Анализирую данные и метрики для валидации результатов",
-          "signal_associations": [
-            "data_driven_mindset",
-            "analytical_thinking"
-          ],
-          "role_weights": {
-            "ml_engineer": 2.5,
-            "data_engineer": 2.0,
-            "product_manager": 1.5
-          }
-        },
-        {
-          "id": "q5_a4",
-          "text": "Проверяю на наличие уязвимостей безопасности и граничных случаев",
-          "signal_associations": [
-            "critical_thinking",
-            "risk_assessment"
-          ],
-          "role_weights": {
-            "security_engineer": 2.7,
-            "qa_engineer": 2.1,
-            "backend_developer": 1.0
-          }
-        }
-      ]
-    },
-    {
-      "id": "q6",
-      "text": "В какой рабочей среде вы чувствуете себя лучше всего?",
-      "thematic_block": "Предпочтения в работе",
-      "answer_options": [
-        {
-          "id": "q6_a1",
-          "text": "Структурированная среда с четкими процессами и правилами",
-          "signal_associations": [
-            "process_orientation",
-            "systematic_approach"
-          ],
-          "role_weights": {
-            "qa_engineer": 2.0,
-            "devops_engineer": 2.0,
-            "technical_writer": 1.5,
-            "data_engineer": 1.5
-          }
-        },
-        {
-          "id": "q6_a2",
-          "text": "Креативная среда, где можно экспериментировать и пробовать новые идеи",
-          "signal_associations": [
-            "creative_problem_solving",
-            "experimental_approach"
-          ],
-          "role_weights": {
-            "game_developer": 2.5,
-            "llm_engineer": 2.0,
-            "frontend_developer": 2.0,
-            "ui_ux_researcher": 1.5
-          }
-        },
-        {
-          "id": "q6_a3",
-          "text": "Командная среда с частым взаимодействием и общением",
-          "signal_associations": [
-            "communication_skills",
-            "user_empathy"
-          ],
-          "role_weights": {
-            "product_manager": 2.5,
-            "ui_ux_researcher": 2.0,
-            "technical_writer": 1.5
-          }
-        },
-        {
-          "id": "q6_a4",
-          "text": "Сфокусированная среда, где можно глубоко погрузиться в технические задачи",
-          "signal_associations": [
-            "technical_depth_preference",
-            "analytical_thinking"
-          ],
-          "role_weights": {
-            "backend_developer": 2.0,
-            "ml_engineer": 2.0,
-            "security_engineer": 2.0,
-            "systems_architect": 1.5
-          }
-        }
-      ]
-    },
-    {
-      "id": "q7",
-      "text": "Как вы предпочитаете организовывать свою работу?",
-      "thematic_block": "Предпочтения в работе",
-      "answer_options": [
-        {
-          "id": "q7_a1",
-          "text": "Следовать установленным рабочим процессам и лучшим практикам",
-          "signal_associations": [
-            "process_orientation",
-            "systematic_approach"
-          ],
-          "role_weights": {
-            "devops_engineer": 2.5,
-            "qa_engineer": 2.0,
-            "technical_writer": 1.5
-          }
-        },
-        {
-          "id": "q7_a2",
-          "text": "Создавать собственную систему, которая лучше всего подходит для конкретной задачи",
-          "signal_associations": [
-            "creative_problem_solving",
-            "experimental_approach"
-          ],
-          "role_weights": {
-            "game_developer": 2.0,
-            "frontend_developer": 1.5,
-            "llm_engineer": 1.5
-          }
-        },
-        {
-          "id": "q7_a3",
-          "text": "Разбивать работу на детальные задачи и тщательно отслеживать прогресс",
-          "signal_associations": [
-            "detail_orientation",
-            "systematic_approach"
-          ],
-          "role_weights": {
-            "qa_engineer": 2.5,
-            "product_manager": 2.0,
-            "technical_writer": 1.5
-          }
-        },
-        {
-          "id": "q7_a4",
-          "text": "Фокусироваться на целях высокого уровня и адаптироваться по ходу дела",
-          "signal_associations": [
-            "big_picture_thinking",
-            "strategic_thinking"
-          ],
-          "role_weights": {
-            "systems_architect": 2.5,
-            "product_manager": 2.5,
-            "devops_engineer": 1.0
-          }
-        }
-      ]
-    },
-    {
-      "id": "q8",
-      "text": "Ваша команда запустила новую функцию в приложении. Что принесет вам наибольшую радость?",
-      "thematic_block": "Предпочтения в работе",
-      "answer_options": [
-        {
-          "id": "q8_a1",
-          "text": "Читать отзывы пользователей: 'Наконец-то удобно! Теперь заказываю каждый день!'",
-          "signal_associations": [
-            "user_empathy",
-            "communication_skills"
-          ],
-          "role_weights": {
-            "frontend_developer": 2.0,
-            "ui_ux_researcher": 2.5,
-            "product_manager": 2.0,
-            "mobile_developer": 1.5
-          }
-        },
-        {
-          "id": "q8_a2",
-          "text": "Разобраться, почему система падала под нагрузкой, и исправить проблему в алгоритме",
-          "signal_associations": [
-            "analytical_thinking",
-            "technical_depth_preference"
-          ],
-          "role_weights": {
-            "backend_developer": 2.5,
-            "ml_engineer": 2.0,
-            "systems_architect": 2.0,
-            "security_engineer": 1.5
-          }
-        },
-        {
-          "id": "q8_a3",
-          "text": "Убедиться, что все сценарии покрыты тестами и система работает без единого бага",
-          "signal_associations": [
-            "systematic_approach",
-            "detail_orientation"
-          ],
-          "role_weights": {
-            "qa_engineer": 2.5,
-            "devops_engineer": 2.0,
-            "backend_developer": 1.5
-          }
-        },
-        {
-          "id": "q8_a4",
-          "text": "Придумать и реализовать фичу, которой нет ни у одного конкурента",
-          "signal_associations": [
-            "creative_problem_solving",
-            "experimental_approach"
-          ],
-          "role_weights": {
-            "game_developer": 2.5,
-            "llm_engineer": 2.0,
-            "frontend_developer": 1.5
-          }
-        }
-      ]
-    },
-    {
-      "id": "q9",
-      "text": "Как вы справляетесь с повторяющимися задачами?",
-      "thematic_block": "Предпочтения в работе",
-      "answer_options": [
-        {
-          "id": "q9_a1",
-          "text": "Автоматизирую их, чтобы сэкономить время и уменьшить количество ошибок",
+            "devops_engineer": 3,
+            "backend_developer": 2
+          },
+          "stage_weights": {
+            "launch_ops": 4,
+            "testing": 1,
+            "development": 2
+          },
           "signal_associations": [
             "automation_mindset",
-            "process_orientation"
-          ],
-          "role_weights": {
-            "devops_engineer": 2.8,
-            "backend_developer": 1.5,
-            "qa_engineer": 1.5
-          }
+            "reliability_focus",
+            "incident_response"
+          ]
         },
         {
-          "id": "q9_a2",
-          "text": "Выполняю их аккуратно, чтобы гарантировать качество и последовательность",
-          "signal_associations": [
-            "detail_orientation",
-            "systematic_approach"
-          ],
+          "id": "c",
+          "text": "Посоветую поменять обои на рабочем столе и настроить иконки, чтобы стало визуально приятнее работать.",
           "role_weights": {
-            "qa_engineer": 2.5,
-            "technical_writer": 2.0,
-            "data_engineer": 1.0
-          }
+            "uiux_designer": 4
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 2
+          },
+          "signal_associations": [
+            "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
         },
         {
-          "id": "q9_a3",
-          "text": "Ищу способы сделать их более интересными или эффективными",
-          "signal_associations": [
-            "creative_problem_solving",
-            "performance_optimization"
-          ],
+          "id": "d",
+          "text": "Посмотрю статистику использования памяти и процессора, чтобы понять, какая программа \"ест\" ресурсы.",
           "role_weights": {
-            "frontend_developer": 1.5,
-            "game_developer": 1.5,
-            "backend_developer": 1.5
-          }
+            "ai_data_engineer": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "development": 2
+          },
+          "signal_associations": [
+            "data_minded",
+            "experiment_minded",
+            "engineering_discipline"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "q06",
+      "type": "single_choice",
+      "prompt": "Вы организуете школьную дискотеку. За что ты отвечаешь?",
+      "options": [
+        {
+          "id": "a",
+          "text": "За оформление зала: свет, плакаты, фотозона — всё должно быть стильно.",
+          "role_weights": {
+            "uiux_designer": 4
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 2
+          },
+          "signal_associations": [
+            "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
         },
         {
-          "id": "q9_a4",
-          "text": "Документирую их, чтобы другие могли следовать процессу",
-          "signal_associations": [
-            "communication_skills",
-            "process_orientation"
-          ],
+          "id": "b",
+          "text": "За техническую часть: подключение колонок, настройка звука и проверка проводов, чтобы музыка не прерывалась.",
           "role_weights": {
-            "technical_writer": 2.9,
-            "devops_engineer": 1.5,
-            "product_manager": 1.0
-          }
+            "devops_engineer": 3,
+            "backend_developer": 2
+          },
+          "stage_weights": {
+            "launch_ops": 4,
+            "testing": 1,
+            "development": 2
+          },
+          "signal_associations": [
+            "automation_mindset",
+            "reliability_focus",
+            "incident_response"
+          ]
+        },
+        {
+          "id": "c",
+          "text": "За сценарий: какие конкурсы будут, в каком порядке включать треки, чтобы всем было весело.",
+          "role_weights": {
+            "product_manager": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "design": 2
+          },
+          "signal_associations": [
+            "problem_framing",
+            "stakeholder_alignment",
+            "user_empathy"
+          ]
+        },
+        {
+          "id": "d",
+          "text": "Я пройдусь по залу перед началом и проверю, надежно ли закреплена аппаратура и нет ли скользкого пола.",
+          "role_weights": {
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "q07",
+      "type": "single_choice",
+      "prompt": "Как ты обычно решаешь сложные задачи по математике или физике?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Мне важно сначала представить задачу в голове или нарисовать схему, чтобы увидеть решение.",
+          "role_weights": {
+            "frontend_developer": 3,
+            "uiux_designer": 2
+          },
+          "stage_weights": {
+            "development": 3,
+            "design": 3,
+            "research": 1
+          },
+          "signal_associations": [
+            "frontend_interactivity",
+            "engineering_discipline",
+            "ui_craft"
+          ]
+        },
+        {
+          "id": "b",
+          "text": "Я люблю строгие формулы и алгоритмы: подставил значения — получил точный результат.",
+          "role_weights": {
+            "backend_developer": 4
+          },
+          "stage_weights": {
+            "development": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
+        },
+        {
+          "id": "c",
+          "text": "Я ищу нестандартные пути или пытаюсь найти ошибку в самом условии задачи.",
+          "role_weights": {
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
+        },
+        {
+          "id": "d",
+          "text": "Мне интересно проанализировать много похожих задач и найти закономерность, как их решать быстрее.",
+          "role_weights": {
+            "ai_data_engineer": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "development": 2
+          },
+          "signal_associations": [
+            "data_minded",
+            "experiment_minded",
+            "engineering_discipline"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "q08",
+      "type": "single_choice",
+      "prompt": "Вы делаете интернет-магазин кроссовок. Твоя зона ответственности?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Сделать так, чтобы при нажатии кнопки \"Купить\" деньги списывались правильно, а товар резервировался на складе.",
+          "role_weights": {
+            "backend_developer": 4
+          },
+          "stage_weights": {
+            "development": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
+        },
+        {
+          "id": "b",
+          "text": "Настроить систему рекомендаций: \"С этими кроссовками часто покупают эти носки\".",
+          "role_weights": {
+            "ai_data_engineer": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "development": 2
+          },
+          "signal_associations": [
+            "data_minded",
+            "experiment_minded",
+            "engineering_discipline"
+          ]
+        },
+        {
+          "id": "c",
+          "text": "Проверить корзину: попробовать купить 0 товаров или ввести буквы вместо номера телефона.",
+          "role_weights": {
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
+        },
+        {
+          "id": "d",
+          "text": "Сделать красивую галерею фото, чтобы кроссовки можно было рассмотреть со всех сторон.",
+          "role_weights": {
+            "frontend_developer": 3,
+            "uiux_designer": 2
+          },
+          "stage_weights": {
+            "development": 3,
+            "design": 3,
+            "research": 1
+          },
+          "signal_associations": [
+            "frontend_interactivity",
+            "engineering_discipline",
+            "ui_craft"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "q09",
+      "type": "single_choice",
+      "prompt": "Что тебя больше всего раздражает в приложениях?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Когда кнопки слишком маленькие, текст нечитаемый или непонятно, куда нажимать.",
+          "role_weights": {
+            "uiux_designer": 4
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 2
+          },
+          "signal_associations": [
+            "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
+        },
+        {
+          "id": "b",
+          "text": "Когда приложение постоянно вылетает, виснет или долго грузится.",
+          "role_weights": {
+            "backend_developer": 3,
+            "devops_engineer": 2
+          },
+          "stage_weights": {
+            "development": 3,
+            "launch_ops": 3,
+            "testing": 1
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
+        },
+        {
+          "id": "c",
+          "text": "Когда мне предлагают товары, которые мне совершенно не интересны.",
+          "role_weights": {
+            "ai_data_engineer": 3,
+            "product_manager": 2
+          },
+          "stage_weights": {
+            "research": 5,
+            "development": 1,
+            "design": 1
+          },
+          "signal_associations": [
+            "data_minded",
+            "experiment_minded",
+            "engineering_discipline"
+          ]
+        },
+        {
+          "id": "d",
+          "text": "Когда я нахожу опечатки в тексте или функции работают не так, как написано.",
+          "role_weights": {
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
         }
       ]
     },
     {
       "id": "q10",
-      "text": "Ваша команда разрабатывает социальную сеть для программистов. На чём вы хотите сфокусироваться?",
-      "thematic_block": "Предпочтения в работе",
-      "answer_options": [
+      "type": "single_choice",
+      "prompt": "Если бы ты писал книгу, о чем бы она была?",
+      "options": [
         {
-          "id": "q10_a1",
-          "text": "Спроектировать, как будут взаимодействовать все части системы (база данных, API, кеш, очереди)",
-          "signal_associations": [
-            "big_picture_thinking",
-            "systematic_approach"
-          ],
+          "id": "a",
+          "text": "Это была бы энциклопедия со структурами, схемами и точными данными о мире.",
           "role_weights": {
-            "systems_architect": 2.8,
-            "backend_developer": 1.5,
-            "devops_engineer": 1.5
-          }
+            "backend_developer": 3,
+            "ai_data_engineer": 2
+          },
+          "stage_weights": {
+            "development": 4,
+            "launch_ops": 1,
+            "research": 2
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
         },
         {
-          "id": "q10_a2",
-          "text": "Создать интуитивный дизайн профиля пользователя с лентой постов и уведомлениями",
+          "id": "b",
+          "text": "Это был бы детектив, где герои ищут улики и распутывают сложные загадки.",
+          "role_weights": {
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
+        },
+        {
+          "id": "c",
+          "text": "Это был бы красочный комикс или арт-бук с минимумом текста, но крутыми иллюстрациями.",
+          "role_weights": {
+            "uiux_designer": 3,
+            "frontend_developer": 2
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 1,
+            "development": 2
+          },
           "signal_associations": [
             "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
+        },
+        {
+          "id": "d",
+          "text": "Это была бы книга по психологии о том, как люди принимают решения и чего они хотят.",
+          "role_weights": {
+            "product_manager": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "design": 2
+          },
+          "signal_associations": [
+            "problem_framing",
+            "stakeholder_alignment",
             "user_empathy"
-          ],
-          "role_weights": {
-            "frontend_developer": 2.5,
-            "ui_ux_researcher": 2.5,
-            "mobile_developer": 2.0
-          }
-        },
-        {
-          "id": "q10_a3",
-          "text": "Настроить обработку миллионов постов в день и систему рекомендаций на основе активности",
-          "signal_associations": [
-            "data_driven_mindset",
-            "analytical_thinking"
-          ],
-          "role_weights": {
-            "data_engineer": 2.5,
-            "ml_engineer": 2.0,
-            "backend_developer": 2.0
-          }
-        },
-        {
-          "id": "q10_a4",
-          "text": "Защитить данные пользователей от утечек и организовать безопасную аутентификацию",
-          "signal_associations": [
-            "risk_assessment",
-            "critical_thinking"
-          ],
-          "role_weights": {
-            "security_engineer": 2.5,
-            "devops_engineer": 2.0,
-            "qa_engineer": 1.5
-          }
+          ]
         }
       ]
     },
     {
       "id": "q11",
-      "text": "При изучении новой технологии, какой подход вы предпочитаете?",
-      "thematic_block": "Предпочтения в обучении",
-      "answer_options": [
+      "type": "single_choice",
+      "prompt": "Вы делаете робота-пылесоса. Что ты будешь программировать?",
+      "options": [
         {
-          "id": "q11_a1",
-          "text": "Сначала тщательно прочитать документацию и понять концепции",
-          "signal_associations": [
-            "systematic_approach",
-            "technical_depth_preference"
-          ],
+          "id": "a",
+          "text": "Логику движения: как ему объезжать препятствия и строить карту комнаты.",
           "role_weights": {
-            "backend_developer": 2.0,
-            "technical_writer": 2.0,
-            "systems_architect": 1.5
-          }
+            "backend_developer": 3,
+            "ai_data_engineer": 2
+          },
+          "stage_weights": {
+            "development": 4,
+            "launch_ops": 1,
+            "research": 2
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
         },
         {
-          "id": "q11_a2",
-          "text": "Сразу начать что-то строить и пробовать на практике",
-          "signal_associations": [
-            "experimental_approach",
-            "creative_problem_solving"
-          ],
+          "id": "b",
+          "text": "Интерфейс пульта управления: чтобы кнопки были понятными и удобными для пользователя.",
           "role_weights": {
-            "frontend_developer": 2.0,
-            "game_developer": 2.0,
-            "mobile_developer": 1.5
-          }
+            "uiux_designer": 3,
+            "frontend_developer": 2
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 1,
+            "development": 2
+          },
+          "signal_associations": [
+            "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
         },
         {
-          "id": "q11_a3",
-          "text": "Изучить примеры и адаптировать их под свои нужды",
-          "signal_associations": [
-            "research_mindset",
-            "analytical_thinking"
-          ],
+          "id": "c",
+          "text": "Систему диагностики: чтобы робот сам понимал, когда у него забился фильтр, и сообщал об этом.",
           "role_weights": {
-            "ml_engineer": 2.0,
-            "llm_engineer": 2.0,
-            "data_engineer": 1.5
-          }
+            "devops_engineer": 4
+          },
+          "stage_weights": {
+            "launch_ops": 4,
+            "testing": 2
+          },
+          "signal_associations": [
+            "automation_mindset",
+            "reliability_focus",
+            "incident_response"
+          ]
         },
         {
-          "id": "q11_a4",
-          "text": "Следовать туториалам и структурированным курсам",
-          "signal_associations": [
-            "process_orientation",
-            "systematic_approach"
-          ],
+          "id": "d",
+          "text": "Тесты на прочность: пущу кота кататься на роботе и посмотрю, выдержит ли он.",
           "role_weights": {
-            "qa_engineer": 2.0,
-            "devops_engineer": 1.5,
-            "technical_writer": 1.5
-          }
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
         }
       ]
     },
     {
       "id": "q12",
-      "text": "Какой тип знаний вы считаете наиболее ценным?",
-      "thematic_block": "Предпочтения в обучении",
-      "answer_options": [
+      "type": "single_choice",
+      "prompt": "Как ты предпочитаешь работать в команде?",
+      "options": [
         {
-          "id": "q12_a1",
-          "text": "Глубокая техническая экспертиза в конкретных областях",
-          "signal_associations": [
-            "technical_depth_preference",
-            "analytical_thinking"
-          ],
+          "id": "a",
+          "text": "Я люблю быть лидером: ставить цели, распределять задачи и следить за общим успехом.",
           "role_weights": {
-            "ml_engineer": 2.5,
-            "security_engineer": 2.0,
-            "backend_developer": 2.0,
-            "data_engineer": 1.5
-          }
+            "product_manager": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "design": 2
+          },
+          "signal_associations": [
+            "problem_framing",
+            "stakeholder_alignment",
+            "user_empathy"
+          ]
         },
         {
-          "id": "q12_a2",
-          "text": "Широкое понимание того, как связаны разные технологии",
-          "signal_associations": [
-            "big_picture_thinking",
-            "strategic_thinking"
-          ],
+          "id": "b",
+          "text": "Я люблю отвечать за свою часть работы самостоятельно, чтобы меня никто не отвлекал.",
           "role_weights": {
-            "systems_architect": 2.5,
-            "product_manager": 2.0,
-            "devops_engineer": 2.0
-          }
+            "backend_developer": 4
+          },
+          "stage_weights": {
+            "development": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
         },
         {
-          "id": "q12_a3",
-          "text": "Понимание потребностей и поведения пользователей",
-          "signal_associations": [
-            "user_empathy",
-            "research_mindset"
-          ],
+          "id": "c",
+          "text": "Я люблю обсуждать идеи, рисовать на доске и придумывать что-то новое вместе.",
           "role_weights": {
-            "ui_ux_researcher": 2.8,
-            "product_manager": 2.0,
-            "frontend_developer": 1.5
-          }
+            "uiux_designer": 4
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 2
+          },
+          "signal_associations": [
+            "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
         },
         {
-          "id": "q12_a4",
-          "text": "Практические навыки и реальный опыт",
-          "signal_associations": [
-            "experimental_approach",
-            "performance_optimization"
-          ],
+          "id": "d",
+          "text": "Я люблю помогать другим находить ошибки в их работе и улучшать результат.",
           "role_weights": {
-            "game_developer": 2.0,
-            "mobile_developer": 2.0,
-            "frontend_developer": 1.5
-          }
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
         }
       ]
     },
     {
       "id": "q13",
-      "text": "Как вы следите за новыми разработками в технологиях?",
-      "thematic_block": "Предпочтения в обучении",
-      "answer_options": [
+      "type": "single_choice",
+      "prompt": "Вы создаете онлайн-кинотеатр. Твоя задача?",
+      "options": [
         {
-          "id": "q13_a1",
-          "text": "Читаю технические статьи и глубокие разборы",
-          "signal_associations": [
-            "research_mindset",
-            "technical_depth_preference"
-          ],
+          "id": "a",
+          "text": "Сделать так, чтобы фильмы загружались быстро и в высоком качестве у миллионов зрителей.",
           "role_weights": {
-            "ml_engineer": 2.5,
-            "llm_engineer": 2.5,
-            "systems_architect": 1.5
-          }
+            "devops_engineer": 3,
+            "backend_developer": 2
+          },
+          "stage_weights": {
+            "launch_ops": 4,
+            "testing": 1,
+            "development": 2
+          },
+          "signal_associations": [
+            "automation_mindset",
+            "reliability_focus",
+            "incident_response"
+          ]
         },
         {
-          "id": "q13_a2",
-          "text": "Экспериментирую с новыми инструментами и фреймворками",
-          "signal_associations": [
-            "experimental_approach",
-            "creative_problem_solving"
-          ],
+          "id": "b",
+          "text": "Придумать алгоритм, который будет советовать фильмы на основе того, что человек смотрел раньше.",
           "role_weights": {
-            "frontend_developer": 2.0,
-            "game_developer": 2.0,
-            "mobile_developer": 1.5
-          }
+            "ai_data_engineer": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "development": 2
+          },
+          "signal_associations": [
+            "data_minded",
+            "experiment_minded",
+            "engineering_discipline"
+          ]
         },
         {
-          "id": "q13_a3",
-          "text": "Слежу за трендами индустрии и лучшими практиками",
-          "signal_associations": [
-            "strategic_thinking",
-            "process_orientation"
-          ],
+          "id": "c",
+          "text": "Нарисовать красивый плеер и сделать удобный поиск по жанрам.",
           "role_weights": {
-            "product_manager": 2.5,
-            "devops_engineer": 2.0,
-            "systems_architect": 1.5
-          }
+            "frontend_developer": 3,
+            "uiux_designer": 2
+          },
+          "stage_weights": {
+            "development": 3,
+            "design": 3,
+            "research": 1
+          },
+          "signal_associations": [
+            "frontend_interactivity",
+            "engineering_discipline",
+            "ui_craft"
+          ]
         },
         {
-          "id": "q13_a4",
-          "text": "Учусь через обсуждения в сообществе и отзывы пользователей",
-          "signal_associations": [
-            "communication_skills",
-            "user_empathy"
-          ],
+          "id": "d",
+          "text": "Проверить, работает ли перемотка назад и включаются ли субтитры на разных языках.",
           "role_weights": {
-            "ui_ux_researcher": 2.5,
-            "technical_writer": 2.0,
-            "product_manager": 1.5
-          }
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
         }
       ]
     },
     {
       "id": "q14",
-      "text": "Что мотивирует вас изучать что-то новое?",
-      "thematic_block": "Предпочтения в обучении",
-      "answer_options": [
+      "type": "single_choice",
+      "prompt": "Тебе подарили сложный конструктор LEGO. Что ты сделаешь?",
+      "options": [
         {
-          "id": "q14_a1",
-          "text": "Любопытство о том, как вещи устроены изнутри",
-          "signal_associations": [
-            "technical_depth_preference",
-            "analytical_thinking"
-          ],
+          "id": "a",
+          "text": "Сначала рассортирую детали по цветам и размерам, чтобы было удобно собирать.",
           "role_weights": {
-            "backend_developer": 2.0,
-            "security_engineer": 2.0,
-            "systems_architect": 1.5
-          }
+            "devops_engineer": 3,
+            "backend_developer": 2
+          },
+          "stage_weights": {
+            "launch_ops": 4,
+            "testing": 1,
+            "development": 2
+          },
+          "signal_associations": [
+            "automation_mindset",
+            "reliability_focus",
+            "incident_response"
+          ]
         },
         {
-          "id": "q14_a2",
-          "text": "Желание создать что-то новое и инновационное",
-          "signal_associations": [
-            "creative_problem_solving",
-            "experimental_approach"
-          ],
+          "id": "b",
+          "text": "Буду собирать строго по инструкции, проверяя каждый шаг, чтобы не ошибиться.",
           "role_weights": {
-            "game_developer": 2.5,
-            "llm_engineer": 2.0,
-            "frontend_developer": 1.5
-          }
-        },
-        {
-          "id": "q14_a3",
-          "text": "Необходимость решить конкретную проблему или улучшить процесс",
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
           "signal_associations": [
-            "process_orientation",
+            "quality_rigor",
+            "bug_hunting",
             "automation_mindset"
-          ],
-          "role_weights": {
-            "devops_engineer": 2.5,
-            "qa_engineer": 2.0,
-            "data_engineer": 1.5
-          }
+          ]
         },
         {
-          "id": "q14_a4",
-          "text": "Понимание того, как это может принести пользу пользователям",
-          "signal_associations": [
-            "user_empathy",
-            "strategic_thinking"
-          ],
+          "id": "c",
+          "text": "Соберу что-то свое, не заглядывая в инструкцию, чтобы было красиво и необычно.",
           "role_weights": {
-            "product_manager": 2.5,
-            "ui_ux_researcher": 2.0,
-            "frontend_developer": 1.5
-          }
+            "uiux_designer": 4
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 2
+          },
+          "signal_associations": [
+            "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
+        },
+        {
+          "id": "d",
+          "text": "Подумаю, можно ли из этого набора собрать робота, который будет полезен в хозяйстве.",
+          "role_weights": {
+            "product_manager": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "design": 2
+          },
+          "signal_associations": [
+            "problem_framing",
+            "stakeholder_alignment",
+            "user_empathy"
+          ]
         }
       ]
     },
     {
       "id": "q15",
-      "text": "Новый разработчик присоединился к проекту и спрашивает, как работает ваш модуль. Как вы объясните?",
-      "thematic_block": "Стиль коммуникации",
-      "answer_options": [
+      "type": "single_choice",
+      "prompt": "Вы делаете сайт для школы. Чем займешься?",
+      "options": [
         {
-          "id": "q15_a1",
-          "text": "Напишу подробный README с примерами кода и пошаговыми инструкциями",
-          "signal_associations": [
-            "communication_skills",
-            "systematic_approach"
-          ],
+          "id": "a",
+          "text": "Сделаю расписание уроков красивым и понятным, чтобы в нем легко было разобраться.",
           "role_weights": {
-            "technical_writer": 2.9,
-            "backend_developer": 1.0,
-            "devops_engineer": 1.0
-          }
-        },
-        {
-          "id": "q15_a2",
-          "text": "Нарисую схему компонентов и потоков данных на доске (или в Figma/Miro)",
+            "uiux_designer": 3,
+            "frontend_developer": 2
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 1,
+            "development": 2
+          },
           "signal_associations": [
             "visual_thinking",
-            "communication_skills"
-          ],
-          "role_weights": {
-            "ui_ux_researcher": 2.5,
-            "systems_architect": 2.0,
-            "frontend_developer": 1.5
-          }
+            "information_architecture",
+            "ui_craft"
+          ]
         },
         {
-          "id": "q15_a3",
-          "text": "Покажу живой пример: запущу код и пошагово объясню, что происходит",
-          "signal_associations": [
-            "experimental_approach",
-            "technical_depth_preference"
-          ],
+          "id": "b",
+          "text": "Создам базу данных учеников и учителей, чтобы оценки надежно хранились и не терялись.",
           "role_weights": {
-            "frontend_developer": 2.0,
-            "game_developer": 2.0,
-            "mobile_developer": 1.5
-          }
+            "backend_developer": 4
+          },
+          "stage_weights": {
+            "development": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
         },
         {
-          "id": "q15_a4",
-          "text": "Объясню простыми словами с аналогией из жизни (например, 'API — это как меню в ресторане')",
+          "id": "c",
+          "text": "Буду проверять электронный журнал: попробую поставить оценку \"12\" или удалить предмет.",
+          "role_weights": {
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
           "signal_associations": [
-            "communication_skills",
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
+        },
+        {
+          "id": "d",
+          "text": "Спрошу у одноклассников, какие функции им реально нужны на сайте школы.",
+          "role_weights": {
+            "product_manager": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "design": 2
+          },
+          "signal_associations": [
+            "problem_framing",
+            "stakeholder_alignment",
             "user_empathy"
-          ],
-          "role_weights": {
-            "product_manager": 2.5,
-            "technical_writer": 2.0,
-            "ui_ux_researcher": 1.5
-          }
+          ]
         }
       ]
     },
     {
       "id": "q16",
-      "text": "Какую роль вы естественным образом берете на себя, работая с другими?",
-      "thematic_block": "Стиль коммуникации",
-      "answer_options": [
+      "type": "single_choice",
+      "prompt": "Что тебе интереснее всего в компьютерных играх?",
+      "options": [
         {
-          "id": "q16_a1",
-          "text": "Технический эксперт, решающий сложные проблемы",
-          "signal_associations": [
-            "technical_depth_preference",
-            "analytical_thinking"
-          ],
+          "id": "a",
+          "text": "Графика, стиль персонажей и красивые локации.",
           "role_weights": {
-            "backend_developer": 2.0,
-            "ml_engineer": 2.0,
-            "security_engineer": 2.0
-          }
+            "uiux_designer": 3,
+            "frontend_developer": 2
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 1,
+            "development": 2
+          },
+          "signal_associations": [
+            "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
         },
         {
-          "id": "q16_a2",
-          "text": "Фасилитатор, обеспечивающий согласованность действий всех участников",
-          "signal_associations": [
-            "communication_skills",
-            "strategic_thinking"
-          ],
+          "id": "b",
+          "text": "Механика игры: как рассчитывается урон, физика полета пули или экономика.",
           "role_weights": {
-            "product_manager": 2.9,
-            "systems_architect": 1.5,
-            "technical_writer": 1.0
-          }
+            "backend_developer": 3,
+            "ai_data_engineer": 2
+          },
+          "stage_weights": {
+            "development": 4,
+            "launch_ops": 1,
+            "research": 2
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
         },
         {
-          "id": "q16_a3",
-          "text": "Защитник качества, выявляющий проблемы на ранней стадии",
-          "signal_associations": [
-            "critical_thinking",
-            "detail_orientation"
-          ],
+          "id": "c",
+          "text": "Поиск секретов, \"пасхалок\" и багов, которые разработчики забыли убрать.",
           "role_weights": {
-            "qa_engineer": 2.8,
-            "security_engineer": 2.0,
-            "devops_engineer": 1.0
-          }
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
         },
         {
-          "id": "q16_a4",
-          "text": "Адвокат пользователя, представляющий его интересы и потребности",
-          "signal_associations": [
-            "user_empathy",
-            "communication_skills"
-          ],
+          "id": "d",
+          "text": "Сюжет, диалоги и то, как игра удерживает мой интерес.",
           "role_weights": {
-            "ui_ux_researcher": 2.9,
-            "product_manager": 2.0,
-            "frontend_developer": 1.5
-          }
+            "product_manager": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "design": 2
+          },
+          "signal_associations": [
+            "problem_framing",
+            "stakeholder_alignment",
+            "user_empathy"
+          ]
         }
       ]
     },
     {
       "id": "q17",
-      "text": "Коллега предлагает другой подход к решению задачи. Ваши действия?",
-      "thematic_block": "Стиль коммуникации",
-      "answer_options": [
+      "type": "single_choice",
+      "prompt": "Ты планируешь путешествие с друзьями. Твоя роль?",
+      "options": [
         {
-          "id": "q17_a1",
-          "text": "Покажу бенчмарки производительности и метрики, подтверждающие мой вариант",
-          "signal_associations": [
-            "data_driven_mindset",
-            "analytical_thinking"
-          ],
+          "id": "a",
+          "text": "Я найду самые красивые места для фото и составлю маршрут по достопримечательностям.",
           "role_weights": {
-            "data_engineer": 2.5,
-            "ml_engineer": 2.0,
-            "systems_architect": 1.5
-          }
+            "uiux_designer": 4
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 2
+          },
+          "signal_associations": [
+            "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
         },
         {
-          "id": "q17_a2",
-          "text": "Спрошу: 'Какой подход быстрее доставит пользу пользователям и принесет больше конверсий?'",
-          "signal_associations": [
-            "user_empathy",
-            "strategic_thinking"
-          ],
+          "id": "b",
+          "text": "Я рассчитаю бюджет, забронирую билеты и проверю все стыковки рейсов.",
           "role_weights": {
-            "product_manager": 2.7,
-            "ui_ux_researcher": 2.0,
-            "frontend_developer": 1.0
-          }
+            "backend_developer": 3,
+            "ai_data_engineer": 2
+          },
+          "stage_weights": {
+            "development": 4,
+            "launch_ops": 1,
+            "research": 2
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
         },
         {
-          "id": "q17_a3",
-          "text": "Проанализирую, какой подход более безопасен и менее подвержен ошибкам",
-          "signal_associations": [
-            "risk_assessment",
-            "critical_thinking"
-          ],
+          "id": "c",
+          "text": "Я буду следить, чтобы мы ничего не забыли: паспорта, зарядки, аптечку.",
           "role_weights": {
-            "security_engineer": 2.5,
-            "qa_engineer": 2.0,
-            "devops_engineer": 1.5
-          }
+            "qa_engineer": 3,
+            "devops_engineer": 2
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 3
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
         },
         {
-          "id": "q17_a4",
-          "text": "Быстро напишу два прототипа и сравню их на практике: что работает лучше?",
-          "signal_associations": [
-            "experimental_approach",
-            "creative_problem_solving"
-          ],
+          "id": "d",
+          "text": "Я спрошу у всех, куда они хотят, и выберу вариант, который устроит большинство.",
           "role_weights": {
-            "game_developer": 2.0,
-            "frontend_developer": 2.0,
-            "llm_engineer": 1.5
-          }
+            "product_manager": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "design": 2
+          },
+          "signal_associations": [
+            "problem_framing",
+            "stakeholder_alignment",
+            "user_empathy"
+          ]
         }
       ]
     },
     {
       "id": "q18",
-      "text": "Какой тип обратной связи вы считаете наиболее полезным?",
-      "thematic_block": "Стиль коммуникации",
-      "answer_options": [
+      "type": "single_choice",
+      "prompt": "Вы делаете \"умный будильник\". Что ты сделаешь?",
+      "options": [
         {
-          "id": "q18_a1",
-          "text": "Детальная техническая критика и предложения",
-          "signal_associations": [
-            "technical_depth_preference",
-            "detail_orientation"
-          ],
+          "id": "a",
+          "text": "Напишу код, который анализирует фазы сна и будит человека в самый легкий момент.",
           "role_weights": {
-            "backend_developer": 2.0,
-            "security_engineer": 2.0,
-            "qa_engineer": 1.5
-          }
+            "ai_data_engineer": 3,
+            "backend_developer": 2
+          },
+          "stage_weights": {
+            "research": 3,
+            "development": 3,
+            "launch_ops": 1
+          },
+          "signal_associations": [
+            "data_minded",
+            "experiment_minded",
+            "engineering_discipline"
+          ]
         },
         {
-          "id": "q18_a2",
-          "text": "Реакции пользователей и инсайты об их опыте",
-          "signal_associations": [
-            "user_empathy",
-            "research_mindset"
-          ],
+          "id": "b",
+          "text": "Сделаю так, чтобы мелодия нарастала плавно и экран приятно светился, не слепя глаза.",
           "role_weights": {
-            "ui_ux_researcher": 2.8,
-            "frontend_developer": 2.0,
-            "product_manager": 1.5
-          }
+            "uiux_designer": 3,
+            "frontend_developer": 2
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 1,
+            "development": 2
+          },
+          "signal_associations": [
+            "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
         },
         {
-          "id": "q18_a3",
-          "text": "Метрики производительности и анализ данных",
-          "signal_associations": [
-            "data_driven_mindset",
-            "performance_optimization"
-          ],
+          "id": "c",
+          "text": "Проверю, сработает ли будильник, если телефон разрядился до 1% или переведен в авиарежим.",
           "role_weights": {
-            "ml_engineer": 2.5,
-            "data_engineer": 2.0,
-            "devops_engineer": 1.5
-          }
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
         },
         {
-          "id": "q18_a4",
-          "text": "Стратегическое направление и соответствие целям",
-          "signal_associations": [
-            "strategic_thinking",
-            "big_picture_thinking"
-          ],
+          "id": "d",
+          "text": "Подумаю, какие еще функции добавить: например, прогноз погоды или новости с утра.",
           "role_weights": {
-            "product_manager": 2.5,
-            "systems_architect": 2.5,
-            "devops_engineer": 1.0
-          }
+            "product_manager": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "design": 2
+          },
+          "signal_associations": [
+            "problem_framing",
+            "stakeholder_alignment",
+            "user_empathy"
+          ]
         }
       ]
     },
     {
       "id": "q19",
-      "text": "Над каким типом проекта вам было бы интереснее всего работать?",
-      "thematic_block": "Предпочтения в проектах",
-      "answer_options": [
+      "type": "single_choice",
+      "prompt": "Что для тебя \"идеальный порядок\" на рабочем столе компьютера?",
+      "options": [
         {
-          "id": "q19_a1",
-          "text": "Создание внутренней логики работы сайта или приложения (то, что скрыто от глаз)",
-          "signal_associations": [
-            "systematic_approach",
-            "technical_depth_preference"
-          ],
+          "id": "a",
+          "text": "Все файлы разложены по папкам, папки подписаны, лишнего ничего нет.",
           "role_weights": {
-            "backend_developer": 2.5,
-            "data_engineer": 2.0,
-            "systems_architect": 2.0
-          }
+            "backend_developer": 3,
+            "devops_engineer": 2
+          },
+          "stage_weights": {
+            "development": 3,
+            "launch_ops": 3,
+            "testing": 1
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
         },
         {
-          "id": "q19_a2",
-          "text": "Создание внешней части, с которой взаимодействуют люди (кнопки, экраны, анимации)",
+          "id": "b",
+          "text": "Красивые обои, минимум иконок, всё выглядит эстетично.",
+          "role_weights": {
+            "uiux_designer": 4
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 2
+          },
           "signal_associations": [
             "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
+        },
+        {
+          "id": "c",
+          "text": "У меня творческий беспорядок, но я точно знаю, где что лежит.",
+          "role_weights": {
+            "product_manager": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "design": 2
+          },
+          "signal_associations": [
+            "problem_framing",
+            "stakeholder_alignment",
             "user_empathy"
-          ],
-          "role_weights": {
-            "frontend_developer": 2.9,
-            "mobile_developer": 2.0,
-            "ui_ux_researcher": 1.5
-          }
+          ]
         },
         {
-          "id": "q19_a3",
-          "text": "Создание программ, которые могут обучаться и анализировать данные (Искусственный Интеллект)",
-          "signal_associations": [
-            "analytical_thinking",
-            "data_driven_mindset"
-          ],
+          "id": "d",
+          "text": "Я регулярно удаляю ненужные файлы и проверяю систему антивирусом.",
           "role_weights": {
-            "ml_engineer": 2.8,
-            "llm_engineer": 2.5,
-            "data_engineer": 1.5
-          }
-        },
-        {
-          "id": "q19_a4",
-          "text": "Настройка надежной работы серверов и автоматизация технических процессов",
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
           "signal_associations": [
-            "automation_mindset",
-            "systematic_approach"
-          ],
-          "role_weights": {
-            "devops_engineer": 2.9,
-            "systems_architect": 1.5,
-            "backend_developer": 1.0
-          }
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
         }
       ]
     },
     {
       "id": "q20",
-      "text": "Какой аспект графика проекта для вас важнее всего?",
-      "thematic_block": "Предпочтения в проектах",
-      "answer_options": [
+      "type": "single_choice",
+      "prompt": "Вы разрабатываете навигатор (карты). Твоя задача?",
+      "options": [
         {
-          "id": "q20_a1",
-          "text": "Иметь время на обеспечение качества и устранение всех багов",
-          "signal_associations": [
-            "detail_orientation",
-            "systematic_approach"
-          ],
+          "id": "a",
+          "text": "Сделать так, чтобы карта загружалась мгновенно, даже при плохом интернете.",
           "role_weights": {
-            "qa_engineer": 2.8,
-            "security_engineer": 2.0,
-            "technical_writer": 1.5
-          }
+            "devops_engineer": 3,
+            "backend_developer": 2
+          },
+          "stage_weights": {
+            "launch_ops": 4,
+            "testing": 1,
+            "development": 2
+          },
+          "signal_associations": [
+            "automation_mindset",
+            "reliability_focus",
+            "incident_response"
+          ]
         },
         {
-          "id": "q20_a2",
-          "text": "Быстро итерировать на основе отзывов пользователей",
-          "signal_associations": [
-            "experimental_approach",
-            "user_empathy"
-          ],
+          "id": "b",
+          "text": "Продумать, как показывать пробки, чтобы водителю было сразу понятно, где затор.",
           "role_weights": {
-            "product_manager": 2.5,
-            "ui_ux_researcher": 2.0,
-            "frontend_developer": 1.5
-          }
+            "uiux_designer": 3,
+            "frontend_developer": 2
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 1,
+            "development": 2
+          },
+          "signal_associations": [
+            "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
         },
         {
-          "id": "q20_a3",
-          "text": "Закладывать прочный фундамент для будущего роста",
-          "signal_associations": [
-            "strategic_thinking",
-            "big_picture_thinking"
-          ],
+          "id": "c",
+          "text": "Анализировать данные о движении машин, чтобы предсказывать пробки заранее.",
           "role_weights": {
-            "systems_architect": 2.9,
-            "backend_developer": 2.0,
-            "devops_engineer": 1.5
-          }
+            "ai_data_engineer": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "development": 2
+          },
+          "signal_associations": [
+            "data_minded",
+            "experiment_minded",
+            "engineering_discipline"
+          ]
         },
         {
-          "id": "q20_a4",
-          "text": "Экспериментировать с инновационными подходами",
-          "signal_associations": [
-            "creative_problem_solving",
-            "experimental_approach"
-          ],
+          "id": "d",
+          "text": "Проверить, приведет ли навигатор в тупик, если специально свернуть не туда.",
           "role_weights": {
-            "game_developer": 2.5,
-            "llm_engineer": 2.0,
-            "ml_engineer": 1.5
-          }
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
         }
       ]
     },
     {
       "id": "q21",
-      "text": "Что делает проект успешным с вашей точки зрения?",
-      "thematic_block": "Предпочтения в проектах",
-      "answer_options": [
+      "type": "single_choice",
+      "prompt": "Какую суперспособность ты бы выбрал?",
+      "options": [
         {
-          "id": "q21_a1",
-          "text": "Пользователи в восторге от него и находят его ценным",
-          "signal_associations": [
-            "user_empathy",
-            "communication_skills"
-          ],
+          "id": "a",
+          "text": "Видеть сквозь стены и понимать, как устроены механизмы внутри.",
           "role_weights": {
-            "ui_ux_researcher": 2.8,
-            "product_manager": 2.5,
-            "frontend_developer": 2.0
-          }
+            "backend_developer": 4
+          },
+          "stage_weights": {
+            "development": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
         },
         {
-          "id": "q21_a2",
-          "text": "Он технически безупречен и имеет отличную архитектуру",
-          "signal_associations": [
-            "technical_depth_preference",
-            "systematic_approach"
-          ],
+          "id": "b",
+          "text": "Предвидеть будущее и знать, что произойдет через час.",
           "role_weights": {
-            "systems_architect": 2.5,
-            "backend_developer": 2.5,
-            "security_engineer": 1.5
-          }
+            "ai_data_engineer": 3,
+            "product_manager": 2
+          },
+          "stage_weights": {
+            "research": 5,
+            "development": 1,
+            "design": 1
+          },
+          "signal_associations": [
+            "data_minded",
+            "experiment_minded",
+            "engineering_discipline"
+          ]
         },
         {
-          "id": "q21_a3",
-          "text": "Он надежен, безопасен и хорошо протестирован",
-          "signal_associations": [
-            "detail_orientation",
-            "risk_assessment"
-          ],
+          "id": "c",
+          "text": "Мгновенно замечать любую, даже самую мелкую деталь или ошибку.",
           "role_weights": {
-            "qa_engineer": 2.5,
-            "security_engineer": 2.5,
-            "devops_engineer": 2.0
-          }
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
         },
         {
-          "id": "q21_a4",
-          "text": "Он достигает бизнес-целей и приносит прибыль",
-          "signal_associations": [
-            "strategic_thinking",
-            "data_driven_mindset"
-          ],
+          "id": "d",
+          "text": "Создавать иллюзии и красивые образы силой мысли.",
           "role_weights": {
-            "product_manager": 2.9,
-            "systems_architect": 1.5,
-            "data_engineer": 1.0
-          }
+            "uiux_designer": 3,
+            "frontend_developer": 2
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 1,
+            "development": 2
+          },
+          "signal_associations": [
+            "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
         }
       ]
     },
     {
       "id": "q22",
-      "text": "Чему бы вы уделили приоритетное внимание, присоединившись к новому проекту?",
-      "thematic_block": "Предпочтения в проектах",
-      "answer_options": [
+      "type": "single_choice",
+      "prompt": "Вы делаете приложение для знакомств. Чем займешься?",
+      "options": [
         {
-          "id": "q22_a1",
-          "text": "Изучению кодовой базы и технической архитектуры",
-          "signal_associations": [
-            "technical_depth_preference",
-            "analytical_thinking"
-          ],
+          "id": "a",
+          "text": "Напишу алгоритм, который подбирает идеальную пару по интересам.",
           "role_weights": {
-            "backend_developer": 2.5,
-            "systems_architect": 2.0,
-            "security_engineer": 1.5
-          }
+            "ai_data_engineer": 3,
+            "backend_developer": 2
+          },
+          "stage_weights": {
+            "research": 3,
+            "development": 3,
+            "launch_ops": 1
+          },
+          "signal_associations": [
+            "data_minded",
+            "experiment_minded",
+            "engineering_discipline"
+          ]
         },
         {
-          "id": "q22_a2",
-          "text": "Изучению пользователей и их потребностей",
-          "signal_associations": [
-            "user_empathy",
-            "research_mindset"
-          ],
+          "id": "b",
+          "text": "Сделаю удобный чат и красивые профили пользователей.",
           "role_weights": {
-            "ui_ux_researcher": 2.8,
-            "product_manager": 2.5,
-            "frontend_developer": 1.5
-          }
+            "frontend_developer": 3,
+            "uiux_designer": 2
+          },
+          "stage_weights": {
+            "development": 3,
+            "design": 3,
+            "research": 1
+          },
+          "signal_associations": [
+            "frontend_interactivity",
+            "engineering_discipline",
+            "ui_craft"
+          ]
         },
         {
-          "id": "q22_a3",
-          "text": "Ревизии процессов развертывания и тестирования",
-          "signal_associations": [
-            "process_orientation",
-            "systematic_approach"
-          ],
+          "id": "c",
+          "text": "Буду следить, чтобы серверы не падали от наплыва пользователей в день святого Валентина.",
           "role_weights": {
-            "devops_engineer": 2.5,
-            "qa_engineer": 2.5,
-            "security_engineer": 1.5
-          }
+            "devops_engineer": 4
+          },
+          "stage_weights": {
+            "launch_ops": 4,
+            "testing": 2
+          },
+          "signal_associations": [
+            "automation_mindset",
+            "reliability_focus",
+            "incident_response"
+          ]
         },
         {
-          "id": "q22_a4",
-          "text": "Исследованию данных и аналитики",
-          "signal_associations": [
-            "data_driven_mindset",
-            "analytical_thinking"
-          ],
+          "id": "d",
+          "text": "Попробую создать анкету кота и посмотрю, пропустит ли её модерация.",
           "role_weights": {
-            "data_engineer": 2.9,
-            "ml_engineer": 2.5,
-            "product_manager": 1.0
-          }
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
         }
       ]
     },
     {
       "id": "q23",
-      "text": "Как вы принимаете важные технические решения?",
-      "thematic_block": "Стиль принятия решений",
-      "answer_options": [
+      "type": "single_choice",
+      "prompt": "Тебе нужно подготовить презентацию для класса. На что потратишь больше времени?",
+      "options": [
         {
-          "id": "q23_a1",
-          "text": "Анализирую данные и метрики для обоснования решения",
-          "signal_associations": [
-            "data_driven_mindset",
-            "analytical_thinking"
-          ],
+          "id": "a",
+          "text": "На дизайн слайдов: шрифты, цвета, картинки.",
           "role_weights": {
-            "data_engineer": 2.5,
-            "ml_engineer": 2.5,
-            "product_manager": 1.5
-          }
+            "uiux_designer": 4
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 2
+          },
+          "signal_associations": [
+            "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
         },
         {
-          "id": "q23_a2",
-          "text": "Учитываю долгосрочные последствия и масштабируемость",
-          "signal_associations": [
-            "strategic_thinking",
-            "big_picture_thinking"
-          ],
+          "id": "b",
+          "text": "На структуру выступления: логика, аргументы, факты.",
           "role_weights": {
-            "systems_architect": 2.8,
-            "product_manager": 2.0,
-            "devops_engineer": 1.5
-          }
+            "backend_developer": 3,
+            "product_manager": 2
+          },
+          "stage_weights": {
+            "development": 3,
+            "launch_ops": 1,
+            "research": 2,
+            "design": 1
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
         },
         {
-          "id": "q23_a3",
-          "text": "Оцениваю риски безопасности и потенциальные уязвимости",
-          "signal_associations": [
-            "risk_assessment",
-            "critical_thinking"
-          ],
+          "id": "c",
+          "text": "На проверку текста: чтобы не было ни одной ошибки или запятой не там.",
           "role_weights": {
-            "security_engineer": 2.5,
-            "qa_engineer": 2.0,
-            "devops_engineer": 1.5
-          }
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
         },
         {
-          "id": "q23_a4",
-          "text": "Тестирую разные варианты и смотрю, что работает лучше",
-          "signal_associations": [
-            "experimental_approach",
-            "creative_problem_solving"
-          ],
+          "id": "d",
+          "text": "На поиск статистики и данных, чтобы подтвердить свои слова цифрами.",
           "role_weights": {
-            "game_developer": 2.0,
-            "llm_engineer": 2.0,
-            "frontend_developer": 1.5
-          }
+            "ai_data_engineer": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "development": 2
+          },
+          "signal_associations": [
+            "data_minded",
+            "experiment_minded",
+            "engineering_discipline"
+          ]
         }
       ]
     },
     {
       "id": "q24",
-      "text": "Чем вы руководствуетесь в условиях неопределенности?",
-      "thematic_block": "Стиль принятия решений",
-      "answer_options": [
+      "type": "single_choice",
+      "prompt": "Вы делаете банковское приложение. Твоя ответственность?",
+      "options": [
         {
-          "id": "q24_a1",
-          "text": "Исследую и собираю больше информации",
-          "signal_associations": [
-            "research_mindset",
-            "analytical_thinking"
-          ],
+          "id": "a",
+          "text": "Безопасность: чтобы никто не мог украсть деньги или взломать аккаунт.",
           "role_weights": {
-            "ml_engineer": 2.5,
-            "technical_writer": 2.0,
-            "ui_ux_researcher": 2.0
-          }
+            "backend_developer": 3,
+            "devops_engineer": 2
+          },
+          "stage_weights": {
+            "development": 3,
+            "launch_ops": 3,
+            "testing": 1
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
         },
         {
-          "id": "q24_a2",
-          "text": "Следую проверенным лучшим практикам и паттернам",
-          "signal_associations": [
-            "process_orientation",
-            "systematic_approach"
-          ],
+          "id": "b",
+          "text": "Удобство: чтобы перевести деньги другу можно было за два клика.",
           "role_weights": {
-            "devops_engineer": 2.5,
-            "qa_engineer": 2.0,
-            "backend_developer": 1.5
-          }
+            "frontend_developer": 3,
+            "uiux_designer": 2
+          },
+          "stage_weights": {
+            "development": 3,
+            "design": 3,
+            "research": 1
+          },
+          "signal_associations": [
+            "frontend_interactivity",
+            "engineering_discipline",
+            "ui_craft"
+          ]
         },
         {
-          "id": "q24_a3",
-          "text": "Советуюсь с пользователями или стейкхолдерами",
-          "signal_associations": [
-            "communication_skills",
-            "user_empathy"
-          ],
+          "id": "c",
+          "text": "Тестирование: попробую перевести отрицательную сумму денег.",
           "role_weights": {
-            "product_manager": 2.9,
-            "ui_ux_researcher": 2.5,
-            "technical_writer": 1.5
-          }
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
         },
         {
-          "id": "q24_a4",
-          "text": "Доверяю своей интуиции и опыту",
-          "signal_associations": [
-            "creative_problem_solving",
-            "strategic_thinking"
-          ],
+          "id": "d",
+          "text": "Аналитика: понять, какими услугами банка люди пользуются чаще всего.",
           "role_weights": {
-            "systems_architect": 2.0,
-            "game_developer": 2.0,
-            "frontend_developer": 1.5
-          }
+            "ai_data_engineer": 3,
+            "product_manager": 2
+          },
+          "stage_weights": {
+            "research": 5,
+            "development": 1,
+            "design": 1
+          },
+          "signal_associations": [
+            "data_minded",
+            "experiment_minded",
+            "engineering_discipline"
+          ]
         }
       ]
     },
     {
       "id": "q25",
-      "text": "Какой фактор имеет наибольший вес в ваших решениях?",
-      "thematic_block": "Стиль принятия решений",
-      "answer_options": [
+      "type": "single_choice",
+      "prompt": "Как ты относишься к инструкциям?",
+      "options": [
         {
-          "id": "q25_a1",
-          "text": "Влияние на пользовательский опыт и удовлетворенность",
-          "signal_associations": [
-            "user_empathy",
-            "strategic_thinking"
-          ],
+          "id": "a",
+          "text": "Я их пишу! Люблю создавать четкие правила для других.",
           "role_weights": {
-            "ui_ux_researcher": 2.8,
-            "product_manager": 2.5,
-            "frontend_developer": 2.0,
-            "mobile_developer": 1.5
-          }
+            "backend_developer": 3,
+            "devops_engineer": 2
+          },
+          "stage_weights": {
+            "development": 3,
+            "launch_ops": 3,
+            "testing": 1
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
         },
         {
-          "id": "q25_a2",
-          "text": "Техническая корректность и качество кода",
-          "signal_associations": [
-            "technical_depth_preference",
-            "detail_orientation"
-          ],
+          "id": "b",
+          "text": "Читаю, чтобы найти в них противоречия или неточности.",
           "role_weights": {
-            "backend_developer": 2.5,
-            "qa_engineer": 2.5,
-            "security_engineer": 2.0
-          }
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
         },
         {
-          "id": "q25_a3",
-          "text": "Надежность и сопровождаемость системы",
-          "signal_associations": [
-            "systematic_approach",
-            "process_orientation"
-          ],
+          "id": "c",
+          "text": "Предпочитаю, чтобы вместо текста были понятные картинки и схемы.",
           "role_weights": {
-            "devops_engineer": 2.9,
-            "systems_architect": 2.5,
-            "qa_engineer": 2.0
-          }
+            "uiux_designer": 4
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 2
+          },
+          "signal_associations": [
+            "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
         },
         {
-          "id": "q25_a4",
-          "text": "Инновации и творческий потенциал",
-          "signal_associations": [
-            "creative_problem_solving",
-            "experimental_approach"
-          ],
+          "id": "d",
+          "text": "Читаю по диагонали, чтобы понять суть, а детали выясняю по ходу дела.",
           "role_weights": {
-            "game_developer": 2.8,
-            "llm_engineer": 2.5,
-            "ml_engineer": 1.5
-          }
+            "product_manager": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "design": 2
+          },
+          "signal_associations": [
+            "problem_framing",
+            "stakeholder_alignment",
+            "user_empathy"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "q26",
+      "type": "single_choice",
+      "prompt": "Вы создаете голосового помощника (как Алиса или Сири). Твоя роль?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Обучать нейросеть понимать человеческую речь и акценты.",
+          "role_weights": {
+            "ai_data_engineer": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "development": 2
+          },
+          "signal_associations": [
+            "data_minded",
+            "experiment_minded",
+            "engineering_discipline"
+          ]
+        },
+        {
+          "id": "b",
+          "text": "Сделать красивую анимацию, когда помощник \"слушает\" или \"говорит\".",
+          "role_weights": {
+            "frontend_developer": 3,
+            "uiux_designer": 2
+          },
+          "stage_weights": {
+            "development": 3,
+            "design": 3,
+            "research": 1
+          },
+          "signal_associations": [
+            "frontend_interactivity",
+            "engineering_discipline",
+            "ui_craft"
+          ]
+        },
+        {
+          "id": "c",
+          "text": "Связать помощника с интернетом, чтобы он мог быстро находить ответы.",
+          "role_weights": {
+            "backend_developer": 4
+          },
+          "stage_weights": {
+            "development": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
+        },
+        {
+          "id": "d",
+          "text": "Задавать помощнику глупые или очень сложные вопросы, чтобы проверить его реакцию.",
+          "role_weights": {
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "q27",
+      "type": "single_choice",
+      "prompt": "В командной игре (спорт или киберспорт) ты обычно...",
+      "options": [
+        {
+          "id": "a",
+          "text": "Капитан или стратег, который видит всю картину игры.",
+          "role_weights": {
+            "product_manager": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "design": 2
+          },
+          "signal_associations": [
+            "problem_framing",
+            "stakeholder_alignment",
+            "user_empathy"
+          ]
+        },
+        {
+          "id": "b",
+          "text": "Надежный защитник или поддержка, на ком держится тыл.",
+          "role_weights": {
+            "devops_engineer": 3,
+            "backend_developer": 2
+          },
+          "stage_weights": {
+            "launch_ops": 4,
+            "testing": 1,
+            "development": 2
+          },
+          "signal_associations": [
+            "automation_mindset",
+            "reliability_focus",
+            "incident_response"
+          ]
+        },
+        {
+          "id": "c",
+          "text": "Тот, кто замечает слабые места противника и использует их.",
+          "role_weights": {
+            "qa_engineer": 3,
+            "ai_data_engineer": 2
+          },
+          "stage_weights": {
+            "testing": 3,
+            "launch_ops": 1,
+            "research": 2,
+            "development": 1
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
+        },
+        {
+          "id": "d",
+          "text": "Тот, кто делает игру красивой и зрелищной (яркие моменты).",
+          "role_weights": {
+            "frontend_developer": 4
+          },
+          "stage_weights": {
+            "development": 4,
+            "design": 2
+          },
+          "signal_associations": [
+            "frontend_interactivity",
+            "engineering_discipline",
+            "ui_craft"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "q28",
+      "type": "single_choice",
+      "prompt": "Вы делаете сервис для прослушивания музыки. Что выберешь?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Сделать так, чтобы обложки альбомов красиво разворачивались на весь экран.",
+          "role_weights": {
+            "frontend_developer": 3,
+            "uiux_designer": 2
+          },
+          "stage_weights": {
+            "development": 3,
+            "design": 3,
+            "research": 1
+          },
+          "signal_associations": [
+            "frontend_interactivity",
+            "engineering_discipline",
+            "ui_craft"
+          ]
+        },
+        {
+          "id": "b",
+          "text": "Обеспечить хранение миллионов треков так, чтобы любой находился за секунду.",
+          "role_weights": {
+            "backend_developer": 4
+          },
+          "stage_weights": {
+            "development": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
+        },
+        {
+          "id": "c",
+          "text": "Анализировать музыкальные вкусы пользователей, чтобы составлять персональные плейлисты.",
+          "role_weights": {
+            "ai_data_engineer": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "development": 2
+          },
+          "signal_associations": [
+            "data_minded",
+            "experiment_minded",
+            "engineering_discipline"
+          ]
+        },
+        {
+          "id": "d",
+          "text": "Проверить звук: не искажается ли он при плохом интернете.",
+          "role_weights": {
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "q29",
+      "type": "single_choice",
+      "prompt": "Что для тебя \"успех проекта\"?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Когда всё работает как часы, без сбоев и остановок.",
+          "role_weights": {
+            "devops_engineer": 3,
+            "backend_developer": 2
+          },
+          "stage_weights": {
+            "launch_ops": 4,
+            "testing": 1,
+            "development": 2
+          },
+          "signal_associations": [
+            "automation_mindset",
+            "reliability_focus",
+            "incident_response"
+          ]
+        },
+        {
+          "id": "b",
+          "text": "Когда пользователям удобно, и они говорят \"вау, как красиво!\".",
+          "role_weights": {
+            "uiux_designer": 3,
+            "frontend_developer": 2
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 1,
+            "development": 2
+          },
+          "signal_associations": [
+            "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
+        },
+        {
+          "id": "c",
+          "text": "Когда продукт приносит пользу и решает реальные проблемы людей.",
+          "role_weights": {
+            "product_manager": 4
+          },
+          "stage_weights": {
+            "research": 4,
+            "design": 2
+          },
+          "signal_associations": [
+            "problem_framing",
+            "stakeholder_alignment",
+            "user_empathy"
+          ]
+        },
+        {
+          "id": "d",
+          "text": "Когда в системе не осталось ни одной ошибки.",
+          "role_weights": {
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "q30",
+      "type": "single_choice",
+      "prompt": "Если бы ты был учителем, как бы ты проверял контрольные?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Искал бы каждую мелкую ошибку и помарку.",
+          "role_weights": {
+            "qa_engineer": 4
+          },
+          "stage_weights": {
+            "testing": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "quality_rigor",
+            "bug_hunting",
+            "automation_mindset"
+          ]
+        },
+        {
+          "id": "b",
+          "text": "Смотрел бы на ход решения и логику, даже если ответ не совсем точный.",
+          "role_weights": {
+            "backend_developer": 4
+          },
+          "stage_weights": {
+            "development": 4,
+            "launch_ops": 2
+          },
+          "signal_associations": [
+            "system_design",
+            "engineering_discipline",
+            "data_minded"
+          ]
+        },
+        {
+          "id": "c",
+          "text": "Оценивал бы аккуратность оформления и понятность почерка.",
+          "role_weights": {
+            "uiux_designer": 4
+          },
+          "stage_weights": {
+            "design": 4,
+            "research": 2
+          },
+          "signal_associations": [
+            "visual_thinking",
+            "information_architecture",
+            "ui_craft"
+          ]
+        },
+        {
+          "id": "d",
+          "text": "Сравнивал бы результаты всего класса, чтобы понять, какую тему ребята не поняли.",
+          "role_weights": {
+            "ai_data_engineer": 3,
+            "product_manager": 2
+          },
+          "stage_weights": {
+            "research": 5,
+            "development": 1,
+            "design": 1
+          },
+          "signal_associations": [
+            "data_minded",
+            "experiment_minded",
+            "engineering_discipline"
+          ]
         }
       ]
     }

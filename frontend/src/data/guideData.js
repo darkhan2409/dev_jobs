@@ -37,7 +37,7 @@ export const GUIDE_STAGES = [
       'Сформулировать ценностное предложение',
       'Определить границы MVP',
     ],
-    backendStageIds: ['idea_and_need'],
+    backendStageIds: ['research'],
   },
   {
     id: 'design',
@@ -68,7 +68,7 @@ export const GUIDE_STAGES = [
       'Как сервисы общаются? (API)',
       'Кто за что отвечает в команде?',
     ],
-    backendStageIds: ['planning', 'design', 'architecture'],
+    backendStageIds: ['design'],
   },
   {
     id: 'build',
@@ -99,7 +99,7 @@ export const GUIDE_STAGES = [
       'Как интегрировать компоненты?',
       'Как управлять версиями? (Git)',
     ],
-    backendStageIds: ['development'],
+    backendStageIds: ['build'],
   },
   {
     id: 'verify',
@@ -130,7 +130,7 @@ export const GUIDE_STAGES = [
       'Безопасны ли данные пользователей?',
       'Готов ли продукт к нагрузке?',
     ],
-    backendStageIds: ['testing', 'security'],
+    backendStageIds: ['test'],
   },
   {
     id: 'release',
@@ -161,7 +161,7 @@ export const GUIDE_STAGES = [
       'Как собирать обратную связь?',
       'Как документировать API?',
     ],
-    backendStageIds: ['deployment', 'analytics', 'documentation'],
+    backendStageIds: ['run'],
   },
 ];
 

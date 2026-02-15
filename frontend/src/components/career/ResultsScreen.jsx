@@ -1,425 +1,424 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, RefreshCw, Briefcase, Sparkles, AlertTriangle, TrendingUp, CheckCircle, BookOpen, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Bot, Briefcase, BriefcaseBusiness, Building2, Medal, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { interviewApi } from '../../api/interviewApi';
-import Button from '../ui/Button';
-import Badge from '../ui/Badge';
-import SignalChart from './SignalChart';
-import StageResultCard from './StageResultCard';
-import { fadeInUp, staggerContainer } from '../../utils/animations';
-
-// Helper function to split text into readable paragraphs
-const splitIntoParagraphs = (text) => {
-    if (!text) return [];
-
-    // First try splitting by double newlines
-    if (text.includes('\n\n')) {
-        return text.split('\n\n').map(p => p.trim()).filter(Boolean);
-    }
-
-    // Try splitting by single newlines
-    if (text.includes('\n')) {
-        return text.split('\n').map(p => p.trim()).filter(Boolean);
-    }
-
-    // Split by sentences - each sentence becomes a paragraph for better readability
-    const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim());
-
-    // If only 1 sentence, return as is
-    if (sentences.length <= 1) {
-        return [text];
-    }
-
-    // Return each sentence as separate paragraph
-    return sentences;
-};
 
 const roleNames = {
-    backend_developer: 'Backend-разработчик',
-    frontend_developer: 'Frontend-разработчик',
-    fullstack_developer: 'Fullstack-разработчик',
-    ml_engineer: 'ML-инженер',
-    llm_engineer: 'LLM-инженер',
-    devops_engineer: 'DevOps-инженер',
-    data_engineer: 'Data-инженер',
-    data_analyst: 'Аналитик данных',
-    qa_engineer: 'QA-инженер',
-    security_engineer: 'Инженер по безопасности',
-    mobile_developer: 'Мобильный разработчик',
-    game_developer: 'Разработчик игр',
-    systems_architect: 'Системный архитектор',
     product_manager: 'Продакт-менеджер',
-    technical_writer: 'Технический писатель',
-    ui_ux_researcher: 'UI/UX-исследователь'
+    uiux_designer: 'UI/UX-дизайнер',
+    frontend_developer: 'Frontend-разработчик',
+    backend_developer: 'Backend-разработчик',
+    ai_data_engineer: 'AI/Data-инженер',
+    qa_engineer: 'QA-инженер',
+    devops_engineer: 'DevOps-инженер',
 };
 
-const ResultsScreen = ({ results, onRestart }) => {
-    const { ranked_roles, signal_profile, interpretation, ranked_stages, stage_recommendation } = results;
+const roleSubtitles = {
+    product_manager: 'Исследование и планирование',
+    uiux_designer: 'Дизайн без кода',
+    frontend_developer: 'Визуальный код',
+    backend_developer: 'Логика и данные',
+    ai_data_engineer: 'Математика и данные',
+    qa_engineer: 'Качество и тесты',
+    devops_engineer: 'Инфраструктура и автоматизация',
+};
+
+const ANALYSIS_BLOCK_FALLBACK_TITLES = [
+    'Почему тебе подходит роль',
+    'Твои сильные качества',
+    'Как это проявится в работе',
+    'С чего начать в 2026',
+];
+
+const MEDAL_STYLES = [
+    {
+        ring: 'border-amber-300/65',
+        bg: 'bg-amber-300/15',
+        icon: 'text-amber-300',
+    },
+    {
+        ring: 'border-slate-300/65',
+        bg: 'bg-slate-300/15',
+        icon: 'text-slate-200',
+    },
+    {
+        ring: 'border-orange-300/65',
+        bg: 'bg-orange-300/15',
+        icon: 'text-orange-300',
+    },
+];
+
+const splitExplanationParagraphs = (text) => {
+    if (!text) return [];
+    let paragraphs = [];
+    if (text.includes('\n\n')) {
+        paragraphs = text.split('\n\n').map((p) => p.trim()).filter(Boolean);
+    } else if (text.includes('\n')) {
+        paragraphs = text.split('\n').map((p) => p.trim()).filter(Boolean);
+    } else {
+        paragraphs = [text.trim()];
+    }
+
+    // If model returns one long paragraph, split it into short readable blocks.
+    if (paragraphs.length === 1) {
+        const sentences = (paragraphs[0].match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [])
+            .map((s) => s.trim())
+            .filter(Boolean);
+
+        if (sentences.length >= 4) {
+            const blocks = [];
+            for (let i = 0; i < sentences.length; i += 2) {
+                blocks.push(sentences.slice(i, i + 2).join(' '));
+            }
+            return blocks;
+        }
+    }
+
+    return paragraphs.filter(Boolean);
+};
+
+const parseAnalysisBlocks = (text) => {
+    const paragraphs = splitExplanationParagraphs(text);
+    if (paragraphs.length === 0) return [];
+
+    return paragraphs.map((paragraph, index) => {
+        const normalized = paragraph.replace(/\s+/g, ' ').trim();
+        const colonMatch = normalized.match(/^(?:\d+[).]\s*)?([^:]{3,80}):\s*(.+)$/);
+        const dashMatch = normalized.match(/^(?:\d+[).]\s*)?([^—-]{3,80})\s*[—-]\s*(.+)$/);
+
+        if (colonMatch) {
+            return {
+                title: colonMatch[1].trim(),
+                text: colonMatch[2].trim(),
+            };
+        }
+
+        if (dashMatch) {
+            return {
+                title: dashMatch[1].trim(),
+                text: dashMatch[2].trim(),
+            };
+        }
+
+        return {
+            title: ANALYSIS_BLOCK_FALLBACK_TITLES[index] || `Блок ${index + 1}`,
+            text: normalized,
+        };
+    });
+};
+
+const formatMatchPercent = (score) => {
+    const numeric = Number(score);
+    if (!Number.isFinite(numeric)) return 0;
+    const normalized = numeric <= 1 ? numeric * 100 : numeric;
+    const clamped = Math.max(0, Math.min(100, normalized));
+    return Math.round(clamped);
+};
+
+const formatKzt = (value) => {
+    if (!value || value <= 0) return '—';
+    return new Intl.NumberFormat('ru-KZ', {
+        style: 'currency',
+        currency: 'KZT',
+        maximumFractionDigits: 0,
+    }).format(value);
+};
+
+const ResultsScreen = ({ results }) => {
+    const navigate = useNavigate();
     const [roleDetails, setRoleDetails] = useState(null);
-    const [nextSteps, setNextSteps] = useState([]);
     const [isRoleDetailsLoading, setIsRoleDetailsLoading] = useState(false);
-    const [roleDetailsError, setRoleDetailsError] = useState(false);
-    const [nextStepsError, setNextStepsError] = useState(false);
+    const [marketStats, setMarketStats] = useState(null);
+    const [isMarketLoading, setIsMarketLoading] = useState(false);
 
-    const primaryRoleId = ranked_roles?.[0]?.role_id;
+    const sortedRoles = [...(results?.ranked_roles || [])].sort((a, b) => b.score - a.score);
+    const primaryRole = sortedRoles[0] || { role_id: 'backend_developer', score: 0 };
+    const primaryRoleId = primaryRole.role_id;
+    const primaryRoleName = roleNames[primaryRoleId] || primaryRoleId;
+    const primaryRoleSubtitle = roleSubtitles[primaryRoleId] || '';
+    const topRoleMatches = (sortedRoles.length > 0 ? sortedRoles : [primaryRole])
+        .slice(0, 3)
+        .map((role) => ({
+            roleId: role.role_id,
+            label: roleNames[role.role_id] || role.role_id,
+            percent: formatMatchPercent(role.score),
+        }));
 
-    // Fallback name if API fails or loading
-    const primaryRoleName = roleNames[primaryRoleId] || 'IT‑специалист';
+    const interpretation = results?.interpretation || null;
 
-    const fetchSupplementaryData = useCallback(async () => {
-        if (!primaryRoleId) return;
+    useEffect(() => {
+        const fetchRoleDetails = async () => {
+            setIsRoleDetailsLoading(true);
+            try {
+                const response = await interviewApi.getRoleDetails(primaryRoleId);
+                setRoleDetails(response.data);
+            } catch (error) {
+                console.error('Failed to fetch role details:', error);
+                setRoleDetails(null);
+            } finally {
+                setIsRoleDetailsLoading(false);
+            }
+        };
 
-        setIsRoleDetailsLoading(true);
-        setRoleDetailsError(false);
-        setNextStepsError(false);
-
-        const [roleRes, nextRes] = await Promise.allSettled([
-            interviewApi.getRoleDetails(primaryRoleId),
-            interviewApi.getNextSteps(primaryRoleId)
-        ]);
-
-        if (roleRes.status === 'fulfilled') {
-            setRoleDetails(roleRes.value.data);
-        } else {
-            setRoleDetails(null);
-            setRoleDetailsError(true);
-            console.error('Failed to fetch role details:', roleRes.reason);
+        if (primaryRoleId) {
+            fetchRoleDetails();
         }
-
-        if (nextRes.status === 'fulfilled') {
-            setNextSteps(nextRes.value.data);
-        } else {
-            setNextSteps([]);
-            setNextStepsError(true);
-            console.error('Failed to fetch next steps:', nextRes.reason);
-        }
-
-        setIsRoleDetailsLoading(false);
     }, [primaryRoleId]);
 
-    // Fetch detailed info for the top role
     useEffect(() => {
-        fetchSupplementaryData();
-    }, [fetchSupplementaryData]);
+        const fetchMarketStats = async () => {
+            setIsMarketLoading(true);
+            try {
+                const response = await interviewApi.getMarketData(primaryRoleId);
+                setMarketStats(response.data || null);
+            } catch (error) {
+                console.error('Failed to fetch market stats:', error);
+                setMarketStats(null);
+            } finally {
+                setIsMarketLoading(false);
+            }
+        };
 
-    const topRoles = ranked_roles?.slice(0, 5) || [];
-    const alternativeRoles = interpretation?.alternative_roles || [];
+        if (primaryRoleId) {
+            fetchMarketStats();
+        }
+    }, [primaryRoleId]);
+
+    const analysisBlocks = parseAnalysisBlocks(interpretation?.explanation);
+    const gradeOrder = ['Junior', 'Middle', 'Senior', 'Lead', 'Team Lead'];
+    const salaryByGradeRows = Object.entries(marketStats?.salary_ranges_by_grade || {}).sort(([gradeA], [gradeB]) => {
+        const idxA = gradeOrder.indexOf(gradeA);
+        const idxB = gradeOrder.indexOf(gradeB);
+        return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
+    });
+    const handleOpenJobs = () => {
+        navigate(`/jobs?search=${encodeURIComponent(primaryRoleName)}`);
+    };
 
     return (
-        <motion.div
-            className="max-w-4xl mx-auto space-y-8"
-            variants={staggerContainer}
-            initial="initial"
-            animate="animate"
-        >
-            {/* Hero Result Card */}
-            <motion.div
-                variants={fadeInUp}
-                className="text-center"
-            >
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 mb-6">
-                    <Trophy className="w-10 h-10 text-amber-400" />
-                </div>
-                <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">
-                    Ваша IT-профессия
-                </h1>
-                <div className="inline-block px-8 py-4 rounded-2xl bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 border border-violet-500/30 backdrop-blur-sm">
-                    <span className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">
-                        {roleDetails?.name || primaryRoleName}
-                    </span>
-                </div>
-                {roleDetails?.description && (
-                    <p className="mt-6 text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                        {roleDetails.description}
-                    </p>
-                )}
-                {!roleDetails?.description && isRoleDetailsLoading && (
-                    <p className="mt-6 text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-                        Загружаем подробный профиль роли...
-                    </p>
-                )}
-                {roleDetailsError && (
-                    <p className="mt-6 text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                        Детальный профиль роли временно недоступен. Ниже доступны результаты теста и учебный следующий шаг.
-                    </p>
-                )}
-            </motion.div>
-
-            {/* Learning First: What to Learn Next */}
-            {stage_recommendation && (
-                <div className="space-y-3">
-                    <motion.div variants={fadeInUp} className="text-center">
-                        <h2 className="text-2xl md:text-3xl font-semibold text-white">Что изучить дальше</h2>
-                        <p className="mt-2 text-slate-400 max-w-2xl mx-auto">
-                            Начните с рекомендованного этапа и соберите базу практики до перехода к поиску вакансий.
-                        </p>
-                    </motion.div>
-                    <StageResultCard
-                        stageRecommendation={stage_recommendation}
-                        rankedStages={ranked_stages}
-                    />
-                </div>
-            )}
-
-            {(roleDetailsError || nextStepsError) && (
+        <div className="min-h-screen text-primary selection:bg-accent/30">
+            <div className="max-w-3xl mx-auto px-4 md:px-6 py-10 md:py-14">
                 <motion.div
-                    variants={fadeInUp}
-                    className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-100"
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45, ease: 'easeOut' }}
+                    className="space-y-6 md:space-y-7"
                 >
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <p className="text-sm">
-                            {roleDetailsError && nextStepsError
-                                ? 'Не удалось загрузить расширенные детали роли и карьерный рост. Базовые результаты сохранены.'
-                                : roleDetailsError
-                                    ? 'Не удалось загрузить расширенные детали роли. Базовые результаты сохранены.'
-                                    : 'Не удалось загрузить блок карьерного роста. Можно продолжить или повторить загрузку.'}
-                        </p>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={fetchSupplementaryData}
-                            isLoading={isRoleDetailsLoading}
-                        >
-                            Повторить загрузку
-                        </Button>
-                    </div>
-                </motion.div>
-            )}
+                    <section className="text-center space-y-3 md:space-y-4">
+                        <h1 className="text-4xl md:text-5xl font-bold leading-tight tracking-tight">
+                            <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                                Ваша IT-профессия
+                            </span>
+                        </h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* 1. Responsibilities */}
-                {roleDetails?.responsibilities?.length > 0 && (
-                    <motion.div
-                        variants={fadeInUp}
-                        className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800"
-                    >
-                        <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                            <Briefcase className="w-5 h-5 text-sky-400" />
-                            Чем предстоит заниматься
-                        </h3>
-                        <ul className="space-y-3">
-                            {roleDetails.responsibilities.map((item, i) => (
-                                <li key={i} className="flex items-start gap-3 text-slate-300">
-                                    <CheckCircle className="w-5 h-5 text-emerald-500/50 flex-shrink-0 mt-0.5" />
-                                    <span>{item}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </motion.div>
-                )}
-
-                {/* 2. Key Signals Analysis */}
-                {interpretation?.explanation && (
-                    <motion.div
-                        variants={fadeInUp}
-                        className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800"
-                    >
-                        <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                            <Sparkles className="w-5 h-5 text-violet-400" />
-                            Почему это ваш выбор
-                        </h3>
-                        <div className="text-slate-300 leading-relaxed mb-4 space-y-3">
-                            {splitIntoParagraphs(interpretation.explanation).map((paragraph, idx) => (
-                                <p key={idx}>{paragraph}</p>
-                            ))}
+                        <div className="inline-flex items-center justify-center rounded-full px-6 md:px-7 min-h-[3.2rem] md:min-h-[4.2rem] bg-gradient-to-r from-violet-600/35 to-violet-400/20 border border-violet-300/35 shadow-[0_0_22px_rgba(124,58,237,0.22)]">
+                            <span className="inline-block text-2xl md:text-4xl font-bold leading-none text-purple-400 text-center whitespace-nowrap -translate-y-px md:-translate-y-0.5">
+                                {primaryRoleName}
+                            </span>
                         </div>
-                        {roleDetails?.entry_difficulty && (
-                            <div className="mt-4 pt-4 border-t border-slate-800">
-                                <span className="text-sm text-slate-500">Сложность входа: </span>
-                                <span className={`text-sm font-medium px-2 py-1 rounded ml-2 ${roleDetails.entry_difficulty === 'junior'
-                                    ? 'bg-emerald-500/20 text-emerald-400'
-                                    : roleDetails.entry_difficulty === 'mid'
-                                        ? 'bg-amber-500/20 text-amber-400'
-                                        : 'bg-red-500/20 text-red-400'
-                                    }`}>
-                                    {roleDetails.entry_difficulty === 'junior' ? 'Низкая (Junior)' :
-                                        roleDetails.entry_difficulty === 'mid' ? 'Средняя (Mid)' : 'Высокая (Senior only)'}
-                                </span>
+
+                        {primaryRoleSubtitle && (
+                            <p className="mt-3 text-base md:text-lg font-semibold text-slate-300">{primaryRoleSubtitle}</p>
+                        )}
+
+                        {roleDetails?.description ? (
+                            <p className="max-w-3xl mx-auto text-base md:text-lg text-slate-300 leading-relaxed">
+                                {roleDetails.description}
+                            </p>
+                        ) : isRoleDetailsLoading ? (
+                            <p className="text-slate-400">Загружаем описание роли...</p>
+                        ) : null}
+
+                        {topRoleMatches.length > 0 && (
+                            <div className="w-full rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-500/10 to-slate-900/60 p-6 md:p-7 text-left">
+                                <h2 className="text-2xl font-semibold text-white tracking-tight">
+                                    Топ-3 профессии по совпадению
+                                </h2>
+                                <p className="mt-1 text-sm text-slate-400">
+                                    Три самых близких направления по твоему текущему профилю.
+                                </p>
+
+                                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    {topRoleMatches.map((role, index) => {
+                                        const medalStyle = MEDAL_STYLES[index] || MEDAL_STYLES[2];
+                                        return (
+                                            <article
+                                                key={role.roleId}
+                                                className={`relative rounded-xl border px-3.5 py-3.5 ${
+                                                    index === 0
+                                                        ? 'border-violet-300/45 bg-violet-500/12'
+                                                        : 'border-violet-400/20 bg-slate-900/45'
+                                                }`}
+                                            >
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-violet-200/90">
+                                                        Топ {index + 1}
+                                                    </p>
+                                                    <span
+                                                        className={`inline-flex h-8 w-8 items-center justify-center rounded-full border ${medalStyle.ring} ${medalStyle.bg}`}
+                                                        title={index === 0 ? 'Золото' : index === 1 ? 'Серебро' : 'Бронза'}
+                                                    >
+                                                        <Medal className={`h-4 w-4 ${medalStyle.icon}`} />
+                                                    </span>
+                                                </div>
+
+                                                <p className="mt-2 text-sm md:text-base font-semibold text-slate-100 leading-snug break-words">
+                                                    {role.label}
+                                                </p>
+
+                                                <p className="mt-2 text-lg font-extrabold text-violet-100">
+                                                    {role.percent}%
+                                                </p>
+
+                                                <div className="mt-2 h-1.5 rounded-full bg-slate-800/90 overflow-hidden">
+                                                    <div
+                                                        className="h-full rounded-full bg-gradient-to-r from-violet-400 to-cyan-400"
+                                                        style={{ width: `${role.percent}%` }}
+                                                    />
+                                                </div>
+                                            </article>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         )}
-                    </motion.div>
-                )}
-            </div>
+                    </section>
 
-            {/* Interpretation Methodology */}
-            <motion.div
-                variants={fadeInUp}
-                className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800"
-            >
-                <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                    <BookOpen className="w-5 h-5 text-cyan-300" />
-                    Как интерпретировать результат
-                </h3>
-                <div className="space-y-3 text-slate-300 leading-relaxed">
-                    <p>
-                        Смотрите на топ ролей как на диапазон возможных направлений, а не как на единственный правильный выбор.
-                    </p>
-                    <p>
-                        Сопоставьте рекомендации с вашими интересами и попробуйте мини-практику: это лучший способ проверить гипотезу.
-                    </p>
-                    <p className="text-amber-200 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
-                        Важно: тест дает рекомендацию, не диагноз. Финальное решение лучше принимать после практических задач и изучения роли.
-                    </p>
-                </div>
-                <Link
-                    to="/guide"
-                    className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-cyan-300 hover:text-cyan-200 transition-colors"
-                >
-                    Открыть карту профессий
-                    <ArrowRight className="w-4 h-4" />
-                </Link>
-            </motion.div>
+                    <section className="rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-500/10 to-slate-900/60 p-6 md:p-7">
+                        <div className="flex items-center gap-3">
+                            <div className="w-11 h-11 rounded-xl bg-violet-500/20 border border-violet-400/40 text-violet-200 flex items-center justify-center">
+                                <Bot className="w-5 h-5" />
+                            </div>
+                            <h2 className="text-2xl font-semibold text-white tracking-tight">Профессиональный анализ</h2>
+                        </div>
 
-            {/* 3. Career Growth Path */}
-            {nextSteps.length > 0 && (
-                <motion.div
-                    variants={fadeInUp}
-                    className="p-6 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800/50 border border-slate-700"
-                >
-                    <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-                        <TrendingUp className="w-5 h-5 text-indigo-400" />
-                        Карьерный рост
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {nextSteps.map((step, idx) => (
-                            <div key={idx} className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 hover:border-indigo-500/30 transition-colors">
-                                <div className="text-indigo-300 font-medium mb-1">
-                                    {roleNames[step.to] || step.to}
+                        <div className="mt-4 space-y-2.5">
+                            {analysisBlocks.length > 0 ? (
+                                analysisBlocks.map((block, index) => (
+                                    <blockquote key={index} className="rounded-xl border border-violet-400/20 bg-slate-900/45 px-4 py-3">
+                                        <p className="inline-flex items-center gap-1.5 rounded-md border border-emerald-300/20 bg-emerald-500/10 px-2 py-1 text-xs md:text-sm font-bold tracking-[0.06em] text-violet-100/95 mb-1.5">
+                                            <Sparkles className="h-3.5 w-3.5 text-emerald-200/90" />
+                                            {block.title}
+                                        </p>
+                                        <p className="text-slate-200 leading-relaxed text-sm md:text-base">
+                                            {block.text}
+                                        </p>
+                                    </blockquote>
+                                ))
+                            ) : (
+                                <blockquote className="rounded-xl border border-violet-400/20 bg-slate-900/45 px-4 py-3">
+                                    <p className="inline-flex items-center gap-1.5 rounded-md border border-emerald-300/20 bg-emerald-500/10 px-2 py-1 text-xs md:text-sm font-bold tracking-[0.06em] text-violet-100/95 mb-1.5">
+                                        <Sparkles className="h-3.5 w-3.5 text-emerald-200/90" />
+                                        Почему тебе подходит роль
+                                    </p>
+                                    <p className="text-slate-200 text-sm md:text-base leading-relaxed">
+                                        По твоим ответам видно, что тебе подходит роль {primaryRoleName}: ты склонен к системному мышлению,
+                                        понимаешь важность структуры и можешь уверенно двигаться в этом направлении.
+                                    </p>
+                                </blockquote>
+                            )}
+
+                            {interpretation?.signal_analysis && (
+                                <div className="rounded-lg border border-violet-500/20 bg-slate-900/35 px-4 py-3">
+                                    <p className="text-xs md:text-sm text-slate-400 leading-relaxed italic">
+                                        {interpretation.signal_analysis}
+                                    </p>
                                 </div>
-                                <div className="text-sm text-slate-500 mb-2">
-                                    Через {step.avg_transition_years} года
+                            )}
+                        </div>
+                    </section>
+
+                    <section className="rounded-2xl border border-violet-500/25 bg-gradient-to-br from-slate-900/70 to-slate-950/55 p-6 md:p-7">
+                        <div className="flex items-center gap-3">
+                            <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-300/30 text-emerald-200 flex items-center justify-center">
+                                <Briefcase className="w-5 h-5" />
+                            </div>
+                            <h2 className="text-2xl font-semibold text-white tracking-tight">Текущий спрос и зарплаты</h2>
+                        </div>
+
+                        {isMarketLoading ? (
+                            <div className="mt-4 rounded-xl border border-slate-700/60 bg-slate-900/35 px-4 py-5 text-slate-400 text-sm">
+                                Загружаем статистику вакансий...
+                            </div>
+                        ) : marketStats ? (
+                            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="rounded-xl border border-violet-400/20 bg-slate-900/45 p-4">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.08em] text-violet-200/85 mb-3">
+                                        Спрос и компании
+                                    </p>
+                                    <div className="space-y-3">
+                                        <div className="flex items-start justify-between gap-3 rounded-lg border border-slate-700/60 bg-slate-950/35 px-3 py-3">
+                                            <div className="flex items-center gap-2 text-slate-300">
+                                                <Briefcase className="w-4 h-4 text-violet-300" />
+                                                <span className="text-sm">Вакансий сейчас</span>
+                                            </div>
+                                            <span className="text-lg font-bold text-violet-100">
+                                                {marketStats.vacancy_count ?? 0}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-start justify-between gap-3 rounded-lg border border-slate-700/60 bg-slate-950/35 px-3 py-3">
+                                            <div className="flex items-center gap-2 text-slate-300">
+                                                <Building2 className="w-4 h-4 text-emerald-300" />
+                                                <span className="text-sm">Компаний нанимают</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-base font-bold text-emerald-100">
+                                                    {marketStats.companies_hiring_count ?? 0}
+                                                </p>
+                                                <p className="text-xs text-slate-400">
+                                                    {marketStats.hiring_company_share_percent ?? 0}% от активного рынка
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="text-sm text-slate-400">
-                                    {step.reason}
+
+                                <div className="rounded-xl border border-emerald-400/20 bg-slate-900/45 p-4">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.08em] text-emerald-200/90 mb-3">
+                                        Зарплаты по грейдам
+                                    </p>
+                                    {salaryByGradeRows.length > 0 ? (
+                                        <div className="space-y-2.5">
+                                            {salaryByGradeRows.map(([grade, salary]) => (
+                                                <div key={grade} className="flex items-center justify-between gap-3 rounded-lg border border-slate-700/60 bg-slate-950/35 px-3 py-2.5">
+                                                    <span className="text-sm font-semibold text-slate-200">{grade}</span>
+                                                    <span className="text-sm text-emerald-100">
+                                                        {formatKzt(salary?.min)} - {formatKzt(salary?.max)}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-slate-400">
+                                            Для этой роли пока недостаточно данных по зарплатам.
+                                        </p>
+                                    )}
                                 </div>
                             </div>
-                        ))}
+                        ) : (
+                            <div className="mt-4 rounded-xl border border-slate-700/60 bg-slate-900/35 px-4 py-5 text-slate-400 text-sm">
+                                Статистика рынка пока недоступна для этой роли.
+                            </div>
+                        )}
+                    </section>
+
+                    <div className="text-center pt-4">
+                        <p className="text-sm text-slate-500 mb-2">
+                            Интересно посмотреть реальные вакансии?
+                        </p>
+                        <button
+                            onClick={handleOpenJobs}
+                            className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-300 transition-colors cursor-pointer"
+                        >
+                            <BriefcaseBusiness className="w-3.5 h-3.5" />
+                            <span>Посмотреть открытые позиции</span>
+                        </button>
                     </div>
                 </motion.div>
-            )}
-
-            {/* 4. Red Flags (Warning) */}
-            {roleDetails?.red_flags?.length > 0 && (
-                <motion.div
-                    variants={fadeInUp}
-                    className="p-6 rounded-2xl bg-red-950/20 border border-red-500/20"
-                >
-                    <h3 className="text-xl font-semibold text-red-200 mb-4 flex items-center gap-2">
-                        <AlertTriangle className="w-5 h-5 text-red-400" />
-                        Вам может быть скучно, если...
-                    </h3>
-                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {roleDetails.red_flags.map((flag, i) => (
-                            <li key={i} className="flex items-center gap-3 text-red-200/80">
-                                <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
-                                <span>{flag}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </motion.div>
-            )}
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* 5. Signal Chart */}
-                {signal_profile && Object.keys(signal_profile).length > 0 && (
-                    <motion.div
-                        variants={fadeInUp}
-                        className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800"
-                    >
-                        <h3 className="text-lg font-medium text-white mb-4">Карта компетенций</h3>
-                        <SignalChart signalProfile={signal_profile} />
-                    </motion.div>
-                )}
-
-                {/* 6. Top Recommendations */}
-                {topRoles.length > 0 && (
-                    <motion.div
-                        variants={fadeInUp}
-                        className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800"
-                    >
-                        <h3 className="text-lg font-medium text-white mb-4">
-                            Топ-5 подходящих профессий
-                        </h3>
-                        <div className="space-y-4">
-                            {topRoles.map(({ role_id, score }, index) => (
-                                <div
-                                    key={role_id}
-                                    className="relative"
-                                >
-                                    <div className="flex justify-between text-sm mb-1">
-                                        <span className={index === 0 ? 'text-amber-400 font-medium' : 'text-slate-300'}>
-                                            {roleNames[role_id] || role_id}
-                                        </span>
-                                        <span className="text-slate-500">{Math.round(score * 100)}%</span>
-                                    </div>
-                                    <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                                        <motion.div
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${score * 100}%` }}
-                                            transition={{ duration: 0.8, delay: index * 0.1 }}
-                                            className={`h-full rounded-full ${index === 0
-                                                ? 'bg-gradient-to-r from-amber-500 to-orange-500'
-                                                : 'bg-slate-600'
-                                                }`}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </motion.div>
-                )}
             </div>
-
-            {/* Alternative Variants */}
-            {alternativeRoles.length > 0 && (
-                <motion.div
-                    variants={fadeInUp}
-                    className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 text-center"
-                >
-                    <h3 className="text-lg font-medium text-white mb-4">
-                        Также стоит рассмотреть
-                    </h3>
-                    <div className="flex flex-wrap gap-2 justify-center">
-                        {alternativeRoles.map((role) => (
-                            <Badge key={role} variant="secondary">
-                                {role}
-                            </Badge>
-                        ))}
-                    </div>
-                </motion.div>
-            )}
-
-            {/* Actions */}
-            <motion.div
-                variants={fadeInUp}
-                className="flex flex-col sm:flex-row gap-4 justify-center pt-8 border-t border-slate-800/50"
-            >
-                <Button
-                    variant="ghost"
-                    onClick={onRestart}
-                >
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Пройти заново
-                </Button>
-            </motion.div>
-
-            {/* Optional Jobs Bridge */}
-            <motion.div
-                variants={fadeInUp}
-                className="p-6 rounded-2xl bg-slate-900/40 border border-slate-800 text-center"
-            >
-                <p className="text-slate-300">
-                    Когда будете готовы, можно посмотреть вакансии по этому направлению.
-                </p>
-                <Link to="/jobs" className="inline-block mt-4">
-                    <Button variant="outline" className="px-8">
-                        <Briefcase className="w-4 h-4 mr-2" />
-                        Посмотреть вакансии (опционально)
-                    </Button>
-                </Link>
-            </motion.div>
-        </motion.div>
+        </div>
     );
 };
 

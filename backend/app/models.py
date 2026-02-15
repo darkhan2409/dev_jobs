@@ -2,15 +2,17 @@ from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import (
-    String, 
-    Text, 
-    Boolean, 
-    DateTime, 
-    Integer, 
-    func, 
+    String,
+    Text,
+    Boolean,
+    DateTime,
+    Integer,
+    func,
     UniqueConstraint,
     Computed,
-    Index
+    Index,
+    ForeignKey,
+    text,
 )
 from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column
@@ -76,7 +78,15 @@ class Vacancy(Base):
 
     # URL логотипа компании
     company_logo: Mapped[Optional[str]] = mapped_column(String)
-    
+
+    # Foreign key to companies table
+    company_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey('companies.id', ondelete='SET NULL'),
+        nullable=True,
+        index=True
+    )
+
     # Зарплата, приведённая к KZT для единой сортировки/фильтрации
     salary_in_kzt: Mapped[Optional[int]] = mapped_column(Integer, index=True)
     
@@ -101,6 +111,47 @@ class Vacancy(Base):
 
     def __repr__(self) -> str:
         return f"<Vacancy(title={self.title}, source={self.source})>"
+
+
+class Company(Base):
+    __tablename__ = "companies"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    # HH employer ID (unique natural key)
+    hh_employer_id: Mapped[int] = mapped_column(Integer, unique=True, nullable=False, index=True)
+
+    name: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    company_type: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+
+    # Logo and URLs
+    logo_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    site_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+
+    # Location
+    area_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    area_name: Mapped[Optional[str]] = mapped_column(String, nullable=True, index=True)
+
+    # Metadata
+    industries: Mapped[Optional[list]] = mapped_column(JSONB, nullable=True)
+    trusted: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+
+    # Full API response for future use
+    raw_data: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now()
+    )
+
+    def __repr__(self) -> str:
+        return f"<Company(name={self.name}, hh_id={self.hh_employer_id})>"
 
 
 class User(Base):
@@ -203,20 +254,20 @@ class LoginAttempt(Base):
         return f"<LoginAttempt(email={self.email}, success={self.success})>"
 
 
-class AdminAuditLog(Base):
-    """Admin audit log model for security tracking."""
-    __tablename__ = "admin_audit_logs"
+class AnalyticsEvent(Base):
+    """Product analytics event stored in first-party Postgres."""
+    __tablename__ = "analytics_events"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    admin_user_id: Mapped[int] = mapped_column(Integer, index=True)
-    admin_email: Mapped[str] = mapped_column(String, index=True)
-    action: Mapped[str] = mapped_column(String, index=True)  # "update_role", "view_users", "view_login_attempts", etc.
-    target_user_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, index=True)
-    target_email: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    details: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON string with action details
-    ip_address: Mapped[str] = mapped_column(String)
+    event_name: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
+    source: Mapped[str] = mapped_column(String(120), nullable=False, server_default="unknown")
+    route: Mapped[str] = mapped_column(String(255), nullable=False, server_default="unknown")
+    user_type_guess: Mapped[str] = mapped_column(String(32), nullable=False, server_default="unknown")
+    session_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    payload: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default=text("'{}'::jsonb"))
+    ip_address: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
     user_agent: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
 
     def __repr__(self) -> str:
-        return f"<AdminAuditLog(admin={self.admin_email}, action={self.action})>"
+        return f"<AnalyticsEvent(event_name={self.event_name}, source={self.source})>"

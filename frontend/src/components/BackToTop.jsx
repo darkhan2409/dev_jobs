@@ -35,7 +35,7 @@ const BackToTop = () => {
                     exit={{ opacity: 0, scale: 0.5, y: 20 }}
                     transition={springConfig}
                     onClick={scrollToTop}
-                    className="fixed bottom-8 right-8 z-[100] p-3 rounded-full bg-slate-800/90 backdrop-blur border border-slate-700 text-slate-400 hover:text-white hover:bg-violet-600 hover:border-violet-500 shadow-xl transition-colors"
+                    className="fixed bottom-8 right-8 z-[100] p-3 rounded-full bg-slate-800/90 backdrop-blur border border-slate-700 text-slate-400 hover:text-white hover:bg-violet-600 hover:border-violet-500 shadow-xl transition-colors cursor-pointer"
                 >
                     <ArrowUp size={24} />
                 </motion.button>

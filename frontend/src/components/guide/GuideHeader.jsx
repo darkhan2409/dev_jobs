@@ -17,7 +17,7 @@ export default function GuideHeader() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         <button
           onClick={() => navigate('/guide')}
-          className="flex items-center gap-2 text-slate-200 hover:text-white transition-colors"
+          className="flex items-center gap-2 text-slate-200 hover:text-white transition-colors cursor-pointer"
         >
           <span className="text-lg font-semibold">GitJob</span>
           <span className="text-xs text-violet-400 font-medium px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20">
@@ -28,7 +28,7 @@ export default function GuideHeader() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/')}
-            className="text-sm text-slate-400 hover:text-slate-200 transition-colors hidden sm:block"
+            className="text-sm text-slate-400 hover:text-slate-200 transition-colors hidden sm:block cursor-pointer"
           >
             Вернуться к поиску
           </button>
@@ -39,7 +39,7 @@ export default function GuideHeader() {
             className={cn(
               'w-8 h-8 rounded-lg flex items-center justify-center',
               'text-slate-400 hover:text-white',
-              'hover:bg-slate-800 transition-colors'
+              'hover:bg-slate-800 transition-colors cursor-pointer'
             )}
             aria-label="Закрыть обучение"
           >

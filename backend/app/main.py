@@ -18,7 +18,8 @@ from app.routers import (
     vacancies,
     companies,
     metrics,
-    admin
+    admin,
+    analytics
 )
 from app.core.limiter import limiter
 from slowapi import _rate_limit_exceeded_handler
@@ -79,6 +80,7 @@ app.include_router(users.router)  # Existing users router
 app.include_router(recommendations.router)
 app.include_router(interview.router)
 app.include_router(admin.router)
+app.include_router(analytics.router)
 
 @app.get("/health")
 def health_check():
@@ -88,6 +90,7 @@ def health_check():
         "timestamp": datetime.now().isoformat(),
         "service": "GitJob API"
     }
+
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

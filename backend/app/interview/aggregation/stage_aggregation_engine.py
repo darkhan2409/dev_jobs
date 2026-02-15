@@ -1,16 +1,18 @@
 """
-Stage Aggregation Engine for IT Product Creation Pipeline.
+Stage Aggregation Engine for IT Product Creation Pipeline v2.1.
 
-Computes stage scores based on signal profile from the career test.
-Maps cognitive signals to product creation stages.
-
-This is deterministic - NO LLM usage here.
+Implements the "Role-First" algorithm:
+1. Determine winning role from ranked_roles
+2. Look up winning role's primary_stages from role_catalog
+3. Select winning stage by highest stage_affinity within primary_stages
+4. Return stage recommendation with display text
 """
 
 from typing import Dict, List, Tuple
 from dataclasses import dataclass
 
 from ..storage.stage_manager import StageManager
+from ..storage.role_catalog_manager import RoleCatalogManager
 from ..models.stage import StageScoreResult, StageRecommendation
 
 
@@ -21,103 +23,93 @@ class StageAggregationEngineError(Exception):
 
 @dataclass
 class StageScoreComputeResult:
-    """
-    Result of stage score computation.
-
-    Contains ranked stages and the primary recommendation.
-    """
-    ranked_stages: List[Tuple[str, float]]  # List of (stage_id, normalized_score) descending
-    raw_scores: Dict[str, float]  # Map of stage_id -> raw_score
-    recommendation: StageRecommendation  # Primary stage recommendation
+    """Result of stage score computation."""
+    ranked_stages: List[Tuple[str, float]]  # (stage_id, normalized_score) descending
+    raw_scores: Dict[str, float]  # stage_id -> raw affinity score
+    recommendation: StageRecommendation
 
 
 class StageAggregationEngine:
     """
-    Aggregation engine for computing stage scores from signal profiles.
+    Role-first stage aggregation engine (v2.1).
 
     Algorithm:
-    1. For each stage, compute score based on signal weights:
-       - strong_signals: +2 points per occurrence
-       - weak_signals: +1 point per occurrence
-       - anti_signals: -1 point per occurrence
-    2. Normalize scores to 0-1 range
-    3. Rank stages by score
-    4. Generate recommendation for top stage
+    1. Winning role = top-ranked role
+    2. Primary stages = role_catalog[winning_role].primary_stages
+    3. Winning stage = primary stage with highest stage_affinity
+    4. Display text from stage_test_mapping
     """
 
-    # Weight constants for signal types
-    STRONG_SIGNAL_WEIGHT = 2
-    WEAK_SIGNAL_WEIGHT = 1
-    ANTI_SIGNAL_WEIGHT = -1
-
-    def __init__(self, stage_manager: StageManager = None):
-        """
-        Initialize the Stage Aggregation Engine.
-
-        Args:
-            stage_manager: StageManager instance (creates new if not provided)
-        """
+    def __init__(
+        self,
+        stage_manager: StageManager = None,
+        role_catalog_manager: RoleCatalogManager = None,
+    ):
         self._stage_manager = stage_manager or StageManager()
+        self._role_catalog_manager = role_catalog_manager or RoleCatalogManager()
 
-    def compute_stage_scores(self, signal_profile: Dict[str, int]) -> StageScoreComputeResult:
+    def compute_stage_scores(
+        self,
+        ranked_roles: List[Tuple[str, float]],
+        stage_affinity: Dict[str, float],
+    ) -> StageScoreComputeResult:
         """
-        Compute stage scores based on signal profile.
+        Compute stage recommendation using the role-first algorithm.
 
         Args:
-            signal_profile: Dict of signal_id -> count from test results
-
-        Returns:
-            StageScoreComputeResult with ranked stages and recommendation
+            ranked_roles: List of (role_id, score) sorted descending
+            stage_affinity: Dict of stage_id -> raw affinity score from answers
         """
-        if not signal_profile:
-            raise StageAggregationEngineError("Signal profile is empty")
+        if not ranked_roles:
+            raise StageAggregationEngineError("No ranked roles provided")
 
-        # Get all test mappings
-        test_mappings = self._stage_manager.get_all_test_mappings()
+        # Step 1: Winning role
+        winning_role_id = ranked_roles[0][0]
 
-        # Step 1: Compute raw scores for each stage
-        raw_scores: Dict[str, float] = {}
+        # Step 2: Get primary stages from role catalog
+        primary_stages = self._role_catalog_manager.get_primary_stages(winning_role_id)
+        if not primary_stages:
+            raise StageAggregationEngineError(
+                f"No primary stages found for role '{winning_role_id}'"
+            )
 
-        for stage_id, mapping in test_mappings.items():
-            score = 0.0
+        # Step 3: Select winning stage by highest affinity within primary_stages
+        best_stage_id = primary_stages[0]  # default to first primary stage
+        best_score = stage_affinity.get(primary_stages[0], 0.0)
 
-            # Add points for strong signals
-            for signal in mapping.strong_signals:
-                score += self.STRONG_SIGNAL_WEIGHT * signal_profile.get(signal, 0)
+        for stage_id in primary_stages:
+            score = stage_affinity.get(stage_id, 0.0)
+            if score > best_score:
+                best_score = score
+                best_stage_id = stage_id
 
-            # Add points for weak signals
-            for signal in mapping.weak_signals:
-                score += self.WEAK_SIGNAL_WEIGHT * signal_profile.get(signal, 0)
+        # Step 4: Normalize all stage scores using min-max for UI display
+        raw_scores = dict(stage_affinity)
 
-            # Subtract points for anti signals
-            for signal in mapping.anti_signals:
-                score += self.ANTI_SIGNAL_WEIGHT * signal_profile.get(signal, 0)
-
-            # Ensure non-negative score
-            raw_scores[stage_id] = max(0.0, score)
-
-        # Step 2: Normalize scores to 0-1 range
         normalized_scores: Dict[str, float] = {}
-
         if raw_scores:
-            max_score = max(raw_scores.values()) if raw_scores.values() else 1.0
+            min_s = min(raw_scores.values())
+            max_s = max(raw_scores.values())
+            score_range = max_s - min_s
+            if score_range == 0:
+                for sid in raw_scores:
+                    normalized_scores[sid] = 1.0
+            else:
+                for sid, raw in raw_scores.items():
+                    normalized_scores[sid] = max(0.0, (raw - min_s) / score_range)
 
-            # Avoid division by zero
-            if max_score == 0:
-                max_score = 1.0
-
-            for stage_id, raw_score in raw_scores.items():
-                normalized_scores[stage_id] = raw_score / max_score
-
-        # Step 3: Rank stages by normalized score (descending)
+        # Rank all stages by normalized score (descending)
         ranked_stages = sorted(
             normalized_scores.items(),
             key=lambda x: x[1],
             reverse=True
         )
 
-        # Step 4: Generate recommendation
-        recommendation = self._generate_recommendation(ranked_stages)
+        # Step 5: Generate recommendation
+        recommendation = self._generate_recommendation(
+            winning_stage_id=best_stage_id,
+            ranked_stages=ranked_stages
+        )
 
         return StageScoreComputeResult(
             ranked_stages=ranked_stages,
@@ -125,31 +117,23 @@ class StageAggregationEngine:
             recommendation=recommendation
         )
 
-    def _generate_recommendation(self, ranked_stages: List[Tuple[str, float]]) -> StageRecommendation:
-        """
-        Generate stage recommendation from ranked stages.
+    def _generate_recommendation(
+        self,
+        winning_stage_id: str,
+        ranked_stages: List[Tuple[str, float]],
+    ) -> StageRecommendation:
+        """Generate stage recommendation from winning stage."""
+        primary_stage = self._stage_manager.get_stage(winning_stage_id)
+        test_mapping = self._stage_manager.get_test_mapping(winning_stage_id)
 
-        Args:
-            ranked_stages: List of (stage_id, score) tuples in descending order
-
-        Returns:
-            StageRecommendation with primary stage and related info
-        """
-        if not ranked_stages:
-            raise StageAggregationEngineError("No ranked stages to generate recommendation")
-
-        primary_stage_id = ranked_stages[0][0]
-        primary_stage = self._stage_manager.get_stage(primary_stage_id)
-        test_mapping = self._stage_manager.get_test_mapping(primary_stage_id)
-
-        if not primary_stage or not test_mapping:
-            raise StageAggregationEngineError(f"Stage {primary_stage_id} not found")
+        stage_name = primary_stage.name if primary_stage else winning_stage_id
+        what_user_will_see = test_mapping.what_user_will_see if test_mapping else ""
 
         # Get roles for this stage
-        role_maps = self._stage_manager.get_roles_for_stage(primary_stage_id)
+        role_maps = self._stage_manager.get_roles_for_stage(winning_stage_id)
         related_roles = [rm.role_id for rm in role_maps]
 
-        # Build ranked stages list
+        # Build ranked stage results for UI
         ranked_stage_results = []
         for stage_id, score in ranked_stages:
             stage = self._stage_manager.get_stage(stage_id)
@@ -163,31 +147,9 @@ class StageAggregationEngine:
                 )
 
         return StageRecommendation(
-            primary_stage_id=primary_stage_id,
-            primary_stage_name=primary_stage.name,
-            what_user_will_see=test_mapping.what_user_will_see,
+            primary_stage_id=winning_stage_id,
+            primary_stage_name=stage_name,
+            what_user_will_see=what_user_will_see,
             related_roles=related_roles,
             ranked_stages=ranked_stage_results
         )
-
-    def get_stage_details_for_recommendation(self, stage_id: str) -> dict:
-        """
-        Get detailed stage info for displaying recommendation.
-
-        Args:
-            stage_id: Stage identifier
-
-        Returns:
-            Dict with stage details, roles, and vacancy filters
-        """
-        stage = self._stage_manager.get_stage(stage_id)
-        if not stage:
-            return {}
-
-        role_maps = self._stage_manager.get_roles_for_stage(stage_id)
-
-        return {
-            "stage": stage.model_dump(),
-            "roles": [rm.model_dump() for rm in role_maps],
-            "vacancy_keywords": stage.primary_vacancy_filters.keywords
-        }

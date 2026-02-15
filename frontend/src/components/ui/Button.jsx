@@ -33,7 +33,7 @@ const Button = React.forwardRef(({
     // If it's a motion component, we need to handle it slightly differently
     // For simplicity, we'll wrap content in standard button/a/Link unless 'as' is passed
 
-    const baseStyles = 'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background';
+    const baseStyles = 'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background';
 
     const mergedClasses = twMerge(
         clsx(baseStyles, variants[variant], sizes[size], className)

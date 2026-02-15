@@ -37,6 +37,3 @@ EXCHANGE_RATES = {
     "RUB": 6.33,
     "KZT": 1
 }
-
-# Default scraping area (Kazakhstan)
-DEFAULT_AREA = 40

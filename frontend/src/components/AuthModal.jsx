@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import PasswordRequirements from './PasswordRequirements';
 
-const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
+const AuthModal = ({ isOpen, onClose, defaultTab = 'login', hideTabs = false }) => {
     const [activeTab, setActiveTab] = useState(defaultTab);
 
     // Sync activeTab with defaultTab prop when modal opens
@@ -81,13 +81,22 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
         setIsLoading(true);
         try {
             await register(username, email, password);
-            setSuccessMessage('Аккаунт создан. Теперь можно войти.');
-            setTimeout(() => {
-                setActiveTab('login');
-                setSuccessMessage('');
-                setPassword('');
-                setConfirmPassword('');
-            }, 1500);
+            if (hideTabs) {
+                setSuccessMessage('Аккаунт создан. Теперь можно войти через кнопку «Войти».');
+                setTimeout(() => {
+                    setSuccessMessage('');
+                    onClose();
+                    resetForm();
+                }, 1500);
+            } else {
+                setSuccessMessage('Аккаунт создан. Теперь можно войти.');
+                setTimeout(() => {
+                    setActiveTab('login');
+                    setSuccessMessage('');
+                    setPassword('');
+                    setConfirmPassword('');
+                }, 1500);
+            }
         } catch (err) {
             const status = err.response?.status;
             const detail = err.response?.data?.detail;
@@ -147,33 +156,35 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
                         </h2>
                         <button
                             onClick={onClose}
-                            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                         >
                             <X size={20} />
                         </button>
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex border-b border-slate-800">
-                        <button
-                            onClick={() => handleTabChange('login')}
-                            className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'login'
-                                ? 'text-violet-400 border-b-2 border-violet-400'
-                                : 'text-slate-400 hover:text-slate-300'
-                                }`}
-                        >
-                            Войти
-                        </button>
-                        <button
-                            onClick={() => handleTabChange('register')}
-                            className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'register'
-                                ? 'text-violet-400 border-b-2 border-violet-400'
-                                : 'text-slate-400 hover:text-slate-300'
-                                }`}
-                        >
-                            Регистрация
-                        </button>
-                    </div>
+                    {!hideTabs && (
+                        <div className="flex border-b border-slate-800">
+                            <button
+                                onClick={() => handleTabChange('login')}
+                                className={`flex-1 py-3 text-sm font-medium transition-colors cursor-pointer ${activeTab === 'login'
+                                    ? 'text-violet-400 border-b-2 border-violet-400'
+                                    : 'text-slate-400 hover:text-slate-300'
+                                    }`}
+                            >
+                                Войти
+                            </button>
+                            <button
+                                onClick={() => handleTabChange('register')}
+                                className={`flex-1 py-3 text-sm font-medium transition-colors cursor-pointer ${activeTab === 'register'
+                                    ? 'text-violet-400 border-b-2 border-violet-400'
+                                    : 'text-slate-400 hover:text-slate-300'
+                                    }`}
+                            >
+                                Регистрация
+                            </button>
+                        </div>
+                    )}
 
                     {/* Form */}
                     <form onSubmit={activeTab === 'login' ? handleLogin : handleRegister} className="p-6 space-y-4">
@@ -246,7 +257,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
                                 >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
@@ -278,7 +289,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
                                     <button
                                         type="button"
                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
                                     >
                                         {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
@@ -310,7 +321,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full py-3 bg-violet-600 hover:bg-violet-500 disabled:bg-violet-600/50 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                            className="w-full py-3 bg-violet-600 hover:bg-violet-500 disabled:bg-violet-600/50 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
                         >
                             {isLoading ? (
                                 <>

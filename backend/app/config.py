@@ -34,12 +34,11 @@ class Settings(BaseSettings):
     # Frontend URL (for email templates)
     FRONTEND_URL: str = "http://localhost:5173"
 
-    # Scraper settings
-    HH_AREA: int = 40  # 40 = Kazakhstan
-
     # Cache settings
-    CACHE_EXPIRE_SECONDS: int = 300  # 5 minutes
     CAREER_SESSION_TTL_MINUTES: int = 120
+
+    # Scraper settings
+    HH_AREA: int = 40  # Kazakhstan
 
     # AI/LLM settings
     OPENAI_API_KEY: Optional[str] = None

@@ -1,6 +1,5 @@
 
 import json
-import os
 from typing import List, Dict, Optional, Any
 from pathlib import Path
 
@@ -28,6 +27,7 @@ class CareerPipelineManager:
         self._graph_data: List[Dict] = []
         self._clusters_data: List[Dict] = []
         self._version: str = ""
+        self._last_loaded_mtime: Optional[float] = None
         
         self._load_data()
         
@@ -44,11 +44,31 @@ class CareerPipelineManager:
                 self._version = data.get("version", "unknown")
                 self._graph_data = data.get("career_pipeline_graph", [])
                 self._clusters_data = data.get("role_clusters", [])
+                self._last_loaded_mtime = self.data_file.stat().st_mtime
         except Exception as e:
             print(f"Error loading career pipeline data: {e}")
+
+    def _reload_if_source_changed(self) -> None:
+        """
+        Reload data when JSON source changes on disk.
+
+        This keeps singleton consumers fresh in long-running API processes.
+        """
+        if not self.data_file.exists():
+            return
+
+        current_mtime = self.data_file.stat().st_mtime
+        should_reload = (
+            self._last_loaded_mtime is None
+            or current_mtime > self._last_loaded_mtime
+            or not self._graph_data
+        )
+        if should_reload:
+            self._load_data()
             
     def get_version(self) -> str:
         """Return the data version."""
+        self._reload_if_source_changed()
         return self._version
         
     def get_next_roles(self, role_id: str) -> List[Dict[str, Any]]:
@@ -61,6 +81,7 @@ class CareerPipelineManager:
         Returns:
             List of transition objects containing 'to', 'reason', etc.
         """
+        self._reload_if_source_changed()
         transitions = []
         for edge in self._graph_data:
             if edge.get("from") == role_id:
@@ -78,6 +99,7 @@ class CareerPipelineManager:
         Returns:
             Transition details dict or None if no direct transition exists.
         """
+        self._reload_if_source_changed()
         for edge in self._graph_data:
             if edge.get("from") == from_role and edge.get("to") == to_role:
                 return edge
@@ -85,6 +107,7 @@ class CareerPipelineManager:
         
     def get_role_clusters(self) -> List[Dict[str, Any]]:
         """Get all role clusters."""
+        self._reload_if_source_changed()
         return self._clusters_data
         
     def get_cluster_for_role(self, role_id: str) -> Optional[Dict[str, Any]]:
@@ -97,6 +120,7 @@ class CareerPipelineManager:
         Returns:
             The cluster object or None.
         """
+        self._reload_if_source_changed()
         for cluster in self._clusters_data:
             if role_id in cluster.get("roles", []):
                 return cluster
@@ -104,4 +128,5 @@ class CareerPipelineManager:
     
     def get_full_graph(self) -> List[Dict[str, Any]]:
         """Return the complete graph data."""
+        self._reload_if_source_changed()
         return self._graph_data

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { staggerContainer } from '../../utils/animations';
 import {
   Rocket,
   Activity,
@@ -19,16 +20,6 @@ const fadeInUp = {
     opacity: 1,
     y: 0,
     transition: { duration: 0.5 }
-  }
-};
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
   }
 };
 
@@ -344,7 +335,7 @@ export default function ReleaseStageContent() {
           {/* Primary Action */}
           <button
             onClick={() => navigate('/guide')}
-            className="group w-full inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40"
+            className="group w-full inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 cursor-pointer"
           >
             <span className="text-lg">Вернуться к Карте Профессий</span>
           </button>
@@ -352,7 +343,7 @@ export default function ReleaseStageContent() {
           {/* Secondary Action - Ghost Button */}
           <button
             onClick={() => navigate('/guide/discovery')}
-            className="group inline-flex items-center gap-2 text-orange-300/70 hover:text-orange-300 font-medium transition-colors"
+            className="group inline-flex items-center gap-2 text-orange-300/70 hover:text-orange-300 font-medium transition-colors cursor-pointer"
           >
             <ArrowRight className="group-hover:translate-x-1 transition-transform" size={18} />
             <span>Начать новый цикл - Исследование</span>
@@ -363,4 +354,3 @@ export default function ReleaseStageContent() {
     </div>
   );
 }
-

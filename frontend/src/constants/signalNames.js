@@ -1,0 +1,38 @@
+export const signalNames = {
+    // Current signals from questions_data.json
+    automation_mindset: 'Автоматизация',
+    bug_hunting: 'Поиск ошибок',
+    data_minded: 'Работа с данными',
+    engineering_discipline: 'Инженерная дисциплина',
+    experiment_minded: 'Экспериментирование',
+    frontend_interactivity: 'Интерактивность',
+    incident_response: 'Решение проблем',
+    information_architecture: 'Структурирование',
+    problem_framing: 'Постановка задач',
+    quality_rigor: 'Внимание к качеству',
+    reliability_focus: 'Надёжность',
+    stakeholder_alignment: 'Работа с людьми',
+    system_design: 'Проектирование систем',
+    ui_craft: 'Дизайн интерфейсов',
+    user_empathy: 'Понимание пользователей',
+    visual_thinking: 'Визуальное мышление',
+
+    // Legacy signals (for backwards compatibility)
+    analytical_thinking: 'Аналитическое мышление',
+    creative_problem_solving: 'Креативное решение',
+    systematic_approach: 'Системный подход',
+    detail_orientation: 'Внимание к деталям',
+    big_picture_thinking: 'Стратегическое видение',
+    data_driven_mindset: 'Данные и аналитика',
+    technical_depth_preference: 'Глубина знаний',
+    process_orientation: 'Процессный подход',
+    communication_skills: 'Коммуникация',
+    experimental_approach: 'Эксперименты',
+    critical_thinking: 'Критическое мышление',
+    strategic_thinking: 'Стратегия',
+    risk_assessment: 'Оценка рисков',
+    platform_thinking: 'Платформенное мышление',
+    performance_optimization: 'Оптимизация',
+    research_mindset: 'Исследования',
+    linguistic_thinking: 'Язык и текст'
+};

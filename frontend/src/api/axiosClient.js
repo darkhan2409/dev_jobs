@@ -1,7 +1,29 @@
 import axios from 'axios';
 
+const normalizeApiBaseUrl = (rawApiUrl) => {
+    if (!rawApiUrl) return '/api';
+
+    const trimmed = rawApiUrl.trim().replace(/\/+$/, '');
+    if (!trimmed || trimmed === '/') return '/api';
+
+    if (/^https?:\/\//i.test(trimmed)) {
+        try {
+            const parsed = new URL(trimmed);
+            if (!parsed.pathname || parsed.pathname === '/') {
+                return `${trimmed}/api`;
+            }
+        } catch (_err) {
+            // Keep original if URL parsing fails.
+        }
+    }
+
+    return trimmed;
+};
+
+const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_URL);
+
 const axiosClient = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+    baseURL: API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -37,7 +59,7 @@ axiosClient.interceptors.response.use(
                 try {
                     // Try to refresh the access token
                     const response = await axios.post(
-                        `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/auth/refresh`,
+                        `${API_BASE_URL}/auth/refresh`,
                         { refresh_token: refreshToken }
                     );
 

@@ -38,7 +38,7 @@ export default function MiniPipelineBar() {
               onClick={() => navigate(`/guide/${stage.id}${stageQuery}`)}
               whileHover={{ scale: 1.15 }}
               whileTap={{ scale: 0.9 }}
-              className="flex flex-col items-center gap-1 group relative"
+              className="flex flex-col items-center gap-1 group relative cursor-pointer"
               aria-label={stage.name}
             >
               <div

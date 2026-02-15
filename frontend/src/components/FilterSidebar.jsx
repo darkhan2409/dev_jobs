@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Filter, X, ChevronDown, Check, Search, DollarSign, Briefcase } from 'lucide-react';
+import { Filter, X, ChevronDown, Check, Search, DollarSign, Briefcase, Building2 } from 'lucide-react';
 import axiosClient from '../api/axiosClient';
 
 const normalizeGradeValue = (value = '') =>
@@ -10,45 +10,25 @@ const normalizeGradeValue = (value = '') =>
         .sort((a, b) => a.localeCompare(b, 'ru-RU'))
         .join(',');
 
+const buildLocalFilters = (filters = {}) => ({
+    search: filters.search || '',
+    company: filters.company || '',
+    minSalary: filters.minSalary || '',
+    location: filters.location || '',
+    grade: normalizeGradeValue(filters.grade || ''),
+    stack: filters.stack || ''
+});
+
 const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = '' }) => {
     const [locations, setLocations] = useState([]);
     const [grades, setGrades] = useState([]);
     const [technologies, setTechnologies] = useState([]);
 
-    const [localFilters, setLocalFilters] = useState({
-        search: '',
-        minSalary: '',
-        location: '',
-        grade: '',
-        stack: ''
-    });
+    const [localFilters, setLocalFilters] = useState(() => buildLocalFilters(filters));
 
     const [isLocationOpen, setIsLocationOpen] = useState(false);
     const [locationSearch, setLocationSearch] = useState('');
     const dropdownRef = useRef(null);
-
-    useEffect(() => {
-        const nextFilters = {
-            search: filters.search || '',
-            minSalary: filters.minSalary || '',
-            location: filters.location || '',
-            grade: normalizeGradeValue(filters.grade || ''),
-            stack: filters.stack || ''
-        };
-
-        setLocalFilters((prev) => {
-            const prevNormalized = {
-                ...prev,
-                grade: normalizeGradeValue(prev.grade)
-            };
-
-            if (JSON.stringify(prevNormalized) === JSON.stringify(nextFilters)) {
-                return prev;
-            }
-
-            return nextFilters;
-        });
-    }, [filters.search, filters.minSalary, filters.location, filters.grade, filters.stack]);
 
     useEffect(() => {
         const fetchFilters = async () => {
@@ -116,6 +96,13 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
         }));
     };
 
+    const handleCompanyChange = (value) => {
+        setLocalFilters((prev) => ({
+            ...prev,
+            company: value
+        }));
+    };
+
     const handleSalaryChange = (value) => {
         const sanitized = value === '' ? '' : Math.max(0, parseInt(value, 10) || 0).toString();
         setLocalFilters((prev) => ({
@@ -125,13 +112,14 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
     };
 
     const applyFilters = () => {
-        onFilterChange(localFilters);
-        onFiltersApplied?.();
+        onFilterChange(localFilters, { trigger: 'filter_apply_button' });
+        onFiltersApplied?.({ action: 'apply', filters: localFilters });
     };
 
     const clearFilters = () => {
         const clearedFilters = {
             search: '',
+            company: '',
             minSalary: '',
             location: '',
             grade: '',
@@ -139,12 +127,13 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
         };
 
         setLocalFilters(clearedFilters);
-        onFilterChange(clearedFilters);
-        onFiltersApplied?.();
+        onFilterChange(clearedFilters, { trigger: 'filter_clear_button' });
+        onFiltersApplied?.({ action: 'clear', filters: clearedFilters });
     };
 
     const hasChanges =
         localFilters.search !== (filters.search || '') ||
+        localFilters.company !== (filters.company || '') ||
         localFilters.minSalary !== (filters.minSalary || '') ||
         localFilters.location !== (filters.location || '') ||
         normalizeGradeValue(localFilters.grade) !== normalizeGradeValue(filters.grade || '') ||
@@ -152,6 +141,7 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
 
     const hasActiveFilters =
         Boolean(filters.search) ||
+        Boolean(filters.company) ||
         Boolean(filters.stack) ||
         Boolean(filters.grade) ||
         Boolean(filters.location) ||
@@ -173,7 +163,7 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                         {hasActiveFilters && (
                             <button
                                 onClick={clearFilters}
-                                className="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition-colors"
+                                className="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
                             >
                                 <X size={14} /> Сбросить
                             </button>
@@ -193,6 +183,28 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                                     placeholder="например: React-разработчик, Python..."
                                     value={localFilters.search}
                                     onChange={(e) => handleSearchChange(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            applyFilters();
+                                        }
+                                    }}
+                                    className="w-full bg-[#0B0C10] border border-gray-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500/50 transition-colors"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                                <Building2 size={12} />
+                                Компания
+                            </h4>
+                            <div className="relative">
+                                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                                <input
+                                    type="text"
+                                    placeholder="например: Яндекс, Kaspi..."
+                                    value={localFilters.company}
+                                    onChange={(e) => handleCompanyChange(e.target.value)}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
                                             applyFilters();
@@ -226,7 +238,7 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                             <div className="relative" ref={dropdownRef}>
                                 <button
                                     onClick={() => setIsLocationOpen((prev) => !prev)}
-                                    className="w-full flex items-center justify-between bg-[#0B0C10] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 hover:border-purple-500/50 transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                    className="w-full flex items-center justify-between bg-[#0B0C10] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 hover:border-purple-500/50 transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500 cursor-pointer"
                                 >
                                     <span className="truncate">{localFilters.location || 'Все города'}</span>
                                     <ChevronDown size={16} className={`text-slate-500 transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} />
@@ -251,11 +263,10 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                                         <div className="overflow-y-auto p-1 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
                                             <button
                                                 onClick={() => handleLocationSelect('')}
-                                                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between group ${
-                                                    !localFilters.location
+                                                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between group cursor-pointer ${!localFilters.location
                                                         ? 'bg-violet-500/10 text-violet-300'
                                                         : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-                                                }`}
+                                                    }`}
                                             >
                                                 <span>Все города</span>
                                                 {!localFilters.location && <Check size={14} />}
@@ -265,11 +276,10 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                                                 <button
                                                     key={loc}
                                                     onClick={() => handleLocationSelect(loc)}
-                                                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between group ${
-                                                        localFilters.location === loc
+                                                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between group cursor-pointer ${localFilters.location === loc
                                                             ? 'bg-violet-500/10 text-violet-300'
                                                             : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     <span>{loc}</span>
                                                     {localFilters.location === loc && <Check size={14} />}
@@ -291,11 +301,10 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                                 {grades.map((grade) => (
                                     <label key={grade} className="flex items-center gap-3 cursor-pointer group">
                                         <div
-                                            className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
-                                                isGradeSelected(grade)
+                                            className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isGradeSelected(grade)
                                                     ? 'bg-purple-600 border-purple-600'
                                                     : 'border-gray-800 group-hover:border-gray-600 bg-[#0B0C10]'
-                                            }`}
+                                                }`}
                                         >
                                             {isGradeSelected(grade) && <Check size={12} className="text-white" />}
                                         </div>
@@ -306,11 +315,10 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                                             onChange={() => handleGradeChange(grade)}
                                         />
                                         <span
-                                            className={`text-sm transition-colors ${
-                                                isGradeSelected(grade)
+                                            className={`text-sm transition-colors ${isGradeSelected(grade)
                                                     ? 'text-white font-medium'
                                                     : 'text-slate-400 group-hover:text-slate-300'
-                                            }`}
+                                                }`}
                                         >
                                             {grade}
                                         </span>
@@ -326,11 +334,10 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                                     <button
                                         key={tech}
                                         onClick={() => handleTechChange(tech)}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all border ${
-                                            localFilters.stack === tech
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all border cursor-pointer ${localFilters.stack === tech
                                                 ? 'bg-purple-500/20 border-purple-500/50 text-purple-200'
                                                 : 'bg-[#0B0C10] border-gray-800 text-slate-400 hover:border-purple-500/30 hover:text-slate-200'
-                                        }`}
+                                            }`}
                                     >
                                         {tech}
                                     </button>
@@ -342,11 +349,10 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                     <div className="pt-4 border-t border-white/5 shrink-0">
                         <button
                             onClick={applyFilters}
-                            className={`w-full py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
-                                hasChanges
+                            className={`w-full py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 cursor-pointer ${hasChanges
                                     ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-500/20'
                                     : 'bg-purple-600/80 hover:bg-purple-600 text-white'
-                            }`}
+                                }`}
                         >
                             <Search size={18} />
                             Применить фильтры

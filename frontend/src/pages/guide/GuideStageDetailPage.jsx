@@ -1,9 +1,7 @@
 ﻿import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Coffee, BriefcaseBusiness } from 'lucide-react';
-import OutcomeChecklist from '../../components/guide/OutcomeChecklist';
-import RoleSpotlight from '../../components/guide/RoleSpotlight';
+import { ArrowLeft, BriefcaseBusiness } from 'lucide-react';
 import DiscoveryStageContent from '../../components/guide/DiscoveryStageContent';
 import DesignStageContent from '../../components/guide/DesignStageContent';
 import BuildStageContent from '../../components/guide/BuildStageContent';
@@ -11,8 +9,9 @@ import VerifyStageContent from '../../components/guide/VerifyStageContent';
 import ReleaseStageContent from '../../components/guide/ReleaseStageContent';
 import { guideApi } from '../../api/guideApi';
 import { getGuideStage } from '../../data/guideData';
-import { STAGE_MAIN_ROLES, STAGE_OUTCOMES } from '../../data/stageDeliverables';
 import { fadeInUp } from '../../utils/animations';
+import { trackEvent } from '../../utils/analytics';
+import { ANALYTICS_EVENTS } from '../../constants/analyticsEvents';
 
 const STAGE_CONTENT_COMPONENTS = {
   discovery: DiscoveryStageContent,
@@ -22,8 +21,19 @@ const STAGE_CONTENT_COMPONENTS = {
   release: ReleaseStageContent,
 };
 
-function OptionalJobsBridge({ stageName }) {
+function OptionalJobsBridge({ stageId, stageName, isRecommendedStage }) {
   const navigate = useNavigate();
+
+  const handleOpenJobs = () => {
+    trackEvent(ANALYTICS_EVENTS.OPTIONAL_JOBS_FROM_GUIDE_CLICK, {
+      source: 'guide_stage_detail',
+      stage_id: stageId,
+      stage_name: stageName,
+      is_recommended_stage: Boolean(isRecommendedStage),
+      destination: '/jobs',
+    });
+    navigate(`/jobs?search=${encodeURIComponent(stageName)}`);
+  };
 
   return (
     <motion.div
@@ -36,69 +46,13 @@ function OptionalJobsBridge({ stageName }) {
         Интересно посмотреть реальные вакансии?
       </p>
       <button
-        onClick={() => navigate(`/jobs?search=${encodeURIComponent(stageName)}`)}
-        className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-300 transition-colors"
+        onClick={handleOpenJobs}
+        className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-300 transition-colors cursor-pointer"
       >
         <BriefcaseBusiness className="w-3.5 h-3.5" />
         <span>Посмотреть открытые позиции</span>
       </button>
     </motion.div>
-  );
-}
-
-function DefaultStageBody({ stage, stageId }) {
-  const mainRole = STAGE_MAIN_ROLES[stageId] || null;
-  const outcome = STAGE_OUTCOMES[stageId] || null;
-
-  return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-16">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center space-y-4"
-      >
-        <div className="text-6xl sm:text-7xl font-bold text-violet-500/20">0{stage.order}</div>
-
-        <h1 className="text-3xl sm:text-4xl font-bold text-white">{stage.name}</h1>
-
-        <p className="text-lg sm:text-xl text-slate-300 leading-relaxed">{stage.subtitle}</p>
-
-        <p className="text-base text-slate-400 leading-relaxed max-w-2xl mx-auto">{stage.description}</p>
-      </motion.div>
-
-      <motion.div
-        variants={fadeInUp}
-        initial="hidden"
-        animate="visible"
-        className="bg-gradient-to-br from-violet-900/30 to-fuchsia-900/30 rounded-2xl p-6 sm:p-8 border border-violet-500/20"
-      >
-        <div className="flex flex-col sm:flex-row items-start gap-6">
-          <Coffee size={48} className="text-violet-400 flex-shrink-0" />
-
-          <div className="flex-1">
-            <h3 className="text-lg sm:text-xl font-semibold text-white mb-3">Почему это важно?</h3>
-            <p className="text-base text-slate-300 leading-relaxed">{stage.whyBlock}</p>
-          </div>
-        </div>
-      </motion.div>
-
-      {mainRole && (
-        <motion.div variants={fadeInUp} initial="hidden" animate="visible" className="space-y-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white text-center">Кто здесь главный?</h2>
-          <RoleSpotlight roleId={mainRole.role_id} quote={mainRole.quote} />
-        </motion.div>
-      )}
-
-      {outcome && (
-        <motion.div variants={fadeInUp} initial="hidden" animate="visible">
-          <OutcomeChecklist
-            items={outcome.items}
-            nextStageId={outcome.nextStageId}
-            nextStageName={outcome.nextStageName}
-          />
-        </motion.div>
-      )}
-    </div>
   );
 }
 
@@ -138,8 +92,24 @@ export default function GuideStageDetailPage() {
 
   useEffect(() => {
     if (!stage) return;
-    loadStageDetail();
+    const timer = setTimeout(() => {
+      loadStageDetail();
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [stage, loadStageDetail]);
+
+  useEffect(() => {
+    if (!stage || !stageId) return;
+
+    trackEvent(ANALYTICS_EVENTS.GUIDE_STAGE_OPEN, {
+      source: 'guide_pipeline',
+      stage_id: stageId,
+      stage_name: stage.name,
+      recommended_stage_id: recommendedStageId || null,
+      is_recommended_stage: Boolean(isRecommendedStage),
+    });
+  }, [stage, stageId, recommendedStageId, isRecommendedStage]);
 
   if (!stage) {
     navigate('/guide');
@@ -192,11 +162,17 @@ export default function GuideStageDetailPage() {
       {StageStoryContent ? (
         <StageStoryContent />
       ) : (
-        <DefaultStageBody stage={stage} stageId={stageId} />
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
+          <p className="text-slate-400">Контент для этого этапа находится в разработке.</p>
+        </div>
       )}
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 mt-12">
-        <OptionalJobsBridge stageName={stage.name} />
+        <OptionalJobsBridge
+          stageId={stageId}
+          stageName={stage.name}
+          isRecommendedStage={isRecommendedStage}
+        />
       </div>
     </div>
   );

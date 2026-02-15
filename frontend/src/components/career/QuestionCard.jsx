@@ -53,18 +53,16 @@ const QuestionCard = ({
                                     whileTap={{ scale: 0.99 }}
                                     onClick={() => onAnswer(option.id)}
                                     disabled={isSubmitting}
-                                    className={`w-full p-4 rounded-xl border text-left transition-all ${
-                                        selectedAnswer === option.id
+                                    className={`w-full p-4 rounded-xl border text-left transition-all cursor-pointer ${selectedAnswer === option.id
                                             ? 'border-violet-500 bg-violet-500/10 text-white'
                                             : 'border-slate-800 bg-slate-900/50 text-slate-300 hover:border-slate-700 hover:bg-slate-900'
-                                    } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
                                     <div className="flex items-start gap-3">
-                                        <span className={`flex-shrink-0 w-6 h-6 rounded-full border flex items-center justify-center text-sm ${
-                                            selectedAnswer === option.id
+                                        <span className={`flex-shrink-0 w-6 h-6 rounded-full border flex items-center justify-center text-sm ${selectedAnswer === option.id
                                                 ? 'border-violet-500 bg-violet-500 text-white'
                                                 : 'border-slate-600 text-slate-500'
-                                        }`}>
+                                            }`}>
                                             {String.fromCharCode(65 + index)}
                                         </span>
                                         <span className="flex-1">{option.text}</span>

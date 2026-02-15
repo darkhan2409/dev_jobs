@@ -4,6 +4,8 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
+import { trackEvent } from '../utils/analytics';
+import { ANALYTICS_EVENTS } from '../constants/analyticsEvents';
 
 const AppHeader = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -49,13 +51,21 @@ const AppHeader = () => {
         setIsUserMenuOpen(false);
     };
 
+    const trackNavClick = (link, source) => {
+        trackEvent(ANALYTICS_EVENTS.NAV_CLICK, {
+            source,
+            route: location.pathname,
+            destination: link.to,
+            label: link.label,
+        });
+    };
+
     const primaryNavLinks = [
         { to: '/start', label: 'С чего начать', source: 'header' },
+        { to: '/jobs', label: 'Вакансии' },
+        { to: '/companies', label: 'Компании' },
         { to: '/career', label: 'Карьерный тест' },
         { to: '/guide', label: 'Карта профессий' },
-        { to: '/jobs', label: 'Вакансии', isPrimary: true },
-        { to: '/companies', label: 'Компании' },
-        { to: '/post-job', label: 'Работодателям' },
     ];
 
     const NavLinkItem = ({ to, label, end, source, isPrimary = false }) => {
@@ -63,13 +73,15 @@ const AppHeader = () => {
             ? location.pathname === to
             : location.pathname.startsWith(to);
         const toValue = source ? { pathname: to, search: `?source=${source}` } : to;
+        const linkMeta = { to, label };
 
         if (isPrimary) {
             return (
                 <NavLink
                     to={toValue}
                     end={end}
-                    className={`relative px-4 py-2 text-sm font-semibold rounded-full border transition-all duration-200 ${isActive
+                    onClick={() => trackNavClick(linkMeta, 'header_desktop')}
+                    className={`relative inline-flex h-9 items-center justify-center px-4 text-base leading-none font-medium rounded-full border transition-all duration-200 ${isActive
                         ? 'bg-white text-[#0B0C10] border-white shadow-lg shadow-white/20'
                         : 'bg-white/10 text-white border-white/20 hover:bg-white hover:text-[#0B0C10] hover:border-white'
                         }`}
@@ -83,7 +95,8 @@ const AppHeader = () => {
             <NavLink
                 to={toValue}
                 end={end}
-                className={`relative px-4 py-2 text-sm font-medium transition-colors group ${isActive ? 'text-white' : 'text-gray-400 hover:text-white'
+                onClick={() => trackNavClick(linkMeta, 'header_desktop')}
+                className={`relative px-4 py-2 text-base font-medium transition-colors group ${isActive ? 'text-white' : 'text-gray-300 hover:text-white'
                     }`}
             >
                 {label}
@@ -113,7 +126,18 @@ const AppHeader = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 items-center justify-between">
                         {/* Logo */}
-                        <Link to="/" className="flex items-center gap-1.5 group select-none">
+                        <Link
+                            to="/"
+                            className="flex items-center gap-1.5 group select-none"
+                            onClick={() =>
+                                trackEvent(ANALYTICS_EVENTS.NAV_CLICK, {
+                                    source: 'header_logo',
+                                    route: location.pathname,
+                                    destination: '/',
+                                    label: 'GitJob',
+                                })
+                            }
+                        >
                             {/* 1. Logo Icon (Square with GitMerge) */}
                             <div className="relative">
                                 <div className="absolute inset-0 bg-purple-600 blur-lg opacity-40 group-hover:opacity-70 transition-opacity duration-500 rounded-xl"></div>
@@ -156,7 +180,11 @@ const AppHeader = () => {
                         </nav>
 
                         {/* Right Side: Auth */}
-                        <div className="hidden md:flex items-center gap-4">
+                        <div className="hidden md:flex items-center">
+                            {/* Vertical Divider */}
+                            <div className="h-6 w-px bg-gray-700 mx-6"></div>
+
+                            <div className="flex items-center gap-4">
                             {isLoading ? (
                                 <div className="w-20 h-8 bg-gray-800 rounded-lg animate-pulse"></div>
                             ) : isAuthenticated ? (
@@ -167,7 +195,7 @@ const AppHeader = () => {
                                             e.stopPropagation();
                                             setIsUserMenuOpen(!isUserMenuOpen);
                                         }}
-                                        className="flex items-center gap-2 px-3 py-2 bg-gray-800/50 hover:bg-gray-800 rounded-xl transition-colors border border-gray-700/50 hover:border-gray-600"
+                                        className="flex items-center gap-2 px-3 py-2 bg-gray-800/50 hover:bg-gray-800 rounded-xl transition-colors border border-gray-700/50 hover:border-gray-600 cursor-pointer"
                                     >
                                         <div className="w-7 h-7 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center">
                                             <User size={14} className="text-white" />
@@ -204,7 +232,7 @@ const AppHeader = () => {
                                                     </Link>
                                                     <button
                                                         onClick={handleLogout}
-                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors"
+                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors cursor-pointer"
                                                     >
                                                         <LogOut size={14} />
                                                         Выйти
@@ -216,27 +244,28 @@ const AppHeader = () => {
                                 </div>
                             ) : (
                                 /* Login/Register Buttons */
-                                <>
+                                <div className="flex items-center gap-4 ml-auto">
                                     <button
                                         onClick={openLogin}
-                                        className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
+                                        className="text-sm font-medium text-gray-400 hover:text-white transition-colors cursor-pointer"
                                     >
                                         Войти
                                     </button>
                                     <button
                                         onClick={openRegister}
-                                        className="px-5 py-2 bg-white text-black text-sm font-semibold rounded-full hover:bg-gray-100 transition-colors shadow-lg"
+                                        className="inline-flex h-9 items-center justify-center px-5 border border-gray-600 bg-transparent text-gray-100 text-sm leading-none font-semibold rounded-full hover:bg-white/10 hover:border-white transition-colors cursor-pointer"
                                     >
                                         Регистрация
                                     </button>
-                                </>
+                                </div>
                             )}
+                            </div>
                         </div>
 
                         {/* Mobile Menu Button */}
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className="md:hidden p-2 text-gray-400 hover:text-white transition-colors"
+                            className="md:hidden p-2 text-gray-400 hover:text-white transition-colors cursor-pointer"
                             aria-label={isMobileMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
                             aria-expanded={isMobileMenuOpen}
                             aria-controls="mobile-main-nav"
@@ -262,15 +291,18 @@ const AppHeader = () => {
                                         key={link.to}
                                         to={link.source ? { pathname: link.to, search: `?source=${link.source}` } : link.to}
                                         end={link.end}
-                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        onClick={() => {
+                                            trackNavClick(link, 'header_mobile');
+                                            setIsMobileMenuOpen(false);
+                                        }}
                                         className={({ isActive }) =>
-                                            `block w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/80 ${link.isPrimary
+                                            `block w-full px-4 py-3 text-base font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/80 ${link.isPrimary
                                                 ? isActive
                                                     ? 'bg-white text-[#0B0C10]'
                                                     : 'bg-white/10 text-white hover:bg-white hover:text-[#0B0C10]'
                                                 : isActive
                                                     ? 'text-white bg-gray-800/50'
-                                                    : 'text-gray-400 hover:text-white hover:bg-gray-800/30'
+                                                    : 'text-gray-300 hover:text-white hover:bg-gray-800/30'
                                                 }`
                                         }
                                     >
@@ -286,7 +318,7 @@ const AppHeader = () => {
                                                 openLogin();
                                                 setIsMobileMenuOpen(false);
                                             }}
-                                            className="w-full px-4 py-3 text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg transition-colors text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/80"
+                                            className="w-full px-4 py-3 text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg transition-colors text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/80 cursor-pointer"
                                         >
                                             Войти
                                         </button>
@@ -295,7 +327,7 @@ const AppHeader = () => {
                                                 openRegister();
                                                 setIsMobileMenuOpen(false);
                                             }}
-                                            className="w-full px-4 py-3 bg-white text-black text-sm font-semibold rounded-lg hover:bg-gray-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/80"
+                                            className="w-full px-4 py-3 border border-gray-600 bg-transparent text-gray-100 text-sm font-semibold rounded-lg hover:bg-white/10 hover:border-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/80 cursor-pointer"
                                         >
                                             Регистрация
                                         </button>
@@ -316,7 +348,7 @@ const AppHeader = () => {
                                                 handleLogout();
                                                 setIsMobileMenuOpen(false);
                                             }}
-                                            className="w-full px-4 py-3 text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg transition-colors text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/80"
+                                            className="w-full px-4 py-3 text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg transition-colors text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/80 cursor-pointer"
                                         >
                                             Выйти
                                         </button>
@@ -333,6 +365,7 @@ const AppHeader = () => {
                 isOpen={isAuthModalOpen}
                 onClose={() => setIsAuthModalOpen(false)}
                 defaultTab={authModalTab}
+                hideTabs
             />
         </>
     );

@@ -3,11 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import desc, func, select
 from fastapi_cache.decorator import cache
-from urllib.parse import unquote
 
 from app.database import get_db
-from app.models import Vacancy
-from app.schemas import CompaniesListResponse, CompanyDetailResponse
+from app.models import Vacancy, Company
+from app.schemas import CompaniesListResponse, CompanyDetailResponse, CompanyResponse
 
 router = APIRouter(prefix="/api/companies", tags=["Companies"])
 
@@ -19,41 +18,47 @@ async def get_companies(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Get list of companies aggregated from active vacancies.
-    Returns company name, vacancy count, and logo.
-    Optimized with GROUP BY and SQL-level LIMIT/OFFSET for performance.
+    Get list of companies from companies table.
+    Only includes companies with active vacancies.
+    Returns company metadata and vacancy count.
     """
-    # 1. Get total count of companies (efficient count)
+    # Count total companies with active vacancies
     count_result = await db.execute(
-        select(func.count(func.distinct(Vacancy.company_name)))
-        .filter(Vacancy.is_active == True, Vacancy.company_name != None)
+        select(func.count(func.distinct(Company.id)))
+        .select_from(Company)
+        .join(Vacancy, Vacancy.company_id == Company.id)
+        .filter(Vacancy.is_active == True)
     )
     total = count_result.scalar() or 0
 
-    # 2. Get paginated companies
+    # Get companies with vacancy counts
     result = await db.execute(
         select(
-            Vacancy.company_name,
-            func.count(Vacancy.id).label("vacancy_count"),
-            func.max(Vacancy.company_logo).label("logo_url")
+            Company,
+            func.count(Vacancy.id).label("vacancy_count")
         )
-        .filter(
-            Vacancy.is_active == True,
-            Vacancy.company_name != None
-        )
-        .group_by(Vacancy.company_name)
+        .join(Vacancy, Vacancy.company_id == Company.id)
+        .filter(Vacancy.is_active == True)
+        .group_by(Company.id)
         .order_by(func.count(Vacancy.id).desc())
         .limit(limit)
     )
-    all_companies = result.all()
+    rows = result.all()
 
     companies_list = [
-        {
-            "name": row.company_name,
-            "vacancy_count": row.vacancy_count,
-            "logo_url": row.logo_url
-        }
-        for row in all_companies
+        CompanyResponse(
+            id=row[0].id,
+            name=row[0].name,
+            vacancy_count=row[1],
+            logo_url=row[0].logo_url,
+            site_url=row[0].site_url,
+            description=row[0].description,
+            company_type=row[0].company_type,
+            area_name=row[0].area_name,
+            industries=row[0].industries,
+            trusted=row[0].trusted
+        )
+        for row in rows
     ]
 
     return CompaniesListResponse(
@@ -62,80 +67,77 @@ async def get_companies(
     )
 
 
-@router.get("/{company_name}", response_model=CompanyDetailResponse)
-async def get_company_detail(
-    company_name: str,
+@router.get("/id/{company_id}", response_model=CompanyDetailResponse)
+async def get_company_detail_by_id(
+    company_id: int,
     page: int = Query(1, ge=1, description="Page number"),
-    per_page: int = Query(20, ge=1, le=100, description="Number of records per page"),
+    per_page: int = Query(21, ge=1, le=100, description="Number of records per page"),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Get company details and all its active vacancies.
-    
+    Get company details by ID and all its active vacancies.
+
     Args:
-        company_name: URL-encoded company name
-        
+        company_id: Company ID from companies table
+
     Returns:
         Company metadata and list of active vacancies
     """
-    decoded_name = unquote(company_name)
-    
-    # Count active vacancies for this company
+    # Fetch company
+    company_result = await db.execute(
+        select(Company).filter(Company.id == company_id)
+    )
+    company = company_result.scalar_one_or_none()
+
+    if not company:
+        raise HTTPException(status_code=404, detail="Company not found")
+
+    # Count active vacancies
     count_result = await db.execute(
         select(func.count(Vacancy.id))
         .filter(
             Vacancy.is_active == True,
-            Vacancy.company_name == decoded_name
+            Vacancy.company_id == company_id
         )
     )
     total = count_result.scalar() or 0
 
     if total == 0:
-        raise HTTPException(status_code=404, detail="Company not found or has no active vacancies")
+        raise HTTPException(status_code=404, detail="Company has no active vacancies")
 
     total_pages = max(1, math.ceil(total / per_page))
     if page > total_pages:
         raise HTTPException(status_code=404, detail="Page out of range")
 
-    # Fetch one vacancy for company metadata
-    first_result = await db.execute(
-        select(Vacancy)
-        .filter(
-            Vacancy.is_active == True,
-            Vacancy.company_name == decoded_name
-        )
-        .order_by(desc(Vacancy.published_at))
-        .limit(1)
-    )
-    first_vacancy = first_result.scalar_one()
-
     offset = (page - 1) * per_page
 
-    # Find paginated active vacancies for this company
+    # Fetch paginated vacancies
     result = await db.execute(
         select(Vacancy)
         .filter(
             Vacancy.is_active == True,
-            Vacancy.company_name == decoded_name
+            Vacancy.company_id == company_id
         )
         .order_by(desc(Vacancy.published_at))
         .offset(offset)
         .limit(per_page)
     )
     vacancies = result.scalars().all()
-    
-    # Build company info from first vacancy
-    company_info = {
-        "name": decoded_name,
-        "vacancy_count": total,
-        "logo_url": first_vacancy.company_logo
-    }
-    
-    # Try to get employer site URL from raw_data
-    employer_data = first_vacancy.raw_data.get("employer", {})
-    if employer_data.get("alternate_url"):
-        company_info["site_url"] = employer_data.get("alternate_url")
-    
+
+    # Build company info
+    company_info = CompanyResponse(
+        id=company.id,
+        name=company.name,
+        vacancy_count=total,
+        logo_url=company.logo_url,
+        site_url=company.site_url,
+        description=company.description,
+        company_type=company.company_type,
+        area_name=company.area_name,
+        industries=company.industries,
+        trusted=company.trusted
+    )
+
     return CompanyDetailResponse(
         company=company_info,
         vacancies=vacancies,

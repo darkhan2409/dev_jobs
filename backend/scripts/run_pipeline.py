@@ -9,6 +9,7 @@ from datetime import datetime
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app.scrapers.hh_scraper import HHScraper
+from app.config import settings
 from app.config_roles import ROLES, SPECIAL_QUERIES
 from scripts.ai_clean_db import run_ai_cleaning_job
 
@@ -82,7 +83,7 @@ async def execute_full_cycle(deep_scrape: bool = False, dry_run_cleaner: bool = 
         role_delay = (10, 20)
         query_delay = (2, 5)
     
-    logger.info(f"Configuration: {pages} pages per role, cleanup={do_cleanup}")
+    logger.info(f"Configuration: {pages} pages per role, cleanup={do_cleanup}, hh_area={settings.HH_AREA}")
     
     try:
         # Scrape all roles
@@ -100,6 +101,7 @@ async def execute_full_cycle(deep_scrape: bool = False, dry_run_cleaner: bool = 
                     role_id=role['id'],
                     text=None,
                     pages=pages,
+                    area=settings.HH_AREA,
                     do_cleanup=do_cleanup
                 )
                 
@@ -129,6 +131,7 @@ async def execute_full_cycle(deep_scrape: bool = False, dry_run_cleaner: bool = 
                     role_id=96,  # Programmer role
                     text=query,
                     pages=special_query_pages,
+                    area=settings.HH_AREA,
                     do_cleanup=False
                 )
                 

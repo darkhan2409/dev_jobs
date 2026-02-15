@@ -1,41 +1,30 @@
 """
-Question and AnswerOption data models.
+Question and AnswerOption data models for Career Test v2.1.
+
+Supports Likert-5 and forced-choice question types with
+role_weights, stage_weights, and signal_associations.
 """
 
-from typing import List, Dict
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from typing import List, Dict, Optional
+from pydantic import BaseModel, Field, ConfigDict, AliasChoices
 
 
 class AnswerOption(BaseModel):
     """
     Represents an answer option for a question.
-    
-    Validates: Requirements 4.1, 4.2, 4.3, 4.4
+    Supports both Likert-5 (5 options) and forced-choice (2 options).
     """
     id: str = Field(..., min_length=1, description="Unique identifier for the answer option")
-    text: str = Field(..., min_length=1, description="Answer option text")
-    signal_associations: List[str] = Field(..., min_length=1, description="Signal IDs this answer indicates")
-    role_weights: Dict[str, float] = Field(..., description="Mapping of role_id to weight value")
-    
-    @field_validator('signal_associations')
-    @classmethod
-    def validate_signal_associations(cls, v: List[str]) -> List[str]:
-        """Ensure at least one signal association is provided."""
-        if not v or len(v) == 0:
-            raise ValueError("Answer option must have at least one signal association")
-        if any(not signal_id.strip() for signal_id in v):
-            raise ValueError("All signal IDs must be non-empty strings")
-        return v
-    
-    @field_validator('role_weights')
-    @classmethod
-    def validate_role_weights(cls, v: Dict[str, float]) -> Dict[str, float]:
-        """Ensure all weights are non-negative."""
-        for role_id, weight in v.items():
-            if weight < 0:
-                raise ValueError(f"Weight for role '{role_id}' must be non-negative, got {weight}")
-        return v
-    
+    text: str = Field(
+        ...,
+        min_length=1,
+        validation_alias=AliasChoices("text", "label"),
+        description="Answer option text",
+    )
+    signal_associations: List[str] = Field(default=[], description="Signal IDs this answer indicates")
+    role_weights: Dict[str, float] = Field(default={}, description="Mapping of role_id to weight value (-4 to +5)")
+    stage_weights: Dict[str, float] = Field(default={}, description="Mapping of stage_id to weight value (-4 to +5)")
+
     model_config = ConfigDict(
         str_strip_whitespace=True
     )
@@ -44,22 +33,16 @@ class AnswerOption(BaseModel):
 class Question(BaseModel):
     """
     Represents a question in the question bank.
-    
-    Validates: Requirements 3.1, 3.2, 3.3, 4.3
+    Supports variable number of answer options (2 for forced-choice, 5 for Likert).
     """
     id: str = Field(..., min_length=1, description="Unique identifier for the question")
     text: str = Field(..., min_length=1, description="Question text")
-    thematic_block: str = Field(..., min_length=1, description="One of 6 thematic blocks")
-    answer_options: List[AnswerOption] = Field(..., min_length=4, max_length=4, description="Exactly 4 answer options")
-    
-    @field_validator('answer_options')
-    @classmethod
-    def validate_answer_options(cls, v: List[AnswerOption]) -> List[AnswerOption]:
-        """Ensure exactly 4 answer options are provided."""
-        if len(v) != 4:
-            raise ValueError(f"Question must have exactly 4 answer options, got {len(v)}")
-        return v
-    
+    thematic_block: str = Field(..., min_length=1, description="Thematic category")
+    answer_options: List[AnswerOption] = Field(..., min_length=2, description="Answer options (2-5)")
+    type: Optional[str] = Field(default=None, description="Question type: likert_5 or forced_choice")
+    is_reverse_keyed: bool = Field(default=False, description="Whether scoring direction is reversed")
+    forced_choice_priority: bool = Field(default=False, description="Whether this is a high-priority discriminator")
+
     model_config = ConfigDict(
         str_strip_whitespace=True
     )

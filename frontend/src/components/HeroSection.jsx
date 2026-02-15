@@ -7,11 +7,9 @@ import Button from './ui/Button';
 
 
 const TECH_FILTERS = ['React', 'Python', 'Go'];
-const CONTEXT_FILTERS = ['Разработка', 'Аналитика', 'Инфраструктура'];
 
 const HeroSection = ({ onSearchApply, totalJobs }) => {
     const [searchTerm, setSearchTerm] = useState('');
-    // const navigate = useNavigate(); // Removed unused
 
     const handleSubmit = (e) => {
         e.preventDefault();

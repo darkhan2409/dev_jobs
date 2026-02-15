@@ -1,27 +1,5 @@
 import { motion } from 'framer-motion';
-
-const signalNames = {
-    analytical_thinking: 'Аналитическое мышление',
-    creative_problem_solving: 'Креативное решение проблем',
-    systematic_approach: 'Системный подход',
-    detail_orientation: 'Внимание к деталям',
-    big_picture_thinking: 'Стратегическое видение',
-    user_empathy: 'Эмпатия к пользователям',
-    data_driven_mindset: 'Мышление, основанное на данных',
-    technical_depth_preference: 'Глубина технических знаний',
-    process_orientation: 'Процессная ориентация',
-    communication_skills: 'Коммуникативные навыки',
-    experimental_approach: 'Экспериментальный подход',
-    visual_thinking: 'Визуальное мышление',
-    critical_thinking: 'Критическое мышление',
-    strategic_thinking: 'Стратегическое мышление',
-    automation_mindset: 'Автоматизация процессов',
-    risk_assessment: 'Оценка рисков',
-    platform_thinking: 'Платформенное мышление',
-    performance_optimization: 'Оптимизация производительности',
-    research_mindset: 'Исследовательский подход',
-    linguistic_thinking: 'Лингвистическое мышление'
-};
+import { signalNames } from '../../constants/signalNames';
 
 const SignalChart = ({ signalProfile }) => {
     const signals = Object.entries(signalProfile)

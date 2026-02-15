@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Building2, Briefcase, Globe, ExternalLink } from 'lucide-react';
@@ -16,17 +16,24 @@ const formatVacanciesCount = (count) => {
     return `${count} вакансий`;
 };
 
+const getCompanyDescription = (company) => {
+    if (!company) return '';
+    return company.description || company.about || company.summary || company.tagline || '';
+};
+
 const CompanyProfilePage = () => {
-    const { companyName } = useParams();
+    const { companyId } = useParams();
     const [company, setCompany] = useState(null);
     const [vacancies, setVacancies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [pagination, setPagination] = useState({
         page: 1,
-        per_page: 20,
+        per_page: 21,
         total: 0
     });
+    const vacanciesSectionRef = useRef(null);
+    const companyDescription = getCompanyDescription(company);
 
     useEffect(() => {
         const fetchCompanyData = async () => {
@@ -34,7 +41,7 @@ const CompanyProfilePage = () => {
                 setLoading(true);
                 // Fetch company details
                 const response = await axiosClient.get(
-                    `/companies/${encodeURIComponent(companyName)}`,
+                    `/companies/id/${companyId}`,
                     {
                         params: {
                             page: pagination.page,
@@ -57,14 +64,14 @@ const CompanyProfilePage = () => {
             }
         };
 
-        if (companyName) {
+        if (companyId) {
             fetchCompanyData();
         }
-    }, [companyName, pagination.page, pagination.per_page]);
+    }, [companyId, pagination.page, pagination.per_page]);
 
     useEffect(() => {
         setPagination((prev) => ({ ...prev, page: 1 }));
-    }, [companyName]);
+    }, [companyId]);
 
     useEffect(() => {
         if (company) {
@@ -74,6 +81,16 @@ const CompanyProfilePage = () => {
             document.title = 'GitJob — IT‑вакансии в Казахстане';
         };
     }, [company]);
+
+    // Scroll to vacancies section when page changes
+    useEffect(() => {
+        if (vacanciesSectionRef.current && pagination.page > 1) {
+            const yOffset = -120; // Offset for sticky header
+            const element = vacanciesSectionRef.current;
+            const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+    }, [pagination.page]);
 
     if (loading) {
         return (
@@ -122,7 +139,7 @@ const CompanyProfilePage = () => {
                         </div>
                         <h1 className="text-3xl font-bold text-white mb-4">Компания не найдена</h1>
                         <p className="text-slate-400 mb-8">
-                            У компании «{decodeURIComponent(companyName)}» сейчас нет активных вакансий.
+                            Компания не найдена или у неё сейчас нет активных вакансий.
                         </p>
                         <Link
                             to="/companies"
@@ -189,6 +206,33 @@ const CompanyProfilePage = () => {
                                     <Briefcase size={16} />
                                     <span>{formatVacanciesCount(pagination.total)}</span>
                                 </div>
+
+                                {/* Company Type */}
+                                {company.company_type && (
+                                    <div className="flex items-center gap-2">
+                                        <span className="px-2 py-1 bg-slate-800 rounded text-xs">
+                                            {company.company_type === 'company' ? 'Компания' :
+                                             company.company_type === 'agency' ? 'Агентство' :
+                                             company.company_type}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Trusted Badge */}
+                                {company.trusted && (
+                                    <div className="flex items-center gap-2">
+                                        <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">
+                                            Проверенная
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Location */}
+                                {company.area_name && (
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <span>{company.area_name}</span>
+                                    </div>
+                                )}
                             </div>
 
                             {company.site_url && (
@@ -207,8 +251,47 @@ const CompanyProfilePage = () => {
                     </div>
                 </motion.div>
 
+                <motion.div
+                    variants={fadeInUp}
+                    className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 mb-8"
+                >
+                    <h2 className="text-xl font-semibold text-white mb-3">О компании</h2>
+                    {companyDescription ? (
+                        <div
+                            className="text-slate-300 leading-relaxed prose prose-invert max-w-none"
+                            dangerouslySetInnerHTML={{ __html: companyDescription }}
+                        />
+                    ) : (
+                        <p className="text-slate-400 leading-relaxed">
+                            Подробное описание компании пока недоступно. Мы показываем проверяемый минимум:
+                            официальный сайт и список актуальных вакансий.
+                        </p>
+                    )}
+
+                    {/* Industries */}
+                    {company.industries && company.industries.length > 0 && (
+                        <div className="mt-4">
+                            <h3 className="text-sm font-semibold text-slate-400 mb-2">Отрасли:</h3>
+                            <div className="flex flex-wrap gap-2">
+                                {company.industries.map((industry, idx) => (
+                                    <span
+                                        key={idx}
+                                        className="px-3 py-1 bg-slate-800 text-slate-300 rounded-lg text-xs"
+                                    >
+                                        {industry.name}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <p className="text-sm text-slate-500 mt-4">
+                        Данные карточки формируются из активных вакансий и публичных данных работодателя.
+                    </p>
+                </motion.div>
+
                 {/* Vacancies Section */}
-                <motion.div variants={fadeInUp}>
+                <motion.div ref={vacanciesSectionRef} variants={fadeInUp}>
                     <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
                         <Briefcase className="text-violet-400" size={24} />
                         Открытые вакансии

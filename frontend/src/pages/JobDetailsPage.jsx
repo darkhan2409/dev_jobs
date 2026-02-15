@@ -1,10 +1,8 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { vacanciesApi } from '../api/vacanciesApi';
 import { formatSalary, formatDate } from '../utils/formatters';
-import { parseJobDescription } from '../utils/jobParser';
-import TableOfContents from '../components/job/TableOfContents';
 import JobDescription from '../components/job/JobDescription';
 import {
     MapPin,
@@ -12,42 +10,37 @@ import {
     ExternalLink,
     Clock,
     Briefcase,
-    Award,
-    Users,
-    Database,
-    CalendarClock
+    Calendar,
+    Share2
 } from 'lucide-react';
 import ErrorState from '../components/ui/ErrorState';
 import EmptyState from '../components/ui/EmptyState';
 import LoadingState from '../components/ui/LoadingState';
 import { pageVariants } from '../utils/animations';
-import { getVacancySourceLabel, formatVacancyUpdatedAt } from '../utils/vacancyTrust';
-
-const QuickStat = ({ icon, label, value }) => {
-    const Icon = icon;
-    return (
-        <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
-            <div className="p-2 rounded-md bg-slate-800 text-violet-400">
-                <Icon size={18} />
-            </div>
-            <div>
-                <p className="text-xs text-slate-500">{label}</p>
-                <p className="text-sm font-medium text-slate-200">{value}</p>
-            </div>
-        </div>
-    );
-};
+import { getVacancySourceLabel } from '../utils/vacancyTrust';
+import { trackEvent } from '../utils/analytics';
+import { ANALYTICS_EVENTS } from '../constants/analyticsEvents';
 
 const JobDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
 
-    const [vacancy, setVacancy] = useState(null);
-    const [status, setStatus] = useState('loading');
+    const prefetchedVacancy = useMemo(() => {
+        const candidate = location.state?.prefetchedVacancy;
+        if (!candidate) return null;
+        return String(candidate.id) === String(id) ? candidate : null;
+    }, [id, location.state]);
+
+    const [vacancy, setVacancy] = useState(prefetchedVacancy);
+    const [status, setStatus] = useState(prefetchedVacancy ? 'ready' : 'loading');
     const [statusMessage, setStatusMessage] = useState('');
+    const trackedVacancyRef = useRef(null);
 
-    const loadVacancy = useCallback(async () => {
-        setStatus('loading');
+    const loadVacancy = useCallback(async ({ silent = false } = {}) => {
+        if (!silent) {
+            setStatus('loading');
+        }
         setStatusMessage('');
 
         try {
@@ -77,8 +70,12 @@ const JobDetailsPage = () => {
     }, [id]);
 
     useEffect(() => {
-        loadVacancy();
-    }, [loadVacancy]);
+        const timer = setTimeout(() => {
+            loadVacancy({ silent: Boolean(prefetchedVacancy) });
+        }, 0);
+
+        return () => clearTimeout(timer);
+    }, [loadVacancy, prefetchedVacancy]);
 
     useEffect(() => {
         if (vacancy) {
@@ -90,9 +87,18 @@ const JobDetailsPage = () => {
         };
     }, [vacancy]);
 
-    const sections = useMemo(() => {
-        return vacancy ? parseJobDescription(vacancy.description) : [];
-    }, [vacancy]);
+    useEffect(() => {
+        if (!vacancy || status !== 'ready') return;
+        if (trackedVacancyRef.current === vacancy.id) return;
+
+        trackEvent(ANALYTICS_EVENTS.VACANCY_OPEN, {
+            source: 'job_details_page',
+            vacancy_id: vacancy.id,
+            company_id: vacancy.company_id || null,
+            grade: vacancy.grade || null,
+        });
+        trackedVacancyRef.current = vacancy.id;
+    }, [vacancy, status]);
 
     if (status === 'loading' && !vacancy) {
         return (
@@ -132,191 +138,140 @@ const JobDetailsPage = () => {
     }
 
     const sourceLabel = getVacancySourceLabel(vacancy);
-    const updatedAtLabel = formatVacancyUpdatedAt(vacancy);
 
     return (
         <motion.div
-            className="min-h-screen text-slate-200 font-sans pb-24 lg:pb-12"
+            className="min-h-screen text-slate-200 font-sans pb-12"
             variants={pageVariants}
             initial="initial"
             animate="animate"
             exit="exit"
         >
-            <div className="border-b border-white/5 pt-24 pb-12">
-                <main className="max-w-7xl mx-auto px-4">
-                    <div className="flex items-center gap-2 text-sm text-slate-500 mb-8">
-                        <Link to="/jobs" className="hover:text-white transition-colors">Вакансии</Link>
-                        <span>/</span>
-                        <span className="text-slate-300 truncate max-w-[300px]">{vacancy.title}</span>
+            <main className="max-w-7xl mx-auto px-4 pt-24">
+                {/* Breadcrumbs */}
+                <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
+                    <Link to="/jobs" className="hover:text-white transition-colors">Вакансии</Link>
+                    <span>/</span>
+                    <span className="text-slate-300 truncate max-w-[300px]">{vacancy.title}</span>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    {/* LEFT COLUMN (70%) - Header & Description */}
+                    <div className="lg:col-span-8 space-y-8">
+                        {/* Unified Header Block */}
+                        <div>
+                            <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
+                                {vacancy.title}
+                            </h1>
+
+                            <div className="text-2xl md:text-3xl font-mono font-bold text-emerald-400 mb-6">
+                                {formatSalary(vacancy.salary_from, vacancy.salary_to, vacancy.currency || 'KZT')}
+                                <span className="text-sm font-sans font-normal text-slate-500 ml-3 align-middle">
+                                    до вычета налогов
+                                </span>
+                            </div>
+
+                            {/* Meta Info Row */}
+                            <div className="flex flex-wrap items-center gap-y-3 gap-x-6 text-sm text-slate-300 border-b border-slate-800 pb-8">
+                                <div className="flex items-center gap-2">
+                                    <Briefcase size={18} className="text-slate-500" />
+                                    <span>{vacancy.raw_data?.experience?.name || 'Опыт не указан'}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Clock size={18} className="text-slate-500" />
+                                    <span>{vacancy.raw_data?.schedule?.name || 'Полный день'}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <MapPin size={18} className="text-slate-500" />
+                                    <span>{vacancy.location || 'Город не указан'}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Calendar size={18} className="text-slate-500" />
+                                    <span>Опубликовано {formatDate(vacancy.published_at)}</span>
+                                </div>
+                            </div>
+
+                            {/* Key Skills Tags */}
+                            {vacancy.key_skills && vacancy.key_skills.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-6">
+                                    {vacancy.key_skills.map((skill, idx) => (
+                                        <span key={idx} className="px-3 py-1 bg-slate-800/50 border border-slate-700 rounded-full text-xs text-slate-300">
+                                            {skill}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Full Description */}
+                        <div className="prose prose-invert prose-lg max-w-none text-slate-300">
+                            <JobDescription htmlContent={vacancy.description} />
+                        </div>
                     </div>
 
-                    <div className="flex flex-col lg:flex-row gap-8 justify-between items-start">
-                        <div className="space-y-6 max-w-3xl">
-                            <div className="flex items-center gap-4">
-                                <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center overflow-hidden p-2 shadow-lg shadow-violet-500/10">
+                    {/* RIGHT COLUMN (30%) - Sticky Actions */}
+                    <aside className="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
+                        {/* Apply Card */}
+                        <div className="p-6 rounded-2xl bg-gradient-to-b from-violet-500/10 to-slate-900 border border-violet-500/20 shadow-xl shadow-black/20 backdrop-blur-sm">
+                            <a
+                                href={vacancy.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() =>
+                                    trackEvent(ANALYTICS_EVENTS.APPLY_CLICK, {
+                                        source: 'job_details_page',
+                                        vacancy_id: vacancy.id,
+                                        company_id: vacancy.company_id || null,
+                                    })
+                                }
+                                className="block w-full mb-4"
+                            >
+                                <button className="w-full py-3.5 px-4 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-violet-600/20 flex items-center justify-center gap-2 group">
+                                    <span>Откликнуться</span>
+                                    <ExternalLink size={18} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                                </button>
+                            </a>
+
+                            <div className="flex justify-between items-center px-1">
+                                <p className="text-xs text-slate-500">
+                                    Источник: {sourceLabel}
+                                </p>
+                                <button className="text-slate-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800">
+                                    <Share2 size={18} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Company Card */}
+                        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800">
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center overflow-hidden p-1">
                                     {vacancy.company_logo ? (
                                         <img src={vacancy.company_logo} alt={vacancy.company_name} className="w-full h-full object-contain" />
                                     ) : (
-                                        <Building2 size={32} className="text-slate-800" />
+                                        <Building2 size={24} className="text-slate-800" />
                                     )}
                                 </div>
                                 <div>
-                                    <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                                        {vacancy.title}
-                                    </h1>
-                                    <div className="flex flex-wrap items-center gap-2 text-slate-400">
-                                        <Building2 size={16} className="text-violet-400" />
-                                        <span className="font-medium text-slate-200">{vacancy.company_name}</span>
-                                        <span className="w-1 h-1 rounded-full bg-slate-700" />
-                                        <MapPin size={16} />
-                                        <span>{vacancy.location || 'Удалённо'}</span>
-                                        <span className="w-1 h-1 rounded-full bg-slate-700" />
-                                        <span className="text-sm">Опубликовано {formatDate(vacancy.published_at)}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-wrap gap-2">
-                                {vacancy.key_skills?.slice(0, 5).map((skill, idx) => (
-                                    <span key={idx} className="px-3 py-1 bg-slate-800/50 border border-slate-700 rounded-full text-xs text-slate-300">
-                                        {skill}
-                                    </span>
-                                ))}
-                            </div>
-
-                            <div className="rounded-xl border border-slate-700/50 bg-slate-900/50 p-3">
-                                <p className="text-xs text-slate-400">Данные вакансии получены из HH API и обновляются по мере синхронизации источника.</p>
-                                <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-300">
-                                    <span className="inline-flex items-center gap-1.5">
-                                        <Database size={14} className="text-violet-400" />
-                                        Источник: {sourceLabel}
-                                    </span>
-                                    <span className="inline-flex items-center gap-1.5">
-                                        <CalendarClock size={14} className="text-violet-400" />
-                                        Обновлено: {updatedAtLabel}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="lg:text-right">
-                            <div className="text-2xl md:text-3xl font-mono font-bold text-emerald-400 mb-2">
-                                {formatSalary(vacancy.salary_from, vacancy.salary_to, vacancy.currency || 'KZT')}
-                            </div>
-                            <div className="text-sm text-slate-500">В месяц, до вычета налогов</div>
-                        </div>
-                    </div>
-                </main>
-            </div>
-
-            <main className="max-w-7xl mx-auto px-4 py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
-                    <div className="hidden lg:block lg:col-span-3">
-                        <TableOfContents sections={sections} />
-                    </div>
-
-                    <div className="lg:col-span-6 space-y-8">
-                        <div className="grid grid-cols-2 gap-4 mb-8">
-                            <QuickStat
-                                icon={Briefcase}
-                                label="Опыт"
-                                value={vacancy.raw_data?.experience?.name || 'Не указано'}
-                            />
-                            <QuickStat
-                                icon={Clock}
-                                label="График"
-                                value={vacancy.raw_data?.schedule?.name || 'Полная занятость'}
-                            />
-                            <QuickStat
-                                icon={Users}
-                                label="Размер команды"
-                                value="Неизвестно"
-                            />
-                            <QuickStat
-                                icon={Award}
-                                label="Уровень"
-                                value={vacancy.raw_data?.professional_roles?.[0]?.name || 'Специалист'}
-                            />
-                        </div>
-
-                        <div className="space-y-6">
-                            {sections.map((section) => (
-                                <section
-                                    key={section.id}
-                                    id={section.id}
-                                    className="scroll-mt-32"
-                                >
-                                    <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-3">
-                                        {section.title}
+                                    <h3 className="font-semibold text-white leading-tight">
+                                        {vacancy.company_name}
                                     </h3>
-                                    <JobDescription htmlContent={section.content} />
-                                </section>
-                            ))}
-                        </div>
-                    </div>
-
-                    <aside className="lg:col-span-3 relative">
-                        <div className="sticky top-24 space-y-6">
-                            <div className="p-6 rounded-2xl bg-gradient-to-b from-violet-500/10 to-slate-900 border border-violet-500/20 shadow-xl shadow-black/20 backdrop-blur-sm">
-                                <h3 className="font-semibold text-white mb-4">Заинтересовало?</h3>
-                                <a
-                                    href={vacancy.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="block w-full mb-4"
-                                >
-                                    <button className="w-full py-3 px-4 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-violet-600/20 flex items-center justify-center gap-2">
-                                        Откликнуться <ExternalLink size={18} />
-                                    </button>
-                                </a>
-                                <p className="text-xs text-center text-slate-500">
-                                    Переход на источник: {sourceLabel}
-                                </p>
-                                <p className="text-[11px] text-center text-slate-600 mt-2">
-                                    Данные карточки синхронизируются из HH API.
-                                </p>
-                            </div>
-
-                            <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800">
-                                <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
-                                    О компании
-                                </h4>
-                                <div className="space-y-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center">
-                                            <Building2 size={20} className="text-slate-400" />
-                                        </div>
-                                        <div>
-                                            <p className="font-medium text-white">{vacancy.company_name}</p>
-                                            <p className="text-xs text-slate-500">IT-компания</p>
-                                        </div>
-                                    </div>
-                                    <Link
-                                        to={`/companies/${encodeURIComponent(vacancy.company_name)}`}
-                                        className="block w-full text-center py-2 text-sm text-violet-400 hover:text-white border border-violet-500/30 hover:bg-violet-500/10 rounded-lg transition-all"
-                                    >
-                                        Профиль компании
-                                    </Link>
+                                    <p className="text-xs text-slate-500 mt-0.5">IT-компания</p>
                                 </div>
                             </div>
+
+                            {vacancy.company_id && (
+                                <Link
+                                    to={`/companies/${vacancy.company_id}`}
+                                    className="block w-full text-center py-2.5 text-sm font-medium text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 hover:bg-slate-800 rounded-xl transition-all"
+                                >
+                                    Подробнее о компании
+                                </Link>
+                            )}
                         </div>
                     </aside>
                 </div>
             </main>
-
-            <div className="lg:hidden fixed bottom-0 left-0 w-full bg-slate-900/95 backdrop-blur-xl border-t border-slate-800 p-4 z-50">
-                <a
-                    href={vacancy.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full"
-                >
-                    <button className="w-full bg-violet-600 text-white font-semibold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2">
-                        <span>Откликнуться</span>
-                        <ExternalLink size={18} />
-                    </button>
-                </a>
-            </div>
         </motion.div>
     );
 };

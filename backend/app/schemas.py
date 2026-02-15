@@ -9,6 +9,7 @@ from app.utils.password_validator import validate_password_strength
 class VacancyResponse(BaseModel):
     id: int
     title: str
+    company_id: Optional[int] = None
     company_name: Optional[str] = None
     company_logo: Optional[str] = None
     salary_from: Optional[int] = None
@@ -43,11 +44,31 @@ class FiltersResponse(BaseModel):
     grades: List[str]
     technologies: List[str]
 
+class RoleMarketStatsResponse(BaseModel):
+    role_id: str
+    vacancy_count: int
+    salary_range: Dict[str, Optional[int]]
+    grade_distribution: Dict[str, int]
+    salary_ranges_by_grade: Dict[str, Dict[str, Optional[int]]]
+    companies_hiring_count: int
+    hiring_company_share_percent: float
+    top_skills: List[str]
+    search_terms_used: List[str]
+
 class CompanyResponse(BaseModel):
+    id: int
     name: str
     vacancy_count: int
     logo_url: Optional[str] = None
     site_url: Optional[str] = None
+    description: Optional[str] = None
+    company_type: Optional[str] = None
+    area_name: Optional[str] = None
+    industries: Optional[List[dict]] = None
+    trusted: bool = False
+
+    class Config:
+        from_attributes = True
 
 class CompaniesListResponse(BaseModel):
     items: List[CompanyResponse]
@@ -210,6 +231,7 @@ class QuestionResponse(BaseModel):
     id: str
     text: str
     thematic_block: str
+    type: Optional[str] = None
     answer_options: List[AnswerOptionResponse]
 
 
@@ -231,6 +253,7 @@ class InterpretationResponse(BaseModel):
     signal_analysis: str
     alternative_roles: List[str]
     differentiation_criteria: str
+    why_this_role_reasons: List[str] = []
 
 
 class RoleScoreResponse(BaseModel):
@@ -306,17 +329,24 @@ class StageWithRolesResponse(BaseModel):
     roles: List[StageRoleMapResponse]
 
 
-class StageScoreResponse(BaseModel):
-    """Stage score from test."""
-    stage_id: str
-    stage_name: str
-    score: float
+# --- Analytics Schemas ---
+
+class AnalyticsEventRequest(BaseModel):
+    """One analytics event payload from frontend."""
+    event_name: str = Field(..., min_length=1, max_length=120)
+    source: str = Field(default="unknown", max_length=120)
+    route: str = Field(default="unknown", max_length=255)
+    user_type_guess: str = Field(default="unknown", max_length=32)
+    session_id: Optional[str] = Field(default=None, max_length=128)
+    timestamp: Optional[datetime] = None
+    payload: Dict[str, Any] = Field(default_factory=dict)
 
 
-class StageRecommendationResponse(BaseModel):
-    """Stage recommendation based on test results."""
-    primary_stage_id: str
-    primary_stage_name: str
-    what_user_will_see: str
-    related_roles: List[str]
-    ranked_stages: List[StageScoreResponse]
+class AnalyticsIngestRequest(BaseModel):
+    """Batch of analytics events."""
+    events: List[AnalyticsEventRequest] = Field(..., min_length=1, max_length=100)
+
+
+class AnalyticsIngestResponse(BaseModel):
+    """Accepted event count."""
+    accepted: int

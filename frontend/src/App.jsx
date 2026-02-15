@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import { ScrollRestoration } from 'react-router-dom';
 import React, { lazy, Suspense } from 'react';
 import HomePage from './pages/HomePage';
 import JobsPage from './pages/JobsPage';
@@ -91,7 +90,7 @@ function AnimatedRoutes() {
         <Route path="/jobs" element={<JobsPage />} />
         <Route path="/jobs/:id" element={<JobDetailsPage />} />
         <Route path="/companies" element={<CompaniesPage />} />
-        <Route path="/companies/:companyName" element={<CompanyProfilePage />} />
+        <Route path="/companies/:companyId" element={<CompanyProfilePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/career" element={<CareerPage />} />
         <Route path="/start" element={<StartPage />} />

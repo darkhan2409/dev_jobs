@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { User, MapPin, Briefcase, Save, Loader2, FileText, LayoutDashboard, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
-// import { useAuth } from '../context/AuthContext'; // Removed unused import
 import axiosClient from '../api/axiosClient';
 import SkillTagInput from '../components/SkillTagInput';
 import { pageVariants } from '../utils/animations';
@@ -10,7 +9,6 @@ import { pageVariants } from '../utils/animations';
 const GRADES = ["Junior", "Middle", "Senior", "Lead"];
 
 const ProfilePage = () => {
-    // const { user: authUser } = useAuth(); // Removed unused authUser
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });

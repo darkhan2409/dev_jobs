@@ -6,6 +6,8 @@ import QuestionCard from '../components/career/QuestionCard';
 import ResultsScreen from '../components/career/ResultsScreen';
 import ErrorState from '../components/ui/ErrorState';
 import { pageVariants } from '../utils/animations';
+import { trackEvent } from '../utils/analytics';
+import { ANALYTICS_EVENTS } from '../constants/analyticsEvents';
 
 const CareerPage = () => {
     const [screen, setScreen] = useState('welcome'); // 'welcome' | 'test' | 'results'
@@ -20,6 +22,16 @@ const CareerPage = () => {
 
     const completeTestRequest = useCallback(async () => {
         const completeRes = await interviewApi.completeTest(sessionId);
+        const resultData = completeRes.data;
+
+        trackEvent(ANALYTICS_EVENTS.CAREER_TEST_COMPLETE, {
+            source: 'career_page',
+            session_id: sessionId,
+            ranked_roles_count: resultData?.ranked_roles?.length || 0,
+            primary_role_id: resultData?.ranked_roles?.[0]?.role_id || null,
+            primary_stage_id: resultData?.stage_recommendation?.primary_stage_id || null,
+        });
+
         setResults(completeRes.data);
         setScreen('results');
     }, [sessionId]);
@@ -32,6 +44,13 @@ const CareerPage = () => {
                 interviewApi.getQuestions(),
                 interviewApi.startTest()
             ]);
+
+            trackEvent(ANALYTICS_EVENTS.CAREER_TEST_START, {
+                source: 'career_page',
+                session_id: sessionRes.data.session_id,
+                questions_count: Array.isArray(questionsRes.data) ? questionsRes.data.length : 0,
+            });
+
             setQuestions(questionsRes.data);
             setSessionId(sessionRes.data.session_id);
             setScreen('test');
@@ -162,7 +181,7 @@ const CareerPage = () => {
 
     return (
         <motion.div
-            className="min-h-screen py-16 px-4"
+            className={`min-h-screen px-4 ${screen === 'results' ? 'pt-16 sm:pt-24 pb-4 sm:pb-8' : 'py-16 sm:py-24'}`}
             variants={pageVariants}
             initial="initial"
             animate="animate"

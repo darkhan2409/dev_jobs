@@ -1,0 +1,112 @@
+{
+  "version": "3.0",
+  "generated_at": "2026-02-14T10:45:03.786059Z",
+  "roles": [
+    {
+      "id": "product_manager",
+      "title": "Product Manager",
+      "tagline": "Research / Planning",
+      "primary_stages": [
+        "research",
+        "design"
+      ],
+      "core_signals": [
+        "problem_framing",
+        "stakeholder_alignment",
+        "user_empathy",
+        "experiment_minded"
+      ]
+    },
+    {
+      "id": "uiux_designer",
+      "title": "UI/UX Designer",
+      "tagline": "Design without code",
+      "primary_stages": [
+        "research",
+        "design"
+      ],
+      "core_signals": [
+        "visual_thinking",
+        "information_architecture",
+        "ui_craft",
+        "user_empathy"
+      ]
+    },
+    {
+      "id": "frontend_developer",
+      "title": "Frontend Developer",
+      "tagline": "Visual code",
+      "primary_stages": [
+        "design",
+        "development",
+        "testing"
+      ],
+      "core_signals": [
+        "frontend_interactivity",
+        "engineering_discipline",
+        "ui_craft",
+        "visual_thinking"
+      ]
+    },
+    {
+      "id": "backend_developer",
+      "title": "Backend Developer",
+      "tagline": "Logic code",
+      "primary_stages": [
+        "development",
+        "testing",
+        "launch_ops"
+      ],
+      "core_signals": [
+        "system_design",
+        "engineering_discipline",
+        "data_minded",
+        "reliability_focus"
+      ]
+    },
+    {
+      "id": "ai_data_engineer",
+      "title": "AI/Data Engineer",
+      "tagline": "Math & Data",
+      "primary_stages": [
+        "research",
+        "development"
+      ],
+      "core_signals": [
+        "data_minded",
+        "experiment_minded",
+        "engineering_discipline",
+        "problem_framing"
+      ]
+    },
+    {
+      "id": "qa_engineer",
+      "title": "QA Engineer",
+      "tagline": "Quality & Tests",
+      "primary_stages": [
+        "testing",
+        "launch_ops"
+      ],
+      "core_signals": [
+        "quality_rigor",
+        "bug_hunting",
+        "automation_mindset",
+        "engineering_discipline"
+      ]
+    },
+    {
+      "id": "devops_engineer",
+      "title": "DevOps Engineer",
+      "tagline": "Infra & Automation",
+      "primary_stages": [
+        "launch_ops"
+      ],
+      "core_signals": [
+        "automation_mindset",
+        "reliability_focus",
+        "incident_response",
+        "engineering_discipline"
+      ]
+    }
+  ]
+}

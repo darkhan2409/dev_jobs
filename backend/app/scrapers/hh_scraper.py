@@ -9,9 +9,10 @@ from sqlalchemy.dialects.postgresql import insert
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 from app.database import SessionLocal
-from app.models import Vacancy
+from app.models import Vacancy, Company
 from app.utils.helpers import determine_grade
 from app.config_roles import EXCHANGE_RATES, ROLES
+from app.config import settings
 
 # User-Agent handling
 try:
@@ -104,8 +105,16 @@ class HHScraper:
                 logger.error(f"Error fetching detail {item['id']}: {e}")
                 self._fallback_to_snippet(item)
 
-    async def fetch_vacancies(self, role_id: int, text: Optional[str] = None, pages: int = 3, area: int = 40, do_cleanup: bool = True) -> dict:
+    async def fetch_vacancies(
+        self,
+        role_id: int,
+        text: Optional[str] = None,
+        pages: int = 3,
+        area: Optional[int] = None,
+        do_cleanup: bool = True,
+    ) -> dict:
         start_time = datetime.now()
+        target_area = settings.HH_AREA if area is None else area
         
         # --- Step 1: Fetch Search Results ---
         tasks = []
@@ -113,7 +122,7 @@ class HHScraper:
             for page in range(pages):
                 params = {
                     "professional_role": role_id,
-                    "area": area,
+                    "area": target_area,
                     "per_page": 100,
                     "page": page
                 }
@@ -129,6 +138,21 @@ class HHScraper:
         if not all_items:
             logger.info(f"[{search_label}] No vacancies found.")
             return {"added": 0, "updated": 0, "deleted": 0}
+
+        # --- Step 1.5: Upsert Companies ---
+        employer_ids = set()
+        for item in all_items:
+            employer = item.get('employer')
+            if employer and employer.get('id'):
+                try:
+                    employer_ids.add(int(employer['id']))
+                except (ValueError, TypeError):
+                    pass
+
+        if employer_ids:
+            logger.info(f"[{search_label}] Found {len(employer_ids)} unique employers. Upserting...")
+            async with httpx.AsyncClient(headers=self.headers, timeout=30.0) as client:
+                await self._upsert_companies(employer_ids, client)
 
         # --- Step 2: Check DB for existing valid descriptions ---
         external_ids = [str(item['id']) for item in all_items]
@@ -180,6 +204,112 @@ class HHScraper:
         req = snippet.get("requirement") or ""
         resp = snippet.get("responsibility") or ""
         item['description'] = f"<div class='fallback-snippet'><p><strong>Requirements:</strong> {req}</p><p><strong>Responsibilities:</strong> {resp}</p></div>"
+
+    async def _fetch_employer_data(self, client: httpx.AsyncClient, employer_id: int) -> Optional[dict]:
+        """Fetch full employer data from HH API."""
+        try:
+            await asyncio.sleep(0.6)  # Rate limit: ~1.5 req/sec
+            url = f"https://api.hh.ru/employers/{employer_id}"
+            resp = await self._make_request(client, url)
+
+            if resp.status_code == 200:
+                return resp.json()
+            elif resp.status_code == 404:
+                logger.warning(f"Employer {employer_id} not found (404)")
+                return None
+            else:
+                logger.warning(f"Failed to fetch employer {employer_id}: {resp.status_code}")
+                return None
+        except Exception as e:
+            logger.error(f"Error fetching employer {employer_id}: {e}")
+            return None
+
+    def _should_refresh_company(self, company: Company) -> bool:
+        """Check if company data should be refreshed (older than 7 days)."""
+        if not company or not company.updated_at:
+            return True
+        age_days = (datetime.now() - company.updated_at).days
+        return age_days > 7
+
+    async def _upsert_companies(self, employer_ids: Set[int], client: httpx.AsyncClient):
+        """Fetch and upsert company records for unique employer IDs."""
+        if not employer_ids:
+            return
+
+        db = SessionLocal()
+        try:
+            # Check which companies exist and need refresh
+            existing = db.query(Company).filter(Company.hh_employer_id.in_(employer_ids)).all()
+            existing_map = {c.hh_employer_id: c for c in existing}
+
+            ids_to_fetch = []
+            for emp_id in employer_ids:
+                company = existing_map.get(emp_id)
+                if self._should_refresh_company(company):
+                    ids_to_fetch.append(emp_id)
+
+            if not ids_to_fetch:
+                logger.info("All companies up to date, skipping fetch")
+                return
+
+            logger.info(f"Fetching {len(ids_to_fetch)} employer details...")
+
+            # Fetch employer data
+            for emp_id in ids_to_fetch:
+                data = await self._fetch_employer_data(client, emp_id)
+                if not data:
+                    continue
+
+                # Upsert company
+                stmt = insert(Company).values(
+                    hh_employer_id=int(data['id']),
+                    name=data.get('name'),
+                    description=data.get('description'),
+                    company_type=data.get('type'),
+                    logo_url=data.get('logo_urls', {}).get('240') if data.get('logo_urls') else None,
+                    site_url=data.get('site_url'),
+                    area_id=str(data.get('area', {}).get('id')) if data.get('area') else None,
+                    area_name=data.get('area', {}).get('name') if data.get('area') else None,
+                    industries=data.get('industries'),
+                    trusted=data.get('trusted', False),
+                    raw_data=data,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now()
+                )
+
+                stmt = stmt.on_conflict_do_update(
+                    index_elements=['hh_employer_id'],
+                    set_={
+                        'name': stmt.excluded.name,
+                        'description': stmt.excluded.description,
+                        'company_type': stmt.excluded.company_type,
+                        'logo_url': stmt.excluded.logo_url,
+                        'site_url': stmt.excluded.site_url,
+                        'area_id': stmt.excluded.area_id,
+                        'area_name': stmt.excluded.area_name,
+                        'industries': stmt.excluded.industries,
+                        'trusted': stmt.excluded.trusted,
+                        'raw_data': stmt.excluded.raw_data,
+                        'updated_at': datetime.now()
+                    }
+                )
+
+                db.execute(stmt)
+
+            db.commit()
+            logger.info(f"Upserted {len(ids_to_fetch)} companies")
+
+        finally:
+            db.close()
+
+    def _get_company_id_by_hh_id(self, hh_employer_id: int) -> Optional[int]:
+        """Get company.id from hh_employer_id."""
+        db = SessionLocal()
+        try:
+            company = db.query(Company).filter(Company.hh_employer_id == hh_employer_id).first()
+            return company.id if company else None
+        finally:
+            db.close()
 
     def _calculate_salary_in_kzt(self, salary: dict) -> Optional[int]:
         if not salary or not salary.get("from"):
@@ -252,7 +382,18 @@ class HHScraper:
                 # Conditional Description Logic
                 if not item.get('skip_detail'):
                      vacancy_data["description"] = item.get("description")
-                
+
+                # Link to company
+                employer = item.get('employer')
+                if employer and employer.get('id'):
+                    try:
+                        hh_emp_id = int(employer['id'])
+                        company_id = self._get_company_id_by_hh_id(hh_emp_id)
+                        if company_id:
+                            vacancy_data['company_id'] = company_id
+                    except (ValueError, TypeError):
+                        pass
+
                 # Smart AI Recheck: Check if title changed BEFORE update
                 # If title changed, mark for AI re-verification
                 existing_vacancy = db.query(Vacancy).filter(
@@ -342,7 +483,7 @@ if __name__ == "__main__":
                     role_id=role['id'],
                     text=None,      
                     pages=10,       # Reduced from 20 to 10 to avoid rate limiting
-                    area=40,        # Kazakhstan
+                    area=settings.HH_AREA,
                     do_cleanup=False 
                 )
                 print(f"📊 Stats for {role['name']}: {stats}")

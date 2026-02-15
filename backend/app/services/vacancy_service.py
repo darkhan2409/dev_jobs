@@ -1,11 +1,22 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import desc, func, or_, select, asc
+from sqlalchemy import desc, func, or_, select, asc, String
 from fastapi import HTTPException, status
 
 from app.models import Vacancy
 from app.core.enums import GradeEnum
 from app.schemas import SortEnum
+
+# Role to vacancy search terms mapping
+ROLE_SEARCH_MAPPING = {
+    "backend_developer": ["backend", "бэкенд", "python developer", "java developer", "go developer", "django", "fastapi", "spring"],
+    "frontend_developer": ["frontend", "фронтенд", "react", "vue", "angular", "верстальщик", "javascript developer"],
+    "product_manager": ["product manager", "продакт", "product owner", "менеджер продукта"],
+    "uiux_designer": ["ui/ux", "ux designer", "ui designer", "дизайнер интерфейсов", "figma", "product designer"],
+    "ai_data_engineer": ["data engineer", "data scientist", "ml engineer", "machine learning", "аналитик данных", "data analyst"],
+    "qa_engineer": ["qa", "тестировщик", "quality assurance", "test engineer", "автотестирование"],
+    "devops_engineer": ["devops", "sre", "site reliability", "infrastructure", "системный администратор", "cloud engineer"],
+}
 
 class VacancyService:
     @staticmethod
@@ -118,7 +129,7 @@ class VacancyService:
             )
 
         if company:
-            query = query.filter(Vacancy.company_name == company)
+            query = query.filter(Vacancy.company_name.ilike(f"%{company}%"))
 
         # Get total count (optimized count query)
         count_query = select(func.count()).select_from(query.subquery())
@@ -153,3 +164,137 @@ class VacancyService:
             )
         )
         return result.scalar_one_or_none()
+
+    @staticmethod
+    async def get_role_market_stats(
+        db: AsyncSession,
+        search_terms: List[str]
+    ) -> Dict[str, Any]:
+        """
+        Aggregate vacancy market stats for a role using search terms.
+        Returns: vacancy_count, salary_range, grade_distribution,
+        salary_ranges_by_grade, companies_hiring_count, hiring_company_share_percent, top_skills
+        """
+        # Build filter: match any search term in title
+        title_filters = [Vacancy.title.ilike(f"%{term}%") for term in search_terms]
+        base_filter = or_(*title_filters)
+
+        # Count total matching vacancies
+        count_result = await db.execute(
+            select(func.count(Vacancy.id))
+            .filter(Vacancy.is_active == True, base_filter)
+        )
+        vacancy_count = count_result.scalar() or 0
+
+        # Salary stats (min, max, avg)
+        salary_result = await db.execute(
+            select(
+                func.min(Vacancy.salary_from).label("min_salary"),
+                func.max(Vacancy.salary_to).label("max_salary"),
+                func.avg(Vacancy.salary_in_kzt).label("avg_salary")
+            )
+            .filter(
+                Vacancy.is_active == True,
+                base_filter,
+                Vacancy.salary_in_kzt.isnot(None)
+            )
+        )
+        salary_row = salary_result.first()
+        salary_range = {
+            "min": int(salary_row.min_salary) if salary_row.min_salary else None,
+            "max": int(salary_row.max_salary) if salary_row.max_salary else None,
+            "avg": int(salary_row.avg_salary) if salary_row.avg_salary else None,
+        }
+
+        # Grade distribution
+        grade_result = await db.execute(
+            select(Vacancy.grade, func.count().label("count"))
+            .filter(
+                Vacancy.is_active == True,
+                base_filter,
+                Vacancy.grade.isnot(None)
+            )
+            .group_by(Vacancy.grade)
+        )
+        grade_rows = grade_result.all()
+        grade_distribution = {row.grade: row.count for row in grade_rows}
+
+        # Salary ranges by grade (min/max/avg in KZT)
+        grade_salary_result = await db.execute(
+            select(
+                Vacancy.grade,
+                func.min(Vacancy.salary_in_kzt).label("min_salary"),
+                func.max(Vacancy.salary_in_kzt).label("max_salary"),
+                func.avg(Vacancy.salary_in_kzt).label("avg_salary"),
+            )
+            .filter(
+                Vacancy.is_active == True,
+                base_filter,
+                Vacancy.grade.isnot(None),
+                Vacancy.salary_in_kzt.isnot(None),
+            )
+            .group_by(Vacancy.grade)
+        )
+        grade_salary_rows = grade_salary_result.all()
+        salary_ranges_by_grade = {
+            row.grade: {
+                "min": int(row.min_salary) if row.min_salary else None,
+                "max": int(row.max_salary) if row.max_salary else None,
+                "avg": int(row.avg_salary) if row.avg_salary else None,
+            }
+            for row in grade_salary_rows
+            if row.grade
+        }
+
+        # Companies hiring stats for this role vs all active hiring companies
+        company_identity = func.coalesce(func.cast(Vacancy.company_id, String), Vacancy.company_name)
+        total_companies_result = await db.execute(
+            select(func.count(func.distinct(company_identity)))
+            .filter(
+                Vacancy.is_active == True,
+                company_identity.isnot(None),
+            )
+        )
+        total_hiring_companies = total_companies_result.scalar() or 0
+
+        matching_companies_result = await db.execute(
+            select(func.count(func.distinct(company_identity)))
+            .filter(
+                Vacancy.is_active == True,
+                base_filter,
+                company_identity.isnot(None),
+            )
+        )
+        companies_hiring_count = matching_companies_result.scalar() or 0
+        hiring_company_share_percent = (
+            round((companies_hiring_count / total_hiring_companies) * 100, 1)
+            if total_hiring_companies > 0
+            else 0.0
+        )
+
+        # Top 10 skills from key_skills
+        tech = func.lower(func.trim(func.jsonb_array_elements_text(Vacancy.key_skills))).label("tech")
+        tech_result = await db.execute(
+            select(tech, func.count().label("cnt"))
+            .filter(
+                Vacancy.is_active == True,
+                base_filter,
+                Vacancy.key_skills.isnot(None),
+                func.jsonb_array_length(Vacancy.key_skills) > 0
+            )
+            .group_by(tech)
+            .order_by(desc("cnt"))
+            .limit(10)
+        )
+        tech_rows = tech_result.all()
+        top_skills = [row.tech for row in tech_rows if row.tech]
+
+        return {
+            "vacancy_count": vacancy_count,
+            "salary_range": salary_range,
+            "grade_distribution": grade_distribution,
+            "salary_ranges_by_grade": salary_ranges_by_grade,
+            "companies_hiring_count": companies_hiring_count,
+            "hiring_company_share_percent": hiring_company_share_percent,
+            "top_skills": top_skills
+        }

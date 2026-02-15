@@ -50,7 +50,7 @@ const HomePage = () => {
                 onSearchApply={handleSearch}
                 totalJobs={totalJobs}
             />
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 mb-6">
                 <div className="rounded-2xl border border-cyan-500/25 bg-gradient-to-r from-cyan-500/10 to-violet-500/10 p-5 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div>
                         <p className="text-cyan-200 font-semibold text-sm uppercase tracking-wide">Для новичков</p>
@@ -59,7 +59,7 @@ const HomePage = () => {
                     </div>
                     <button
                         onClick={handleStartJourney}
-                        className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-500/20 hover:bg-cyan-500/30 px-4 py-2.5 text-white font-medium transition-colors"
+                        className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-500/20 hover:bg-cyan-500/30 px-4 py-2.5 text-white font-medium transition-colors cursor-pointer"
                     >
                         С чего начать
                         <ArrowRight size={16} />

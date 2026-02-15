@@ -1,8 +1,22 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Code2, Users, Zap, Heart, Mail, Github, MessageCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import {
+    Code2,
+    Users,
+    Zap,
+    Heart,
+    Mail,
+    Database,
+    CalendarClock,
+    AlertTriangle
+} from 'lucide-react';
 import { pageVariants, fadeInUp } from '../utils/animations';
+import {
+    PROJECT_CONTACT_EMAIL,
+    VACANCY_DATA_SOURCE_LABEL,
+    VACANCY_DATA_UPDATE_FREQUENCY_LABEL,
+    VACANCY_DATA_LIMITATION_LABEL
+} from '../constants/trustSignals';
 
 const AboutPage = () => {
     const techStack = [
@@ -29,25 +43,6 @@ const AboutPage = () => {
             icon: <Users className="text-blue-400" size={24} />,
             title: 'Открытый код',
             description: 'Полностью открытый проект. Можно контрибьютить, форкать и учиться по коду.'
-        },
-    ];
-
-    const faqs = [
-        {
-            q: 'Как часто обновляются вакансии?',
-            a: 'Мы обновляем вакансии с HH.ru каждые несколько часов, чтобы список был свежим.'
-        },
-        {
-            q: 'Нужна регистрация?',
-            a: 'Нет. Все вакансии доступны без аккаунта.'
-        },
-        {
-            q: 'Как работает AI‑фильтрация?',
-            a: 'Мы классифицируем вакансии и убираем не‑IT роли, чтобы выдача оставалась качественной.'
-        },
-        {
-            q: 'Можно помочь проекту?',
-            a: 'Конечно. Загляните в репозиторий на GitHub и подключайтесь.'
         },
     ];
 
@@ -78,11 +73,10 @@ const AboutPage = () => {
                             <Heart className="text-red-500" size={28} />
                             <h2 className="text-2xl font-bold text-white">Наша миссия</h2>
                         </div>
-                        <p className="text-slate-300 text-lg leading-relaxed">
-                            Мы верим, что поиск работы в IT не должен быть «игрой в иголку в стоге сена».
-                            GitJob агрегирует вакансии из разных источников, убирает нерелевантные роли с помощью AI
-                            и показывает всё в чистом, developer‑friendly интерфейсе. Наша цель — соединять сильных
-                            разработчиков в Казахстане с действительно интересными возможностями.
+                        <p className="text-slate-300 text-lg md:text-xl leading-relaxed py-4">
+                            Мы строим честный рынок труда, где талант разработчика важнее умения проходить
+                            HR-фильтры. Мы убрали весь шум, чтобы вы могли сосредоточиться на главном — на коде
+                            и вашей карьере.
                         </p>
                     </div>
                 </motion.section>
@@ -106,6 +100,34 @@ const AboutPage = () => {
                     </div>
                 </motion.section>
 
+                {/* Data Transparency */}
+                <motion.section variants={fadeInUp} className="mb-16">
+                    <h2 className="text-2xl font-bold text-white mb-8 text-center">Прозрачность данных</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
+                            <div className="bg-slate-800 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                                <Database className="text-violet-400" size={22} />
+                            </div>
+                            <h3 className="text-lg font-semibold text-white mb-2">Источник вакансий</h3>
+                            <p className="text-slate-400 text-sm">{VACANCY_DATA_SOURCE_LABEL}</p>
+                        </div>
+                        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
+                            <div className="bg-slate-800 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                                <CalendarClock className="text-cyan-400" size={22} />
+                            </div>
+                            <h3 className="text-lg font-semibold text-white mb-2">Частота обновления</h3>
+                            <p className="text-slate-400 text-sm">Синхронизация выполняется {VACANCY_DATA_UPDATE_FREQUENCY_LABEL}.</p>
+                        </div>
+                        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
+                            <div className="bg-slate-800 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                                <AlertTriangle className="text-amber-400" size={22} />
+                            </div>
+                            <h3 className="text-lg font-semibold text-white mb-2">Ограничения</h3>
+                            <p className="text-slate-400 text-sm">{VACANCY_DATA_LIMITATION_LABEL}</p>
+                        </div>
+                    </div>
+                </motion.section>
+
                 {/* Tech Stack */}
                 <motion.section variants={fadeInUp} className="mb-16">
                     <h2 className="text-2xl font-bold text-white mb-8 text-center">Технологии</h2>
@@ -122,54 +144,20 @@ const AboutPage = () => {
                     </div>
                 </motion.section>
 
-                {/* FAQ */}
-                <motion.section variants={fadeInUp} className="mb-16">
-                    <h2 className="text-2xl font-bold text-white mb-8 text-center">Вопросы и ответы</h2>
-                    <div className="space-y-4">
-                        {faqs.map((faq, idx) => (
-                            <div
-                                key={idx}
-                                className="bg-slate-900/50 border border-slate-800 rounded-xl p-6"
-                            >
-                                <h3 className="text-lg font-semibold text-white mb-2">{faq.q}</h3>
-                                <p className="text-slate-400">{faq.a}</p>
-                            </div>
-                        ))}
-                    </div>
-                </motion.section>
-
                 {/* Contact */}
                 <motion.section variants={fadeInUp}>
-                    <div className="bg-gradient-to-r from-violet-900/30 to-fuchsia-900/30 border border-violet-500/30 rounded-2xl p-8 text-center">
-                        <h2 className="text-2xl font-bold text-white mb-4">Связаться с нами</h2>
-                        <p className="text-slate-300 mb-6">
+                    <div className="bg-gradient-to-r from-violet-900/30 to-fuchsia-900/30 border border-violet-500/30 rounded-2xl p-6 text-center">
+                        <h2 className="text-2xl font-bold text-white mb-3">Связаться с нами</h2>
+                        <p className="text-slate-300 mb-4">
                             Есть вопросы, идеи или хотите помочь проекту?
                         </p>
                         <div className="flex flex-wrap justify-center gap-4">
                             <a
-                                href="mailto:hello@devjobs.kz"
-                                className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
+                                href={`mailto:${PROJECT_CONTACT_EMAIL}`}
+                                className="flex items-center gap-2 px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
                             >
                                 <Mail size={18} />
-                                <span>hello@devjobs.kz</span>
-                            </a>
-                            <a
-                                href="https://github.com"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
-                            >
-                                <Github size={18} />
-                                <span>GitHub</span>
-                            </a>
-                            <a
-                                href="https://t.me/devjobskz"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
-                            >
-                                <MessageCircle size={18} />
-                                <span>Telegram</span>
+                                <span>{PROJECT_CONTACT_EMAIL}</span>
                             </a>
                         </div>
                     </div>

@@ -111,11 +111,11 @@ const PrivacyPage = () => {
                             Если у вас есть вопросы по этой политике, напишите нам:
                         </p>
                         <a
-                            href="mailto:hello@devjobs.kz"
+                            href="mailto:info@gitjob.kz"
                             className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
                         >
                             <Mail size={16} />
-                            hello@devjobs.kz
+                            info@gitjob.kz
                         </a>
                     </section>
                 </motion.div>

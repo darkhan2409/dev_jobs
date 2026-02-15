@@ -29,7 +29,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, isLoading = false, 
             <button
                 onClick={() => handleSafePageChange(currentPage - 1)}
                 disabled={isLoading || currentPage === 1}
-                className="p-2 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="p-2 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
                 aria-label="Предыдущая страница"
             >
                 &lt;
@@ -40,7 +40,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, isLoading = false, 
                     key={pageNum}
                     onClick={() => handleSafePageChange(pageNum)}
                     disabled={isLoading}
-                    className={`w-10 h-10 rounded-lg font-mono text-sm border transition-colors ${
+                    className={`w-10 h-10 rounded-lg font-mono text-sm border transition-colors cursor-pointer ${
                         currentPage === pageNum
                             ? 'bg-violet-600 border-violet-500 text-white'
                             : pendingPage === pageNum
@@ -56,7 +56,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, isLoading = false, 
             <button
                 onClick={() => handleSafePageChange(currentPage + 1)}
                 disabled={isLoading || currentPage >= totalPages}
-                className="p-2 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="p-2 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
                 aria-label="Следующая страница"
             >
                 &gt;

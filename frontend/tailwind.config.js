@@ -12,23 +12,34 @@ export default {
                 sans: ['Inter', 'sans-serif'],
             },
             colors: {
-                background: '#020617', // slate-950
-                surface: '#0f172a',    // slate-900
-                primary: {
-                    DEFAULT: '#7c3aed', // violet-600
-                    hover: '#6d28d9',   // violet-700
-                    light: '#8b5cf6',   // violet-500
-                    soft: 'rgba(124, 58, 237, 0.1)',
-                },
-                secondary: {
-                    DEFAULT: '#c026d3', // fuchsia-600
-                    hover: '#a21caf',   // fuchsia-700
-                },
-                text: {
-                    main: '#e2e8f0',    // slate-200
-                    muted: '#94a3b8',   // slate-400
-                },
-                border: '#1e293b',      // slate-800
+                // Base
+                background: '#020617', // slate-950 (legacy)
+                surface: '#0f172a',    // slate-900 (legacy)
+
+                // --- SEMANTIC TOKENS (Strict) ---
+                // Backgrounds
+                'app': '#0B0E14',           // Deep Dark
+                'surface-solid': '#151921', // Card Solid
+                'surface-glass': 'rgba(21, 25, 33, 0.6)', // Card Glass (Apply backdrop-blur-md utility)
+                'surface-hover': '#1e2330', // Interactive Hover
+
+                // Borders
+                'border-subtle': 'rgba(255, 255, 255, 0.05)',
+                'border-highlight': 'rgba(255, 255, 255, 0.1)',
+                'border-accent': 'rgba(124, 58, 237, 0.3)', // Violet hint
+
+                // Text
+                'primary': '#F9FAFB',       // White 95%
+                'secondary': '#9CA3AF',     // Gray 60%
+                'muted': 'rgba(148, 163, 184, 0.6)', // Slate 40%
+
+                // Brand
+                'accent': '#7c3aed',        // Violet-600
+                'success': '#10B981',       // Emerald-500
+
+                // Legacy (Keep for non-refactored pages for now)
+                'brand-primary': '#7c3aed',
+                'brand-secondary': '#10B981',
             },
             animation: {
                 'fade-in-up': 'fadeInUp 0.5s ease-out forwards',

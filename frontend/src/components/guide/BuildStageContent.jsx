@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { staggerContainer } from '../../utils/animations';
 import {
   Code,
   GitMerge,
@@ -25,16 +26,6 @@ const fadeInUp = {
     opacity: 1,
     y: 0,
     transition: { duration: 0.5 }
-  }
-};
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
   }
 };
 
@@ -435,7 +426,7 @@ export default function BuildStageContent() {
       >
         <button
           onClick={() => navigate('/guide/verify')}
-          className="group flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-green-500/25 hover:shadow-green-500/40"
+          className="group flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-green-500/25 hover:shadow-green-500/40 cursor-pointer"
         >
           <span className="text-lg">Перейти к этапу Проверка</span>
           <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />

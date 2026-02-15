@@ -1,96 +1,80 @@
 """
-LLM Interpreter for IT Career Test Engine (MVP VERSION - SIMPLE).
+LLM Interpreter for IT Career Test Engine.
 
-Generates natural language interpretation of test results using OpenAI API.
-This is the ONLY component that uses LLM functionality.
-
-Validates: Requirements 7.1, 7.2, 7.3, 7.4, 7.5, 7.6
+Generates concise, evidence-based interpretation of test results using OpenAI API.
 """
 
+import json
+import ast
 import os
 import time
 import logging
-from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
 
-from openai import OpenAI, APIError, RateLimitError, APIConnectionError, APITimeoutError
+from openai import OpenAI, RateLimitError, APIConnectionError, APITimeoutError
 
 
-# Configure logging
 logger = logging.getLogger(__name__)
 
 
 class LLMInterpreterError(Exception):
     """Base exception for LLM Interpreter errors."""
-    pass
 
 
 class LLMAPIError(LLMInterpreterError):
     """Raised when LLM API call fails after all retries."""
-    pass
 
 
 class LLMConfigError(LLMInterpreterError):
     """Raised when LLM configuration is invalid."""
-    pass
 
 
 @dataclass
 class RetryConfig:
     """Configuration for retry behavior."""
+
     max_retries: int = 3
-    base_delay: float = 1.0  # seconds
-    max_delay: float = 60.0  # seconds
+    base_delay: float = 1.0
+    max_delay: float = 60.0
     exponential_base: float = 2.0
-    jitter: bool = True  # Add randomness to delays
+    jitter: bool = True
 
 
 @dataclass
 class InterpretationResult:
-    """
-    Result of LLM interpretation.
+    """Result of LLM interpretation."""
 
-    Contains personalized career recommendation and analysis.
-    """
-    primary_recommendation: str  # Role name
-    explanation: str  # Why this role fits
-    signal_analysis: str  # Which signals led to this result
-    alternative_roles: List[str]  # If scores are close
-    differentiation_criteria: str  # How to choose between close roles
+    primary_recommendation: str
+    explanation: str
+    signal_analysis: str
+    alternative_roles: List[str]
+    differentiation_criteria: str
+    why_this_role_reasons: List[str]
 
 
 class LLMInterpreter:
-    """
-    LLM-based interpreter for generating natural language explanations of test results.
+    """LLM-based interpreter for natural language explanation of test results."""
 
-    This is the ONLY component that uses LLM functionality.
-    Uses OpenAI API for generating personalized interpretations.
-    Includes retry logic with exponential backoff for resilience.
-    """
-
-    # Retryable OpenAI exceptions
     RETRYABLE_EXCEPTIONS = (
         RateLimitError,
         APIConnectionError,
         APITimeoutError,
     )
+    EXPLANATION_BLOCK_TITLES = [
+        "Почему тебе подходит роль",
+        "Твои сильные качества",
+        "Как это проявится в работе",
+        "С чего начать в 2026",
+    ]
 
     def __init__(
         self,
         api_key: str = None,
-        model: str = "gpt-4",
+        model: str = "gpt-4o",
         score_threshold: float = 0.1,
-        retry_config: Optional[RetryConfig] = None
+        retry_config: Optional[RetryConfig] = None,
     ):
-        """
-        Initialize the LLM Interpreter.
-
-        Args:
-            api_key: OpenAI API key (defaults to OPENAI_API_KEY env var)
-            model: OpenAI model to use (default: gpt-4, can use gpt-3.5-turbo for cheaper option)
-            score_threshold: Threshold for detecting close scores (default: 0.1)
-            retry_config: Configuration for retry behavior (default: RetryConfig())
-        """
         self._api_key = api_key or os.getenv("OPENAI_API_KEY")
         if not self._api_key:
             raise LLMConfigError(
@@ -104,70 +88,75 @@ class LLMInterpreter:
         self._retry_config = retry_config or RetryConfig()
 
     def _calculate_delay(self, attempt: int) -> float:
-        """
-        Calculate delay for retry with exponential backoff.
-
-        Args:
-            attempt: Current attempt number (0-indexed)
-
-        Returns:
-            Delay in seconds
-        """
-        delay = self._retry_config.base_delay * (
-            self._retry_config.exponential_base ** attempt
-        )
+        delay = self._retry_config.base_delay * (self._retry_config.exponential_base**attempt)
         delay = min(delay, self._retry_config.max_delay)
 
-        # Add jitter (0-25% randomness) to prevent thundering herd
         if self._retry_config.jitter:
             import random
-            jitter = delay * random.uniform(0, 0.25)
-            delay += jitter
+
+            delay += delay * random.uniform(0, 0.25)
 
         return delay
 
-    def _call_with_retry(self, prompt: str) -> str:
-        """
-        Call OpenAI API with retry logic and exponential backoff.
-        Uses JSON mode for robust parsing.
-        """
-        last_exception = None
+    def _build_system_prompt(self) -> str:
+        """System prompt with strict style and output requirements."""
+        return """Ты — карьерный наставник GitJob. Ты искренне хочешь помочь новичку понять результаты теста и сделать первые шаги в обучении.
 
+Пиши по-русски, дружелюбно, просто и по делу. Без пафоса, без воды, без канцелярита.
+Учитывай контекст: сейчас 2026 год, эпоха ИИ, поэтому рекомендации должны включать практичный AI-старт.
+
+Сформируй explanation ровно в 8-10 предложениях по структуре:
+1) Короткий вывод: какая роль подходит и почему.
+2) Разбери 3 главных качества пользователя, каждое качество подкрепи наблюдением из его ответов/паттернов.
+3) Объясни, как эти качества проявятся в реальных рабочих задачах выбранной роли.
+4) Дай старт обучения: 2-3 инструмента (для каждого: что это и зачем новичку), строго уровня beginner.
+Формат explanation: 4 именованных блока. Каждый блок с новой строки в формате "Название: текст".
+Используй такие названия блоков:
+- "Почему тебе подходит роль"
+- "Твои сильные качества"
+- "Как это проявится в работе"
+- "С чего начать в 2026"
+
+Требования к стилю:
+- Обращение на «ты».
+- Простые формулировки, понятные старшекласснику.
+- Не использовать штампы вроде «ты гений», «магия», «идеальный кандидат».
+- Если используешь термин, сразу объясни его простыми словами.
+- Рекомендации по обучению должны быть реалистичны для старта с нуля (первые 1-3 месяца).
+- Не давай Docker/Kubernetes как первый шаг для новичка.
+- Docker/Kubernetes можно упоминать только как следующий этап после базы и в основном для DevOps-трека.
+- Предпочитай базовые инструменты: Git/GitHub, VS Code, Postman, Figma, SQL playground, Python/JavaScript basics, AI-помощник (Copilot/ChatGPT) с простым объяснением пользы.
+
+Верни только JSON-объект со строго этими полями:
+primary_recommendation, explanation, signal_analysis, why_this_role_reasons, alternative_roles, differentiation_criteria.
+
+Дополнительно:
+- signal_analysis: 1-2 коротких факта по поведенческим паттернам.
+- why_this_role_reasons: ровно 3 короткие причины в формате «Ты выбирал X -> это значит Y».
+- Никакого markdown и никакого текста вне JSON.
+"""
+
+    def _call_with_retry(self, prompt: str) -> str:
+        """Call OpenAI API with retry logic and exponential backoff."""
         for attempt in range(self._retry_config.max_retries + 1):
             try:
                 response = self._client.chat.completions.create(
                     model=self._model,
                     messages=[
-                        {
-                            "role": "system",
-                            "content": (
-                                "Ты — ведущий эксперт по профориентации в IT. "
-                                "Твоя задача — анализировать результаты теста и давать глубокие, но лаконичные рекомендации. "
-                                "ПРАВИЛА:\n"
-                                "1. Используй ТОЛЬКО предоставленные описания ролей и сигналов. Не выдумывай новые качества.\n"
-                                "2. Пиши на профессиональном русском языке, избегай воды.\n"
-                                "3. Каждая секция объяснения должна быть разбита на абзацы. Используй \\n\\n между абзацами для читаемости.\n"
-                                "4. Пиши короткими абзацами по 2-3 предложения максимум.\n"
-                                "5. Всегда возвращай ответ ТОЛЬКО в формате JSON."
-                            )
-                        },
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
+                        {"role": "system", "content": self._build_system_prompt()},
+                        {"role": "user", "content": prompt},
                     ],
                     response_format={"type": "json_object"},
-                    temperature=0.7,
-                    max_tokens=1000,
-                    timeout=45.0
+                    temperature=0.5,
+                    max_tokens=600,
+                    timeout=45.0,
                 )
                 return response.choices[0].message.content
 
             except self.RETRYABLE_EXCEPTIONS as e:
-                last_exception = e
                 if attempt < self._retry_config.max_retries:
                     delay = self._calculate_delay(attempt)
-                    logger.warning(f"Retry {attempt+1}: {e}. Waiting {delay:.2f}s...")
+                    logger.warning(f"Retry {attempt + 1}: {e}. Waiting {delay:.2f}s...")
                     time.sleep(delay)
                 else:
                     raise LLMAPIError(f"OpenAI exhausted retries: {e}") from e
@@ -181,39 +170,30 @@ class LLMInterpreter:
         ranked_roles: List[Tuple[str, float]],
         signal_profile: Dict[str, int],
         role_profiles: Dict[str, Dict],
-        signals: Dict[str, Dict]
+        signals: Dict[str, Dict],
     ) -> InterpretationResult:
-        """
-        Generate natural language interpretation of test results using JSON flow.
-        """
+        """Generate natural language interpretation from ranking + signals."""
         if not ranked_roles:
             raise LLMInterpreterError("No ranked roles provided")
 
-        # Determine if we have close scores
         multiple_recommendations = False
         if len(ranked_roles) >= 2:
-            top_score = ranked_roles[0][1]
-            second_score = ranked_roles[1][1]
-            if top_score - second_score < self._score_threshold:
+            if (ranked_roles[0][1] - ranked_roles[1][1]) < self._score_threshold:
                 multiple_recommendations = True
 
-        # Format the prompt
         prompt = self._format_prompt(
-            ranked_roles,
-            signal_profile,
-            role_profiles,
-            signals,
-            multiple_recommendations
+            ranked_roles=ranked_roles,
+            signal_profile=signal_profile,
+            role_profiles=role_profiles,
+            signals=signals,
+            multiple_recommendations=multiple_recommendations,
         )
 
-        # Call OpenAI API
         interpretation_json = self._call_with_retry(prompt)
-
-        # Parse the JSON response
         return self._parse_interpretation(
-            interpretation_json,
-            ranked_roles,
-            multiple_recommendations
+            interpretation_text=interpretation_json,
+            ranked_roles=ranked_roles,
+            multiple_recommendations=multiple_recommendations,
         )
 
     def _format_prompt(
@@ -222,70 +202,280 @@ class LLMInterpreter:
         signal_profile: Dict[str, int],
         role_profiles: Dict[str, Dict],
         signals: Dict[str, Dict],
-        multiple_recommendations: bool
+        multiple_recommendations: bool,
     ) -> str:
-        """Format the prompt for JSON response."""
-        top_roles = ranked_roles[:3]
-        sorted_signals = sorted(signal_profile.items(), key=lambda x: x[1], reverse=True)[:5]
+        """Build user prompt in Role/Summary format."""
+        primary_role_id = ranked_roles[0][0]
+        primary_role_name = role_profiles.get(primary_role_id, {}).get("name", primary_role_id)
 
-        signal_text = "\n".join([
-            f"- {signals[s_id]['name']}: {signals[s_id]['description']}"
-            for s_id, _ in sorted_signals if s_id in signals
-        ])
-
-        roles_text = ""
+        top_roles = ranked_roles[:4]
+        top_role_lines = []
         for role_id, score in top_roles:
-            if role_id in role_profiles:
-                r = role_profiles[role_id]
-                roles_text += f"- {r['name']} (Балл: {score:.2f}): {r['description']}\n"
+            role_name = role_profiles.get(role_id, {}).get("name", role_id)
+            top_role_lines.append(f"- {role_name} ({role_id}): {score:.3f}")
 
-        json_structure = {
-            "primary_recommendation": "Название роли и краткое 'почему'",
-            "explanation": "Подробное (3-4 предл.) соответствие мышления роли",
-            "signal_analysis": "Анализ топовых сигналов в контексте выбора",
-        }
-        if multiple_recommendations:
-            json_structure["alternative_roles"] = ["Роль 2", "Роль 3"]
-            json_structure["differentiation_criteria"] = "Как выбрать между ними"
+        top_signals = sorted(signal_profile.items(), key=lambda x: x[1], reverse=True)[:5]
+        signal_lines = []
+        for signal_id, count in top_signals:
+            signal_name = signals.get(signal_id, {}).get("name", signal_id)
+            signal_lines.append(f"- {signal_name} ({signal_id}): {count}")
 
-        import json
-        return f"""Проанализируй данные теста и верни JSON согласно структуре:
-{json.dumps(json_structure, ensure_ascii=False, indent=2)}
+        top_quality_lines = []
+        for signal_id, count in top_signals[:3]:
+            signal_name = signals.get(signal_id, {}).get("name", signal_id)
+            top_quality_lines.append(f"- {signal_name}: {count}")
 
-ДАННЫЕ:
-ПРОФИЛЬ (Сигналы): {signal_text}
-РОЛИ: {roles_text}
-{'ВНИМАНИЕ: Баллы ролей близки, обязательно заполни секции альтернатив и критериев.' if multiple_recommendations else ''}
-"""
+        primary_role_profile = role_profiles.get(primary_role_id, {})
+        role_hint = primary_role_profile.get("description", "")
+
+        close_roles_text = None
+        if multiple_recommendations and len(ranked_roles) > 1:
+            close_roles = []
+            for role_id, score in ranked_roles[1:3]:
+                role_name = role_profiles.get(role_id, {}).get("name", role_id)
+                close_roles.append(f"{role_name} ({score:.3f})")
+            if close_roles:
+                close_roles_text = (
+                    "Close alternatives (scores are close): "
+                    + ", ".join(close_roles)
+                    + ". Добавь их в alternative_roles и коротко объясни отличие в differentiation_criteria."
+                )
+
+        prompt_lines = [
+            "# Input Data",
+            "Current year: 2026",
+            f"Primary role: {primary_role_name} ({primary_role_id})",
+            "",
+            "Top role scores:",
+            *(top_role_lines or ["- нет данных"]),
+            "",
+            "Top behavior signals from answers:",
+            *(signal_lines or ["- нет выраженных паттернов"]),
+            "",
+            "Three strongest qualities to explain in explanation:",
+            *(top_quality_lines or ["- нет данных"]),
+        ]
+
+        if role_hint:
+            prompt_lines.extend(["", f"Role profile hint: {role_hint}"])
+
+        prompt_lines.extend(
+            [
+                "",
+                "Output focus:",
+                "- explanation: exactly 8-10 sentences",
+                "- include role fit summary, then 3 qualities from data above, then practical role tasks",
+                "- include 2-3 tools for 2026 AI-era learning with plain explanation of each tool purpose",
+                "- tools must be beginner-friendly for first 1-3 months",
+                "- avoid Docker/Kubernetes as immediate first tools; mention them only as later step, mostly for DevOps path",
+                "- format explanation as 4 named blocks, each line in format: \"Название: текст\"",
+                "- use block titles: \"Почему тебе подходит роль\", \"Твои сильные качества\", \"Как это проявится в работе\", \"С чего начать в 2026\"",
+                "- simple beginner-friendly language",
+                "- why_this_role_reasons: exactly 3 short strings",
+            ]
+        )
+
+        if close_roles_text:
+            prompt_lines.extend(["", close_roles_text])
+
+        return "\n".join(prompt_lines) + "\n"
 
     def _parse_interpretation(
         self,
         interpretation_text: str,
         ranked_roles: List[Tuple[str, float]],
-        multiple_recommendations: bool
+        multiple_recommendations: bool,
     ) -> InterpretationResult:
-        """Parse JSON response from LLM."""
-        import json
+        """Parse JSON response from LLM with safe fallbacks."""
         logger.info(f"LLM raw response: {interpretation_text}")
+
+        def parse_payload(raw_text: str) -> Dict[str, Any]:
+            if raw_text is None:
+                raise ValueError("LLM response is empty")
+
+            text = str(raw_text).strip()
+            if not text:
+                raise ValueError("LLM response is blank")
+
+            candidates: List[str] = [text]
+
+            # Sometimes model wraps payload in markdown fences.
+            if "```" in text:
+                cleaned = text.replace("```json", "").replace("```", "").strip()
+                if cleaned:
+                    candidates.append(cleaned)
+
+            # Sometimes model adds extra text around the JSON-like object.
+            start = text.find("{")
+            end = text.rfind("}")
+            if start != -1 and end > start:
+                candidates.append(text[start : end + 1])
+
+            tried: set[str] = set()
+            for candidate in candidates:
+                candidate = candidate.strip()
+                if not candidate or candidate in tried:
+                    continue
+                tried.add(candidate)
+
+                for parser in (json.loads, ast.literal_eval):
+                    try:
+                        parsed = parser(candidate)
+                        if isinstance(parsed, dict):
+                            return parsed
+                    except Exception:
+                        continue
+
+            raise ValueError("LLM response is not a parseable object")
+
+        def to_text(value: Any, default: str = "") -> str:
+            if value is None:
+                return default
+            if isinstance(value, str):
+                return value.strip()
+            if isinstance(value, (list, tuple)):
+                parts = [str(item).strip() for item in value if str(item).strip()]
+                return " ".join(parts) if parts else default
+            return str(value).strip()
+
+        def to_str_list(value: Any, max_items: Optional[int] = None) -> List[str]:
+            items: List[str] = []
+            if value is None:
+                items = []
+            elif isinstance(value, (list, tuple)):
+                items = [str(item).strip() for item in value if str(item).strip()]
+            elif isinstance(value, str):
+                raw = value.strip()
+                if raw:
+                    if "\n" in raw:
+                        items = [part.strip("-• ").strip() for part in raw.split("\n") if part.strip()]
+                    else:
+                        items = [raw]
+            else:
+                raw = str(value).strip()
+                items = [raw] if raw else []
+
+            if max_items is not None:
+                return items[:max_items]
+            return items
+
+        def normalize_explanation(value: Any) -> str:
+            def clean_text(raw: Any) -> str:
+                return str(raw).replace("\r\n", "\n").strip().strip("'\"")
+
+            def flatten(value_to_flatten: Any) -> str:
+                if value_to_flatten is None:
+                    return ""
+                if isinstance(value_to_flatten, str):
+                    return clean_text(value_to_flatten)
+                if isinstance(value_to_flatten, (list, tuple)):
+                    parts = [flatten(item) for item in value_to_flatten]
+                    return " ".join([p for p in parts if p]).strip()
+                if isinstance(value_to_flatten, dict):
+                    if "text" in value_to_flatten:
+                        return flatten(value_to_flatten.get("text"))
+                    parts = []
+                    for key, val in value_to_flatten.items():
+                        key_text = clean_text(key)
+                        val_text = flatten(val)
+                        if val_text:
+                            parts.append(f"{key_text}: {val_text}")
+                    return " ".join(parts).strip()
+                return clean_text(value_to_flatten)
+
+            if value is None:
+                return ""
+
+            if isinstance(value, str):
+                raw = clean_text(value)
+                if (raw.startswith("{") and raw.endswith("}")) or (raw.startswith("[") and raw.endswith("]")):
+                    for parser in (json.loads, ast.literal_eval):
+                        try:
+                            reparsed = parser(raw)
+                            return normalize_explanation(reparsed)
+                        except Exception:
+                            continue
+                return raw
+
+            if isinstance(value, dict):
+                normalized: Dict[str, str] = {}
+                for key, val in value.items():
+                    key_text = clean_text(key).strip(":")
+                    val_text = flatten(val)
+                    if key_text and val_text:
+                        normalized[key_text] = val_text
+
+                if not normalized:
+                    return ""
+
+                lines: List[str] = []
+                used: set[str] = set()
+                for title in self.EXPLANATION_BLOCK_TITLES:
+                    match_key = next(
+                        (
+                            key
+                            for key in normalized.keys()
+                            if key.lower() == title.lower()
+                            or key.lower() in title.lower()
+                            or title.lower() in key.lower()
+                        ),
+                        None,
+                    )
+                    if match_key:
+                        lines.append(f"{title}: {normalized[match_key]}")
+                        used.add(match_key)
+
+                for key, val in normalized.items():
+                    if key not in used:
+                        lines.append(f"{key}: {val}")
+
+                return "\n".join(lines).strip()
+
+            if isinstance(value, (list, tuple)):
+                lines: List[str] = []
+                for item in value:
+                    if isinstance(item, dict):
+                        title = item.get("title") or item.get("name") or item.get("block")
+                        text = item.get("text") or item.get("content") or item.get("value")
+                        if title and text:
+                            lines.append(f"{clean_text(title)}: {flatten(text)}")
+                        else:
+                            item_text = flatten(item)
+                            if item_text:
+                                lines.append(item_text)
+                    else:
+                        item_text = flatten(item)
+                        if item_text:
+                            lines.append(item_text)
+                return "\n".join(lines).strip()
+
+            return clean_text(value)
+
         try:
-            data = json.loads(interpretation_text)
-            logger.info(f"Parsed explanation: {data.get('explanation', '')[:200]}...")
-            
+            data = parse_payload(interpretation_text)
+            default_primary = ranked_roles[0][0] if ranked_roles else "Unknown"
+            explanation_text = normalize_explanation(data.get("explanation"))
+            logger.info(f"Parsed explanation: {explanation_text[:200]}...")
             return InterpretationResult(
-                primary_recommendation=data.get("primary_recommendation", ranked_roles[0][0]),
-                explanation=data.get("explanation", ""),
-                signal_analysis=data.get("signal_analysis", ""),
-                alternative_roles=data.get("alternative_roles", []),
-                differentiation_criteria=data.get("differentiation_criteria", "")
+                primary_recommendation=to_text(data.get("primary_recommendation"), default_primary),
+                explanation=explanation_text,
+                signal_analysis=to_text(data.get("signal_analysis"), ""),
+                alternative_roles=to_str_list(data.get("alternative_roles")),
+                differentiation_criteria=to_text(data.get("differentiation_criteria"), ""),
+                why_this_role_reasons=to_str_list(data.get("why_this_role_reasons"), max_items=3),
             )
         except Exception as e:
             logger.error(f"Failed to parse LLM JSON: {e}")
+            fallback_explanation = normalize_explanation(interpretation_text)
+            if not fallback_explanation:
+                fallback_explanation = "Не удалось структурировать ответ. Попробуй пройти тест еще раз."
             return InterpretationResult(
                 primary_recommendation=ranked_roles[0][0] if ranked_roles else "Unknown",
-                explanation=interpretation_text[:500],
-                signal_analysis="Ошибка разбора ответа",
-                alternative_roles=[],
-                differentiation_criteria=""
+                explanation=fallback_explanation[:1200],
+                signal_analysis="Не удалось разобрать ответ LLM.",
+                alternative_roles=[] if not multiple_recommendations else [r[0] for r in ranked_roles[1:3]],
+                differentiation_criteria="",
+                why_this_role_reasons=[],
             )
 
     @property

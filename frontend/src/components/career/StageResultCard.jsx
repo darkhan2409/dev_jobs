@@ -9,21 +9,50 @@ import { findGuideStageByBackendId, getGuideStage } from '../../data/guideData';
 
 const roleNames = {
     backend_developer: 'Backend-разработчик',
+    business_analyst: 'Бизнес-аналитик',
+    data_analyst: 'Аналитик данных',
     frontend_developer: 'Frontend-разработчик',
     fullstack_developer: 'Fullstack-разработчик',
+    manual_qa: 'Manual QA',
     ml_engineer: 'ML-инженер',
     llm_engineer: 'LLM-инженер',
     devops_engineer: 'DevOps-инженер',
     data_engineer: 'Data-инженер',
-    data_analyst: 'Аналитик данных',
+    product_analyst: 'Продуктовый аналитик',
+    project_manager: 'Проект-менеджер',
+    qa_automation: 'QA Automation',
     qa_engineer: 'QA-инженер',
     security_engineer: 'Инженер по безопасности',
     mobile_developer: 'Мобильный разработчик',
     game_developer: 'Разработчик игр',
+    sre: 'Site Reliability Engineer',
+    system_analyst: 'Системный аналитик',
     systems_architect: 'Системный архитектор',
-    product_manager: 'Продакт-менеджер',
     technical_writer: 'Технический писатель',
-    ui_ux_researcher: 'UI/UX-исследователь'
+    product_manager: 'Продакт-менеджер',
+    ui_designer: 'UI-дизайнер',
+    ui_ux_researcher: 'UI/UX-исследователь',
+    ux_designer: 'UX-дизайнер'
+};
+
+const aggregateGuideStages = (rankedStages = []) => {
+    const guideStageScores = new Map();
+
+    rankedStages.forEach(({ stage_id, score }) => {
+        const guideStage = findGuideStageByBackendId(stage_id) || getGuideStage(stage_id);
+        if (!guideStage) return;
+
+        const previous = guideStageScores.get(guideStage.id);
+        if (!previous || score > previous.score) {
+            guideStageScores.set(guideStage.id, {
+                stage_id: guideStage.id,
+                stage_name: guideStage.name,
+                score,
+            });
+        }
+    });
+
+    return Array.from(guideStageScores.values()).sort((a, b) => b.score - a.score);
 };
 
 const StageResultCard = ({ stageRecommendation, rankedStages }) => {
@@ -36,9 +65,9 @@ const StageResultCard = ({ stageRecommendation, rankedStages }) => {
         related_roles
     } = stageRecommendation;
 
-    // Show top 3 stages
-    const topStages = rankedStages?.slice(0, 3) || [];
     const mappedGuideStage = findGuideStageByBackendId(primary_stage_id) || getGuideStage(primary_stage_id);
+    const primaryGuideStageName = mappedGuideStage?.name || primary_stage_name;
+    const topStages = aggregateGuideStages(rankedStages).slice(0, 3);
     const recommendedStageId = mappedGuideStage?.id || null;
     const stageQuery = recommendedStageId ? `?recommendedStageId=${recommendedStageId}` : '';
     const guideStageLink = recommendedStageId ? `/guide/${recommendedStageId}${stageQuery}` : '/guide';
@@ -59,7 +88,7 @@ const StageResultCard = ({ stageRecommendation, rankedStages }) => {
                         Ваш этап продукта
                     </h3>
                     <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
-                        {primary_stage_name}
+                        {primaryGuideStageName}
                     </div>
                 </div>
             </div>

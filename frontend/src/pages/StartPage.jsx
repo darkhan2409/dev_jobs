@@ -5,6 +5,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import { pageVariants } from '../utils/animations';
 import { trackEvent } from '../utils/analytics';
+import { ANALYTICS_EVENTS } from '../constants/analyticsEvents';
 
 const ALLOWED_SOURCES = new Set(['header', 'homepage', 'direct']);
 
@@ -43,12 +44,12 @@ const StartPage = () => {
     };
 
     const handleJobsModeClick = () => {
-        trackStartClick('start_mode_jobs_click', { destination: '/jobs' });
+        trackStartClick(ANALYTICS_EVENTS.START_MODE_JOBS_CLICK, { destination: '/jobs' });
         navigate('/jobs');
     };
 
     const handleNewbieModeClick = (destination) => {
-        trackStartClick('start_mode_newbie_click', { destination });
+        trackStartClick(ANALYTICS_EVENTS.START_MODE_NEWBIE_CLICK, { destination });
         navigate(destination);
     };
 
@@ -70,7 +71,10 @@ const StartPage = () => {
                             Навигация по платформе
                         </span>
                         <h1 className="mt-4 text-3xl md:text-5xl font-bold text-white tracking-tight">
-                            С чего начать в GitJob
+                            С чего начать в{' '}
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">
+                                GitJob
+                            </span>
                         </h1>
                         <p className="mt-4 text-slate-300 max-w-3xl text-base md:text-lg leading-relaxed">
                             Выберите удобный режим: сразу перейти к поиску IT-вакансий или спокойно пройти обучающий путь с тестом и картой профессий.
@@ -128,4 +132,3 @@ const StartPage = () => {
 };
 
 export default StartPage;
-

@@ -16,20 +16,17 @@
     font-family: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', monospace;
   }
 
-  .glass-panel {
-    @apply bg-slate-900/80 backdrop-blur-md border border-slate-700/50;
+  /* Career Result Refactor Utilities */
+  .timeline-grid {
+    display: grid;
+    grid-template-columns: min-content 1fr;
+    gap: 1.5rem;
   }
 
-  .btn-primary {
-    @apply bg-violet-600 hover:bg-violet-500 text-white font-medium px-4 py-2 rounded-lg transition-all duration-200 active:scale-95;
-  }
-
-  .btn-ghost {
-    @apply text-slate-400 hover:text-slate-100 font-medium px-4 py-2 rounded-lg transition-colors;
-  }
-
-  .input-code {
-    @apply bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 font-mono placeholder:text-slate-600 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 transition-all;
+  .timeline-marker-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 }
 
