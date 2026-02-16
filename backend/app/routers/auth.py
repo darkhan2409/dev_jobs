@@ -1,6 +1,8 @@
+import asyncio
+import logging
 from datetime import datetime, timezone
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status, Request, Body
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, or_
@@ -26,6 +28,25 @@ from app.services.email_service import email_service
 from app.utils.account_security import check_account_lockout, get_lockout_remaining_time
 
 router = APIRouter(prefix="/api/auth", tags=["Auth"])
+logger = logging.getLogger(__name__)
+
+
+async def _safe_send_verification_email(user: User, token: str) -> None:
+    try:
+        sent = await email_service.send_verification_email(user, token)
+        if sent is False:
+            logger.warning("Verification email was not sent user_id=%s email=%s", user.id, user.email)
+    except Exception:
+        logger.exception("Background verification email task failed user_id=%s", getattr(user, "id", None))
+
+
+async def _safe_send_password_reset_email(user: User, token: str) -> None:
+    try:
+        sent = await email_service.send_password_reset_email(user, token)
+        if sent is False:
+            logger.warning("Password reset email was not sent user_id=%s email=%s", user.id, user.email)
+    except Exception:
+        logger.exception("Background password reset email task failed user_id=%s", getattr(user, "id", None))
 
 @router.post("/register", response_model=UserOut, summary="Register new user")
 @limiter.limit("5/minute")
@@ -53,6 +74,7 @@ async def register(
             detail="Username already taken"
         )
     
+    
     # Create new user with hashed password
     hashed_password = get_password_hash(user_data.password)
     new_user = User(
@@ -62,8 +84,19 @@ async def register(
     )
     
     db.add(new_user)
-    await db.commit()
-    await db.refresh(new_user)
+    
+    try:
+        await db.commit()
+        await db.refresh(new_user)
+    except Exception as e:
+        await db.rollback()
+        # Handle race condition: concurrent registration with same email/username
+        if "unique constraint" in str(e).lower() or "duplicate" in str(e).lower():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Email or username already registered"
+            )
+        raise
     
     return new_user
 
@@ -146,7 +179,12 @@ async def login_for_access_token(
         )
 
     # Verify password
-    if not verify_password(form_data.password, user.hashed_password):
+    is_password_valid = await asyncio.to_thread(
+        verify_password,
+        form_data.password,
+        user.hashed_password
+    )
+    if not is_password_valid:
         login_attempt = LoginAttempt(
             user_id=user.id,
             email=form_data.username,
@@ -318,7 +356,12 @@ async def change_password(
     Logs out from all devices after successful password change.
     """
     # Verify old password
-    if not verify_password(password_data.old_password, current_user.hashed_password):
+    is_old_password_valid = await asyncio.to_thread(
+        verify_password,
+        password_data.old_password,
+        current_user.hashed_password
+    )
+    if not is_old_password_valid:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect current password"
@@ -339,6 +382,7 @@ async def change_password(
 @limiter.limit("3/hour")
 async def send_verification_email(
     request: Request,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -354,8 +398,8 @@ async def send_verification_email(
     # Create verification token
     token = await create_verification_token(db, current_user.id)
 
-    # Send email
-    await email_service.send_verification_email(current_user, token)
+    # Send email in background to keep request path non-blocking.
+    background_tasks.add_task(_safe_send_verification_email, current_user, token)
 
     return {"message": "Verification code sent to your email"}
 
@@ -394,6 +438,7 @@ async def verify_email(
 async def forgot_password(
     request: Request,
     forgot_data: ForgotPasswordRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -408,8 +453,8 @@ async def forgot_password(
         # Create reset token
         token = await create_password_reset_token(db, user.id)
 
-        # Send email
-        await email_service.send_password_reset_email(user, token)
+        # Send email in background to avoid request-path blocking on SMTP.
+        background_tasks.add_task(_safe_send_password_reset_email, user, token)
 
     return {"message": "If your email is registered, you will receive a password reset link"}
 
@@ -532,7 +577,12 @@ async def delete_account(
     Delete user account. Requires password confirmation.
     """
     # Verify password
-    if not verify_password(delete_data.password, current_user.hashed_password):
+    is_delete_password_valid = await asyncio.to_thread(
+        verify_password,
+        delete_data.password,
+        current_user.hashed_password
+    )
+    if not is_delete_password_valid:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect password"
@@ -540,16 +590,17 @@ async def delete_account(
 
     # Hard delete user and all related data
     user_id = current_user.id
-    
-    # Clean up related tables since we don't have cascade delete in DB
-    await db.execute(delete(RefreshToken).where(RefreshToken.user_id == user_id))
-    await db.execute(delete(EmailVerificationToken).where(EmailVerificationToken.user_id == user_id))
-    await db.execute(delete(PasswordResetToken).where(PasswordResetToken.user_id == user_id))
-    await db.execute(delete(LoginAttempt).where(LoginAttempt.user_id == user_id))
-    
-    # Finally delete the user
-    await db.execute(delete(User).where(User.id == user_id))
 
-    await db.commit()
+    # Ensure clean transaction state before starting atomic delete.
+    if db.in_transaction():
+        await db.rollback()
+
+    # Atomic delete to avoid partial state on failure.
+    async with db.begin():
+        await db.execute(delete(RefreshToken).where(RefreshToken.user_id == user_id))
+        await db.execute(delete(EmailVerificationToken).where(EmailVerificationToken.user_id == user_id))
+        await db.execute(delete(PasswordResetToken).where(PasswordResetToken.user_id == user_id))
+        await db.execute(delete(LoginAttempt).where(LoginAttempt.user_id == user_id))
+        await db.execute(delete(User).where(User.id == user_id))
 
     return {"message": "Account and all associated data deleted successfully"}

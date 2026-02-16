@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Filter, X, ChevronDown, Check, Search, DollarSign, Briefcase, Building2 } from 'lucide-react';
 import axiosClient from '../api/axiosClient';
 
@@ -23,6 +23,8 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
     const [locations, setLocations] = useState([]);
     const [grades, setGrades] = useState([]);
     const [technologies, setTechnologies] = useState([]);
+    const [filtersLoading, setFiltersLoading] = useState(false);
+    const [filtersError, setFiltersError] = useState('');
 
     const [localFilters, setLocalFilters] = useState(() => buildLocalFilters(filters));
 
@@ -30,20 +32,25 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
     const [locationSearch, setLocationSearch] = useState('');
     const dropdownRef = useRef(null);
 
-    useEffect(() => {
-        const fetchFilters = async () => {
-            try {
-                const response = await axiosClient.get('/filters');
-                setLocations(response.data.locations || []);
-                setGrades(response.data.grades || []);
-                setTechnologies(response.data.technologies || []);
-            } catch (error) {
-                console.error('Failed to load filters:', error);
-            }
-        };
-
-        fetchFilters();
+    const fetchFilters = useCallback(async () => {
+        setFiltersLoading(true);
+        setFiltersError('');
+        try {
+            const response = await axiosClient.get('/filters');
+            setLocations(response.data.locations || []);
+            setGrades(response.data.grades || []);
+            setTechnologies(response.data.technologies || []);
+        } catch (error) {
+            console.error('Failed to load filters:', error);
+            setFiltersError('Failed to load filters. Please try again.');
+        } finally {
+            setFiltersLoading(false);
+        }
     }, []);
+
+    useEffect(() => {
+        fetchFilters();
+    }, [fetchFilters]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -171,6 +178,24 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                     </div>
 
                     <div className="flex-1 overflow-y-auto space-y-6 py-4 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+                        {filtersLoading && (
+                            <div className="rounded-xl border border-slate-800 bg-slate-900/70 px-3 py-2 text-xs text-slate-400">
+                                Loading filters...
+                            </div>
+                        )}
+
+                        {filtersError && (
+                            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-200 flex items-center justify-between gap-2">
+                                <span>{filtersError}</span>
+                                <button
+                                    onClick={fetchFilters}
+                                    className="px-2 py-1 rounded border border-red-400/40 hover:bg-red-500/20 transition-colors cursor-pointer"
+                                >
+                                    Retry
+                                </button>
+                            </div>
+                        )}
+
                         <div className="space-y-2">
                             <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center gap-2">
                                 <Briefcase size={12} />

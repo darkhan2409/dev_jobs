@@ -1,13 +1,24 @@
 """
 Interview API Router - FastAPI endpoints for IT Career Test Engine v2.1.
 """
+import asyncio
 import logging
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, status
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, HTTPException, Request, status
 
 from app.interview import ITCareerTestOrchestrator
+from app.interview.aggregation import IncompleteSessionError
+from app.interview.storage import (
+    InvalidReferenceError,
+    SessionCompleteError,
+    SessionNotFoundError,
+)
+from app.interview.storage.session_store import (
+    SessionBackendUnavailableError,
+    SessionLimitExceededError,
+)
 from app.config import settings
+from app.core.limiter import limiter
 from app.schemas import (
     QuestionResponse,
     AnswerOptionResponse,
@@ -33,19 +44,58 @@ router = APIRouter(
 )
 
 _orchestrator: Optional[ITCareerTestOrchestrator] = None
+_orchestrator_lock: Optional[asyncio.Lock] = None
 
 
-def get_orchestrator() -> ITCareerTestOrchestrator:
+async def get_orchestrator() -> ITCareerTestOrchestrator:
     """Get or create the orchestrator singleton."""
-    global _orchestrator
+    global _orchestrator, _orchestrator_lock
     if _orchestrator is None:
-        enable_llm = bool(settings.OPENAI_API_KEY)
-        _orchestrator = ITCareerTestOrchestrator(
-            openai_api_key=settings.OPENAI_API_KEY,
-            model=settings.AI_MODEL,
-            enable_llm=enable_llm
-        )
+        current_loop = asyncio.get_running_loop()
+        lock_loop = getattr(_orchestrator_lock, "_loop", None) if _orchestrator_lock else None
+        if _orchestrator_lock is None or (lock_loop is not None and lock_loop is not current_loop):
+            _orchestrator_lock = asyncio.Lock()
+        async with _orchestrator_lock:
+            if _orchestrator is None:
+                enable_llm = bool(settings.OPENAI_API_KEY)
+                _orchestrator = ITCareerTestOrchestrator(
+                    openai_api_key=settings.OPENAI_API_KEY,
+                    model=settings.AI_MODEL,
+                    enable_llm=enable_llm
+                )
     return _orchestrator
+
+
+def _map_interview_exception(exc: Exception) -> HTTPException:
+    if isinstance(exc, SessionNotFoundError):
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Interview session not found"
+        )
+    if isinstance(exc, SessionCompleteError):
+        return HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Interview session is already completed"
+        )
+    if isinstance(exc, (InvalidReferenceError, IncompleteSessionError)):
+        return HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Interview session data is invalid or incomplete"
+        )
+    if isinstance(exc, SessionLimitExceededError):
+        return HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many active interview sessions. Please try again later."
+        )
+    if isinstance(exc, SessionBackendUnavailableError):
+        return HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Interview session storage is temporarily unavailable"
+        )
+    return HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="Unexpected interview error"
+    )
 
 
 # --- API Endpoints ---
@@ -53,7 +103,7 @@ def get_orchestrator() -> ITCareerTestOrchestrator:
 @router.get("/questions", response_model=List[QuestionResponse], summary="Get all test questions")
 async def get_questions():
     """Get all questions for the IT Career Test."""
-    orchestrator = get_orchestrator()
+    orchestrator = await get_orchestrator()
     questions = orchestrator.get_all_questions()
 
     return [
@@ -72,38 +122,51 @@ async def get_questions():
 
 
 @router.post("/start", response_model=StartTestResponse, summary="Start a new test session")
-async def start_test():
+@limiter.limit("5/minute")
+async def start_test(request: Request):
     """Start a new IT Career Test session."""
-    orchestrator = get_orchestrator()
-    session_id = orchestrator.start_test()
-    return StartTestResponse(session_id=session_id)
+    try:
+        orchestrator = await get_orchestrator()
+        session_id = await asyncio.to_thread(orchestrator.start_test)
+        logger.info("interview_session_created session_id=%s", session_id)
+        return StartTestResponse(session_id=session_id)
+    except Exception as exc:
+        logger.error("Interview start failed", exc_info=True)
+        raise _map_interview_exception(exc)
 
 
 @router.post("/answer/{session_id}", summary="Submit an answer")
-async def submit_answer(session_id: str, request: SubmitAnswerRequest):
+@limiter.limit("60/minute")
+async def submit_answer(request: Request, session_id: str, payload: SubmitAnswerRequest):
     """Submit an answer for a question in the test."""
-    orchestrator = get_orchestrator()
     try:
-        orchestrator.submit_answer(session_id, request.question_id, request.answer_option_id)
-        return {"status": "ok"}
-    except Exception as e:
-        logger.error(f"Error submitting answer: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
+        orchestrator = await get_orchestrator()
+        await asyncio.to_thread(
+            orchestrator.submit_answer,
+            session_id,
+            payload.question_id,
+            payload.answer_option_id,
         )
+        return {"status": "ok"}
+    except Exception as exc:
+        logger.error("Interview answer submit failed", exc_info=True)
+        raise _map_interview_exception(exc)
 
 
 @router.post("/complete/{session_id}", response_model=TestResultResponse, summary="Complete test and get results")
-async def complete_test(session_id: str, skip_llm: bool = False):
+@limiter.limit("5/minute")
+async def complete_test(request: Request, session_id: str, skip_llm: bool = False):
     """Complete the test and get results with role-first stage recommendation."""
-    orchestrator = get_orchestrator()
-
     try:
-        result = orchestrator.complete_test(session_id, skip_llm=skip_llm)
+        orchestrator = await get_orchestrator()
+        result = await asyncio.wait_for(
+            asyncio.to_thread(orchestrator.complete_test, session_id, skip_llm),
+            timeout=30.0
+        )
 
         # Convert interpretation
         interpretation = None
+        warnings = list(result.warnings or [])
         if result.interpretation:
             try:
                 interpretation = InterpretationResponse(
@@ -116,6 +179,7 @@ async def complete_test(session_id: str, skip_llm: bool = False):
                 )
             except Exception as ie:
                 logger.warning(f"Interpretation payload invalid, returning result without interpretation: {ie}")
+                warnings.append("interpretation_payload_invalid")
                 interpretation = None
 
         # Convert stage result (now computed by orchestrator via role-first algorithm)
@@ -138,6 +202,8 @@ async def complete_test(session_id: str, skip_llm: bool = False):
                 related_roles=rec.related_roles
             )
 
+        logger.info("interview_session_completed session_id=%s", result.session_id)
+
         return TestResultResponse(
             session_id=result.session_id,
             ranked_roles=[
@@ -147,21 +213,25 @@ async def complete_test(session_id: str, skip_llm: bool = False):
             signal_profile=result.signal_profile,
             interpretation=interpretation,
             ranked_stages=ranked_stages,
-            stage_recommendation=stage_recommendation
+            stage_recommendation=stage_recommendation,
+            warnings=warnings or None,
         )
-    except Exception as e:
-        logger.error(f"Error completing test: {e}")
+    except asyncio.TimeoutError:
+        logger.error("Interview completion timed out after 30s for session_id=%s", session_id)
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="Interview completion timed out. Please try again."
         )
+    except Exception as exc:
+        logger.error("Interview completion failed", exc_info=True)
+        raise _map_interview_exception(exc)
 
 
 # --- Career Pipeline Endpoints ---
 
 @router.get("/roles/{role_id}", summary="Get role details")
 async def get_role_details(role_id: str):
-    orchestrator = get_orchestrator()
+    orchestrator = await get_orchestrator()
     role = orchestrator.role_manager.get_role(role_id)
     if not role:
         raise HTTPException(status_code=404, detail="Role not found")
@@ -176,29 +246,43 @@ from app.interview.aggregation.stage_aggregation_engine import StageAggregationE
 
 _stage_manager: Optional[StageManager] = None
 _stage_engine: Optional[StageAggregationEngine] = None
+_stage_manager_lock: Optional[asyncio.Lock] = None
+_stage_engine_lock: Optional[asyncio.Lock] = None
 
 
-def get_stage_manager() -> StageManager:
-    global _stage_manager
+async def get_stage_manager() -> StageManager:
+    global _stage_manager, _stage_manager_lock
     if _stage_manager is None:
-        _stage_manager = StageManager()
+        current_loop = asyncio.get_running_loop()
+        lock_loop = getattr(_stage_manager_lock, "_loop", None) if _stage_manager_lock else None
+        if _stage_manager_lock is None or (lock_loop is not None and lock_loop is not current_loop):
+            _stage_manager_lock = asyncio.Lock()
+        async with _stage_manager_lock:
+            if _stage_manager is None:
+                _stage_manager = StageManager()
     return _stage_manager
 
 
-def get_stage_engine() -> StageAggregationEngine:
-    global _stage_engine
+async def get_stage_engine() -> StageAggregationEngine:
+    global _stage_engine, _stage_engine_lock
     if _stage_engine is None:
-        _stage_engine = StageAggregationEngine(
-            get_stage_manager(),
-            RoleCatalogManager()
-        )
+        current_loop = asyncio.get_running_loop()
+        lock_loop = getattr(_stage_engine_lock, "_loop", None) if _stage_engine_lock else None
+        if _stage_engine_lock is None or (lock_loop is not None and lock_loop is not current_loop):
+            _stage_engine_lock = asyncio.Lock()
+        async with _stage_engine_lock:
+            if _stage_engine is None:
+                _stage_engine = StageAggregationEngine(
+                    await get_stage_manager(),
+                    RoleCatalogManager()
+                )
     return _stage_engine
 
 
 @router.get("/stages", response_model=List[StageResponse], summary="Get all product stages")
 async def get_all_stages():
     """Get all stages of IT product creation process."""
-    manager = get_stage_manager()
+    manager = await get_stage_manager()
     stages = manager.get_all_stages()
     return [
         StageResponse(id=stage.id, name=stage.name, summary=stage.summary)
@@ -208,7 +292,7 @@ async def get_all_stages():
 
 @router.get("/stages/{stage_id}", response_model=StageWithRolesResponse, summary="Get stage details")
 async def get_stage_details(stage_id: str):
-    manager = get_stage_manager()
+    manager = await get_stage_manager()
     stage = manager.get_stage(stage_id)
     if not stage:
         raise HTTPException(status_code=404, detail=f"Stage '{stage_id}' not found")

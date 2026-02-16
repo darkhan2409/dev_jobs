@@ -53,8 +53,13 @@ export default function GuideRoleProfilePage() {
     loadRoleProfile();
   }, [loadRoleProfile]);
 
+  useEffect(() => {
+    if (!extras) {
+      navigate('/guide', { replace: true });
+    }
+  }, [extras, navigate]);
+
   if (!extras) {
-    navigate('/guide');
     return null;
   }
 

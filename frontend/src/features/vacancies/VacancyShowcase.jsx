@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 import VacancyCard from './VacancyCard';
 import axiosClient from '../../api/axiosClient';
 import { Loader2, ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 const VacancyShowcase = () => {
     const [vacancies, setVacancies] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
 
     useEffect(() => {
         const fetchRandomVacancies = async () => {
@@ -18,10 +18,14 @@ const VacancyShowcase = () => {
                 });
 
                 // Shuffle and pick 6
-                const shuffled = response.data.items.sort(() => 0.5 - Math.random());
+                const items = Array.isArray(response?.data?.items) ? response.data.items : [];
+                const shuffled = [...items].sort(() => 0.5 - Math.random());
                 setVacancies(shuffled.slice(0, 6));
+                setError(false);
             } catch (error) {
                 console.error("Failed to fetch showcase vacancies:", error);
+                setVacancies([]);
+                setError(true);
             } finally {
                 setLoading(false);
             }
@@ -59,11 +63,17 @@ const VacancyShowcase = () => {
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {vacancies.map((vacancy) => (
-                        <VacancyCard key={vacancy.id} vacancy={vacancy} />
-                    ))}
-                </div>
+                {error ? (
+                    <div className="rounded-2xl border border-slate-700 bg-slate-900/70 p-6 text-center">
+                        <p className="text-slate-300">Лента вакансий временно недоступна. Попробуйте обновить страницу позже.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {vacancies.map((vacancy) => (
+                            <VacancyCard key={vacancy.id} vacancy={vacancy} />
+                        ))}
+                    </div>
+                )}
 
                 <div className="mt-12 text-center md:hidden">
                     <Link

@@ -3,6 +3,7 @@ uvicorn[standard]==0.32.0
 sqlalchemy==2.0.36
 psycopg2-binary==2.9.10
 asyncpg==0.31.0
+aiosqlite>=0.20.0
 python-dotenv==1.0.1
 pydantic==2.10.3
 pydantic[email]>=2.10.3
@@ -22,3 +23,4 @@ bcrypt==4.0.1  # pinned for passlib compatibility
 python-jose[cryptography]>=3.3.0
 python-multipart>=0.0.6
 aiosmtplib>=3.0.0
+redis>=5.0.0

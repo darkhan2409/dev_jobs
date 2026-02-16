@@ -9,6 +9,7 @@ from app.core.enums import GradeEnum, SortEnum
 from app.schemas import VacancyResponse, PaginatedVacancies, FiltersResponse, RoleMarketStatsResponse
 from app.services.vacancy_service import VacancyService, ROLE_SEARCH_MAPPING
 from app.core.limiter import limiter
+from app.infra.cache import build_cache_key, get_cached_response, set_cached_response
 
 router = APIRouter(prefix="/api", tags=["Vacancies"])
 
@@ -26,7 +27,6 @@ async def get_filters(request: Request, db: AsyncSession = Depends(get_db)):
 
 @router.get("/vacancies", response_model=PaginatedVacancies, summary="Get vacancies", description="Returns paginated list of IT vacancies with filtering and sorting options.")
 @limiter.limit("100/minute")
-# @cache(expire=300) # Disabled: CACHE_BREAKS_FILTERS
 async def get_vacancies(
     request: Request,
     page: int = Query(1, ge=1, description="Page number"),
@@ -42,8 +42,32 @@ async def get_vacancies(
 ):
     """
     Get paginated list of vacancies with optional filters.
-    Delegate to Service.
+    Uses endpoint-level Redis caching (Approach A).
     """
+    # Build cache key from path + normalized query params
+    query_params = {
+        "page": page,
+        "per_page": per_page,
+        "search": search,
+        "location": location,
+        "grade": grade,
+        "stack": stack,
+        "min_salary": min_salary,
+        "company": company,
+        "sort": sort.value if sort else None,
+    }
+    # Remove None values
+    query_params = {k: v for k, v in query_params.items() if v is not None}
+
+    cache_key = build_cache_key("/api/vacancies", query_params)
+    request_id = getattr(request.state, "request_id", None) or request.headers.get("X-Request-ID")
+
+    # Try to get from cache
+    cached_response = await get_cached_response(cache_key, request_id)
+    if cached_response is not None:
+        return PaginatedVacancies(**cached_response)
+
+    # Cache miss - query database
     vacancies, total = await VacancyService.get_vacancies(
         db=db,
         page=page,
@@ -56,13 +80,18 @@ async def get_vacancies(
         company=company,
         sort=sort
     )
-    
-    return PaginatedVacancies(
-        items=vacancies,
-        total=total,
-        page=page,
-        per_page=per_page
-    )
+
+    response_data = {
+        "items": [v.model_dump() if hasattr(v, 'model_dump') else v for v in vacancies],
+        "total": total,
+        "page": page,
+        "per_page": per_page
+    }
+
+    # Store in cache
+    await set_cached_response(cache_key, response_data, request_id=request_id)
+
+    return PaginatedVacancies(**response_data)
 
 
 @router.get("/vacancies/{vacancy_id}", response_model=VacancyResponse)

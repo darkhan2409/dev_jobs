@@ -12,6 +12,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
 from scripts.run_pipeline import execute_full_cycle
+from scripts.cleanup_auth_artifacts import cleanup_auth_artifacts
 import httpx
 
 # Ensure logs directory exists
@@ -59,18 +60,39 @@ def trigger_cache_clear():
         from dotenv import load_dotenv
         load_dotenv()
         
-        secret = os.getenv("INTERNAL_SECRET", "dev-secret-123")
-        url = f"http://127.0.0.1:8000/api/internal/clear-cache?secret={secret}"
+        secret = os.getenv("INTERNAL_SECRET")
+        if not secret:
+            logger.warning("[WARNING] INTERNAL_SECRET is not set; skipping cache clear trigger.")
+            return
+        url = "http://127.0.0.1:8000/api/internal/clear-cache"
         
-        # Using httpx to make a sync call (using .get or .post)
-        # We use a context manager or just simple call since it's one-off
-        response = httpx.post(url, timeout=5.0)
+        response = httpx.post(
+            url,
+            timeout=5.0,
+            headers={"X-Admin-Secret": secret}
+        )
         if response.status_code == 200:
             logger.info(f"[SUCCESS] API Cache cleared successfully.")
         else:
             logger.warning(f"[WARNING] Failed to clear cache: {response.status_code} {response.text}")
     except Exception as e:
         logger.warning(f"[WARNING] Could not connect to API to clear cache (API might be down): {e}")
+
+
+def job_cleanup_auth_artifacts():
+    """Cleanup stale login attempts and old refresh tokens."""
+    logger.info(">>> STARTING AUTH ARTIFACT CLEANUP <<<")
+    try:
+        retention_days = int(os.getenv("AUTH_ARTIFACT_RETENTION_DAYS", "30"))
+        result = cleanup_auth_artifacts(retention_days=retention_days)
+        logger.info(
+            "[SUCCESS] AUTH ARTIFACT CLEANUP FINISHED: login_attempts_deleted=%s refresh_tokens_deleted=%s retention_days=%s",
+            result["login_attempts_deleted"],
+            result["refresh_tokens_deleted"],
+            result["retention_days"],
+        )
+    except Exception as e:
+        logger.error(f"[ERROR] AUTH ARTIFACT CLEANUP FAILED: {e}", exc_info=True)
 
 def heartbeat():
     """Logs 'Alive' status."""
@@ -89,6 +111,8 @@ if __name__ == "__main__":
     
     # 3. Daily Deep Job at 03:00 AM
     scheduler.add_job(job_daily_deep, CronTrigger(hour=3, minute=0, jitter=300))
+    # 4. Daily auth artifact cleanup at 04:00 AM
+    scheduler.add_job(job_cleanup_auth_artifacts, CronTrigger(hour=4, minute=0, jitter=180))
 
     logger.info("Scheduler initialized. Jobs configured.")
     

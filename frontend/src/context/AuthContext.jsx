@@ -1,7 +1,24 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { authApi } from '../api/authApi';
+import { refreshAccessTokenSingleFlight } from '../api/axiosClient';
 
 const AuthContext = createContext(null);
+const REFRESH_INTERVAL_MS = 13 * 60 * 1000;
+const REFRESH_BACKOFF_STEPS_MS = [
+    60 * 1000,
+    2 * 60 * 1000,
+    5 * 60 * 1000,
+    10 * 60 * 1000,
+    15 * 60 * 1000
+];
+
+const getRefreshRetryDelay = (failureCount) => {
+    const index = Math.min(
+        Math.max(failureCount - 1, 0),
+        REFRESH_BACKOFF_STEPS_MS.length - 1
+    );
+    return REFRESH_BACKOFF_STEPS_MS[index];
+};
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
@@ -15,39 +32,49 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const refreshIntervalRef = useRef(null);
+    const refreshTimeoutRef = useRef(null);
+    const refreshFailuresRef = useRef(0);
 
     const stopRefreshTimer = useCallback(() => {
-        if (refreshIntervalRef.current) {
-            clearInterval(refreshIntervalRef.current);
-            refreshIntervalRef.current = null;
+        if (refreshTimeoutRef.current) {
+            clearTimeout(refreshTimeoutRef.current);
+            refreshTimeoutRef.current = null;
         }
+        refreshFailuresRef.current = 0;
     }, []);
 
-    const startRefreshTimer = useCallback(() => {
-        stopRefreshTimer();
-        refreshIntervalRef.current = setInterval(async () => {
+    const scheduleRefresh = useCallback((delayMs) => {
+        if (refreshTimeoutRef.current) {
+            clearTimeout(refreshTimeoutRef.current);
+            refreshTimeoutRef.current = null;
+        }
+
+        refreshTimeoutRef.current = setTimeout(async () => {
             const refreshToken = localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
 
-            if (refreshToken) {
-                try {
-                    const response = await authApi.refresh(refreshToken);
-                    localStorage.setItem('access_token', response.data.access_token);
-
-                    // Token Rotation: Save new refresh token if provided
-                    if (response.data.refresh_token) {
-                        const storage = localStorage.getItem('refresh_token')
-                            ? localStorage
-                            : sessionStorage;
-                        storage.setItem('refresh_token', response.data.refresh_token);
-                    }
-                } catch (error) {
-                    console.error('Token refresh failed:', error);
-                    // Logout will be triggered by axios interceptor
-                }
+            if (!refreshToken) {
+                stopRefreshTimer();
+                return;
             }
-        }, 13 * 60 * 1000); // 13 minutes
+
+            try {
+                await refreshAccessTokenSingleFlight();
+                refreshFailuresRef.current = 0;
+                scheduleRefresh(REFRESH_INTERVAL_MS);
+            } catch (error) {
+                refreshFailuresRef.current += 1;
+                const failures = refreshFailuresRef.current;
+                console.error(`Token refresh failed (attempt ${failures}):`, error);
+
+                scheduleRefresh(getRefreshRetryDelay(failures));
+            }
+        }, delayMs);
     }, [stopRefreshTimer]);
+
+    const startRefreshTimer = useCallback(() => {
+        refreshFailuresRef.current = 0;
+        scheduleRefresh(REFRESH_INTERVAL_MS);
+    }, [scheduleRefresh]);
 
     // Session restoration on page load
     useEffect(() => {
@@ -71,15 +98,7 @@ export const AuthProvider = ({ children }) => {
 
             const tryRefresh = async () => {
                 if (!refreshToken) return false;
-                const response = await authApi.refresh(refreshToken);
-                localStorage.setItem('access_token', response.data.access_token);
-
-                if (response.data.refresh_token) {
-                    const storage = localStorage.getItem('refresh_token')
-                        ? localStorage
-                        : sessionStorage;
-                    storage.setItem('refresh_token', response.data.refresh_token);
-                }
+                await refreshAccessTokenSingleFlight();
                 return true;
             };
 

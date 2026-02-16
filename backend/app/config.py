@@ -1,7 +1,10 @@
 import sys
 from typing import Optional
+import logging
 from pydantic import ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+logger = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
@@ -29,6 +32,7 @@ class Settings(BaseSettings):
     SMTP_PORT: int = 587
     SMTP_USER: Optional[str] = None
     SMTP_PASSWORD: Optional[str] = None
+    SMTP_TIMEOUT_SECONDS: int = 10
     FROM_EMAIL: str = "noreply@devjobs.kz"
     
     # Frontend URL (for email templates)
@@ -36,6 +40,12 @@ class Settings(BaseSettings):
 
     # Cache settings
     CAREER_SESSION_TTL_MINUTES: int = 120
+    REDIS_URL: Optional[str] = None
+    CACHE_ENABLED: bool = True
+    CACHE_TTL_SECONDS: int = 120
+    INTERVIEW_SESSION_BACKEND: str = "memory"  # redis | memory
+    INTERVIEW_SESSION_MAX_ACTIVE: int = 2000
+    DB_STATEMENT_TIMEOUT_SECONDS: int = 30
 
     # Scraper settings
     HH_AREA: int = 40  # Kazakhstan
@@ -43,6 +53,11 @@ class Settings(BaseSettings):
     # AI/LLM settings
     OPENAI_API_KEY: Optional[str] = None
     AI_MODEL: str = "gpt-4o"
+
+    # Salary normalization rates
+    EXCHANGE_RATE_USD: float = 509.0
+    EXCHANGE_RATE_EUR: float = 594.36
+    EXCHANGE_RATE_RUB: float = 6.33
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -54,5 +69,5 @@ class Settings(BaseSettings):
 try:
     settings = Settings()
 except ValidationError as e:
-    print(f"Configuration error: {e}")
+    logger.error("Configuration error: %s", e)
     sys.exit(1)

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Building2, Briefcase, Globe, ExternalLink } from 'lucide-react';
@@ -6,6 +6,7 @@ import axiosClient from '../api/axiosClient';
 import { pageVariants, fadeInUp } from '../utils/animations';
 import VacancyCard, { VacancySkeleton } from '../features/vacancies/VacancyCard';
 import Pagination from '../components/ui/Pagination';
+import { sanitizeHtml } from '../utils/sanitizeHtml';
 
 const formatVacanciesCount = (count) => {
     if (!count) return '0 вакансий';
@@ -27,6 +28,7 @@ const CompanyProfilePage = () => {
     const [vacancies, setVacancies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [logoLoadFailed, setLogoLoadFailed] = useState(false);
     const [pagination, setPagination] = useState({
         page: 1,
         per_page: 21,
@@ -34,6 +36,10 @@ const CompanyProfilePage = () => {
     });
     const vacanciesSectionRef = useRef(null);
     const companyDescription = getCompanyDescription(company);
+    const safeCompanyDescription = useMemo(
+        () => sanitizeHtml(companyDescription),
+        [companyDescription]
+    );
 
     useEffect(() => {
         const fetchCompanyData = async () => {
@@ -71,6 +77,7 @@ const CompanyProfilePage = () => {
 
     useEffect(() => {
         setPagination((prev) => ({ ...prev, page: 1 }));
+        setLogoLoadFailed(false);
     }, [companyId]);
 
     useEffect(() => {
@@ -182,18 +189,15 @@ const CompanyProfilePage = () => {
                     <div className="flex flex-col md:flex-row items-start gap-6">
                         {/* Logo */}
                         <div className="w-24 h-24 bg-white rounded-xl flex items-center justify-center overflow-hidden p-3 flex-shrink-0">
-                            {company.logo_url ? (
+                            {company.logo_url && !logoLoadFailed ? (
                                 <img
                                     src={company.logo_url}
                                     alt={company.name}
                                     className="w-full h-full object-contain"
-                                    onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        e.target.nextSibling.style.display = 'flex';
-                                    }}
+                                    onError={() => setLogoLoadFailed(true)}
                                 />
                             ) : null}
-                            <div className={`w-full h-full items-center justify-center ${company.logo_url ? 'hidden' : 'flex'}`}>
+                            <div className={`w-full h-full items-center justify-center ${company.logo_url && !logoLoadFailed ? 'hidden' : 'flex'}`}>
                                 <Building2 className="text-slate-800" size={40} />
                             </div>
                         </div>
@@ -259,7 +263,7 @@ const CompanyProfilePage = () => {
                     {companyDescription ? (
                         <div
                             className="text-slate-300 leading-relaxed prose prose-invert max-w-none"
-                            dangerouslySetInnerHTML={{ __html: companyDescription }}
+                            dangerouslySetInnerHTML={{ __html: safeCompanyDescription }}
                         />
                     ) : (
                         <p className="text-slate-400 leading-relaxed">

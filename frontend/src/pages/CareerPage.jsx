@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { interviewApi } from '../api/interviewApi';
 import WelcomeScreen from '../components/career/WelcomeScreen';
@@ -68,6 +68,8 @@ const CareerPage = () => {
 
     const handleAnswer = useCallback((answerOptionId) => {
         const currentQuestion = questions[currentIndex];
+        if (!currentQuestion) return;
+
         setAnswers(prev => ({
             ...prev,
             [currentQuestion.id]: answerOptionId
@@ -88,6 +90,15 @@ const CareerPage = () => {
 
     const handleNext = useCallback(async () => {
         const currentQuestion = questions[currentIndex];
+        if (!currentQuestion) {
+            setErrorState({
+                title: 'Test state error',
+                message: 'Current question is unavailable. Please restart the test.',
+                retryAction: 'restart'
+            });
+            return;
+        }
+
         const selectedAnswerId = answers[currentQuestion.id];
 
         if (!selectedAnswerId) return;
@@ -166,6 +177,17 @@ const CareerPage = () => {
             } finally {
                 setIsSubmitting(false);
             }
+            return;
+        }
+
+        if (errorState.retryAction === 'restart') {
+            setScreen('welcome');
+            setSessionId(null);
+            setQuestions([]);
+            setCurrentIndex(0);
+            setAnswers({});
+            setResults(null);
+            setErrorState(null);
         }
     }, [completeTestRequest, errorState, handleNext, handleStart]);
 
@@ -178,6 +200,37 @@ const CareerPage = () => {
         setResults(null);
         setErrorState(null);
     }, []);
+
+    useEffect(() => {
+        if (screen !== 'test') return undefined;
+
+        const warningMessage = 'Если уйти со страницы, прогресс карьерного теста будет потерян. Продолжить?';
+
+        const handleBeforeUnload = (event) => {
+            event.preventDefault();
+            event.returnValue = warningMessage;
+            return warningMessage;
+        };
+
+        const handlePopState = (event) => {
+            const shouldLeave = window.confirm(warningMessage);
+            if (!shouldLeave) {
+                event.preventDefault();
+                window.history.pushState({ career_test_guard: true }, '', window.location.href);
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        window.history.pushState({ career_test_guard: true }, '', window.location.href);
+        window.addEventListener('popstate', handlePopState);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, [screen]);
+
+    const currentQuestion = questions[currentIndex] || null;
 
     return (
         <motion.div
@@ -202,16 +255,26 @@ const CareerPage = () => {
                     <WelcomeScreen onStart={handleStart} isLoading={isLoading} />
                 )}
 
-                {screen === 'test' && questions.length > 0 && (
+                {screen === 'test' && currentQuestion && (
                     <QuestionCard
-                        question={questions[currentIndex]}
+                        question={currentQuestion}
                         currentIndex={currentIndex}
                         totalQuestions={questions.length}
-                        selectedAnswer={answers[questions[currentIndex].id] || null}
+                        selectedAnswer={answers[currentQuestion.id] || null}
                         onAnswer={handleAnswer}
                         onPrev={handlePrev}
                         onNext={handleNext}
                         isSubmitting={isSubmitting}
+                    />
+                )}
+
+                {screen === 'test' && !currentQuestion && questions.length > 0 && (
+                    <ErrorState
+                        title="Test state error"
+                        message="Question pointer is out of range. Restart the test to continue."
+                        onRetry={handleRestart}
+                        showHomeLink={false}
+                        className="py-8"
                     />
                 )}
 

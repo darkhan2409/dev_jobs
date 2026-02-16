@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, ArrowRight, UserPlus } from 'lucide-react';
 import VacancyCard from './VacancyCard';
@@ -10,23 +10,28 @@ const RecommendedSection = () => {
     const { isAuthenticated, user } = useAuth();
     const [recommendations, setRecommendations] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
-    useEffect(() => {
+    const fetchRecommendations = useCallback(async () => {
         if (!isAuthenticated) return;
 
-        const fetchRecommendations = async () => {
-            try {
-                const response = await axiosClient.get('/recommendations');
-                setRecommendations(response.data);
-            } catch (error) {
-                console.error("Failed to fetch recommendations:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchRecommendations();
+        setLoading(true);
+        setError('');
+        try {
+            const response = await axiosClient.get('/recommendations');
+            setRecommendations(Array.isArray(response.data) ? response.data : []);
+        } catch (requestError) {
+            console.error("Failed to fetch recommendations:", requestError);
+            setRecommendations([]);
+            setError('Recommendations are temporarily unavailable. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     }, [isAuthenticated]);
+
+    useEffect(() => {
+        fetchRecommendations();
+    }, [fetchRecommendations]);
 
     if (!isAuthenticated) return null;
 
@@ -100,12 +105,30 @@ const RecommendedSection = () => {
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {/* Show top 6 from recommendations (which might be fallbacks) */}
-                    {recommendations.slice(0, 6).map((vacancy) => (
-                        <VacancyCard key={vacancy.id} vacancy={vacancy} />
-                    ))}
-                </div>
+                {recommendations.length === 0 && !error ? (
+                    <div className="text-center py-12 text-slate-400">
+                        <p>Нет доступных рекомендаций. Попробуйте заполнить профиль.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {/* Show top 6 from recommendations (which might be fallbacks) */}
+                        {recommendations.slice(0, 6).map((vacancy) => (
+                            <VacancyCard key={vacancy.id} vacancy={vacancy} />
+                        ))}
+                    </div>
+                )}
+
+                {error && (
+                    <div className="mt-6 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-100 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <span>{error}</span>
+                        <button
+                            onClick={fetchRecommendations}
+                            className="px-3 py-1.5 rounded-lg border border-amber-400/40 bg-amber-500/10 hover:bg-amber-500/20 transition-colors"
+                        >
+                            Retry
+                        </button>
+                    </div>
+                )}
             </div>
         </section>
     );

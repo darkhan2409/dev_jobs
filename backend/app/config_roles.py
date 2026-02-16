@@ -3,6 +3,8 @@ Shared configuration for HH.ru scraper roles and settings.
 This file is used by both the scraper and scheduler to maintain consistency.
 """
 
+from app.config import settings
+
 # All IT roles to scrape from HH.ru (Kazakhstan, area=40)
 ROLES = [
     {"id": 96,  "name": "Programmer / Developer"},
@@ -32,8 +34,8 @@ SPECIAL_QUERIES = [
 
 # Exchange rates for salary normalization to KZT
 EXCHANGE_RATES = {
-    "USD": 509,
-    "EUR": 594.36,
-    "RUB": 6.33,
+    "USD": settings.EXCHANGE_RATE_USD,
+    "EUR": settings.EXCHANGE_RATE_EUR,
+    "RUB": settings.EXCHANGE_RATE_RUB,
     "KZT": 1
 }

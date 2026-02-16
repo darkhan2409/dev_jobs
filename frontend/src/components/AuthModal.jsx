@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, Loader2, AlertCircle, Eye, EyeOff, User, Check, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -25,6 +25,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login', hideTabs = false }) 
     const [successMessage, setSuccessMessage] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const modalRef = useRef(null);
 
     const { login, register } = useAuth();
 
@@ -133,6 +134,62 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login', hideTabs = false }) 
         }
     };
 
+    useEffect(() => {
+        if (!isOpen) return undefined;
+
+        const previousActiveElement = document.activeElement;
+        document.body.style.overflow = 'hidden';
+
+        const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+        const setInitialFocus = () => {
+            const focusable = modalRef.current?.querySelectorAll(focusableSelector);
+            if (focusable && focusable.length > 0) {
+                focusable[0].focus();
+            } else {
+                modalRef.current?.focus();
+            }
+        };
+
+        const handleKeydown = (event) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                onClose();
+                return;
+            }
+
+            if (event.key !== 'Tab') return;
+
+            const focusable = modalRef.current?.querySelectorAll(focusableSelector);
+            if (!focusable || focusable.length === 0) {
+                event.preventDefault();
+                return;
+            }
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            const active = document.activeElement;
+
+            if (event.shiftKey && active === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && active === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        };
+
+        document.addEventListener('keydown', handleKeydown);
+        requestAnimationFrame(setInitialFocus);
+
+        return () => {
+            document.removeEventListener('keydown', handleKeydown);
+            document.body.style.overflow = '';
+            if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
+                previousActiveElement.focus();
+            }
+        };
+    }, [isOpen, onClose, activeTab]);
+
     if (!isOpen) return null;
 
     return (
@@ -147,15 +204,21 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login', hideTabs = false }) 
                     initial={{ scale: 0.95, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.95, opacity: 0 }}
+                    ref={modalRef}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="auth-modal-title"
+                    tabIndex={-1}
                     className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden"
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between p-6 border-b border-slate-800">
-                        <h2 className="text-xl font-bold text-white">
+                        <h2 id="auth-modal-title" className="text-xl font-bold text-white">
                             {activeTab === 'login' ? 'С возвращением' : 'Создать аккаунт'}
                         </h2>
                         <button
                             onClick={onClose}
+                            aria-label="Закрыть окно авторизации"
                             className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                         >
                             <X size={20} />

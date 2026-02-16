@@ -1,6 +1,9 @@
 import React from 'react';
+import { sanitizeHtml } from '../../utils/sanitizeHtml';
 
 const JobDescription = ({ htmlContent }) => {
+    const safeHtml = React.useMemo(() => sanitizeHtml(htmlContent), [htmlContent]);
+
     return (
         <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 text-gray-300 shadow-xl shadow-black/20">
             <div
@@ -30,7 +33,7 @@ const JobDescription = ({ htmlContent }) => {
                     /* Selection */
                     selection:bg-violet-500/30 selection:text-white
                 "
-                dangerouslySetInnerHTML={{ __html: htmlContent || '' }}
+                dangerouslySetInnerHTML={{ __html: safeHtml }}
             />
         </div>
     );

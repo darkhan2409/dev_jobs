@@ -15,6 +15,15 @@ class ErrorBoundary extends React.Component {
         console.error('Error caught by boundary:', error, errorInfo);
     }
 
+    componentDidUpdate(prevProps) {
+        if (
+            this.state.hasError &&
+            prevProps.resetKey !== this.props.resetKey
+        ) {
+            this.setState({ hasError: false, error: null });
+        }
+    }
+
     render() {
         if (this.state.hasError) {
             return (

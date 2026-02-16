@@ -14,14 +14,17 @@ import { pageVariants } from '../utils/animations';
 const HomePage = () => {
     const navigate = useNavigate();
     const [totalJobs, setTotalJobs] = useState(null);
+    const [isBackendUnavailable, setIsBackendUnavailable] = useState(false);
 
     useEffect(() => {
         const fetchMetrics = async () => {
             try {
                 const response = await axiosClient.get('/metrics');
                 setTotalJobs(response.data.total_count);
+                setIsBackendUnavailable(false);
             } catch (error) {
                 console.error('Failed to fetch metrics for hero:', error);
+                setIsBackendUnavailable(true);
             }
         };
         fetchMetrics();
@@ -50,6 +53,13 @@ const HomePage = () => {
                 onSearchApply={handleSearch}
                 totalJobs={totalJobs}
             />
+            {isBackendUnavailable && (
+                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+                    <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-100 text-sm">
+                        Бэкенд временно недоступен, часть данных может не отображаться.
+                    </div>
+                </section>
+            )}
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 mb-6">
                 <div className="rounded-2xl border border-cyan-500/25 bg-gradient-to-r from-cyan-500/10 to-violet-500/10 p-5 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div>

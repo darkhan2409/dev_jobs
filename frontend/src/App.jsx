@@ -20,6 +20,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import AppHeader from './components/AppHeader';
 import AppFooter from './components/AppFooter';
 import BackgroundEffect from './components/BackgroundEffect';
+import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 
 // Guide pages (lazy loaded — isolated educational section)
@@ -98,8 +99,22 @@ function AnimatedRoutes() {
         <Route path="/post-job" element={<PostJobPage />} />
         {/* Legacy redirect: /vacancies/:id → /jobs/:id */}
         <Route path="/vacancies/:id" element={<VacancyRedirect />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/security" element={<SecuritySettingsPage />} />
+        <Route
+          path="/profile"
+          element={(
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/security"
+          element={(
+            <ProtectedRoute>
+              <SecuritySettingsPage />
+            </ProtectedRoute>
+          )}
+        />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         {/* Guide — educational section within main layout */}
@@ -124,22 +139,32 @@ function AnimatedRoutes() {
   );
 }
 
+function AppContent() {
+  const location = useLocation();
+
+  return (
+    <>
+      <ScrollToTop />
+      <TitleUpdater />
+      <ErrorBoundary resetKey={location.pathname}>
+        <div className="min-h-screen flex flex-col text-slate-200 relative">
+          <BackgroundEffect />
+          <AppHeader />
+          <div className="flex-1">
+            <AnimatedRoutes />
+          </div>
+          <AppFooter />
+        </div>
+      </ErrorBoundary>
+    </>
+  );
+}
+
 function App() {
   return (
     <Router>
       <AuthProvider>
-        <ScrollToTop />
-        <TitleUpdater />
-        <ErrorBoundary>
-          <div className="min-h-screen flex flex-col text-slate-200 relative">
-            <BackgroundEffect />
-            <AppHeader />
-            <div className="flex-1">
-              <AnimatedRoutes />
-            </div>
-            <AppFooter />
-          </div>
-        </ErrorBoundary>
+        <AppContent />
       </AuthProvider>
     </Router>
   );

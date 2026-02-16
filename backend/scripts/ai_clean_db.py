@@ -57,7 +57,7 @@ async def run_ai_cleaning_job(dry_run: bool = False):
         batches = [unchecked[i:i + BATCH_SIZE] for i in range(0, total, BATCH_SIZE)]
         
         total_junk = 0
-        total_deleted = 0
+        total_deactivated = 0
         
         with open(AUDIT_LOG_FILE, "a", encoding="utf-8") as log_file:
             # Process batches with progress bar
@@ -85,8 +85,9 @@ async def run_ai_cleaning_job(dry_run: bool = False):
                         log_file.write(msg + "\n")
                         
                         if not dry_run:
-                            db.delete(vacancy)
-                            total_deleted += 1
+                            vacancy.is_active = False
+                            vacancy.is_ai_checked = True
+                            total_deactivated += 1
                     else:
                         # Mark as checked
                         if not dry_run:
@@ -108,7 +109,7 @@ async def run_ai_cleaning_job(dry_run: bool = False):
         logger.info(f"\n✅ Scan Complete.")
         logger.info(f"Total Scanned: {total}")
         logger.info(f"Junk Found: {total_junk}")
-        logger.info(f"Deleted: {total_deleted}")
+        logger.info(f"Deactivated: {total_deactivated}")
         logger.info(f"Marked as Checked: {total - total_junk}")
         logger.info(f"Estimated Cost: ${estimated_cost:.2f}")
         logger.info(f"Dry Run: {dry_run}")

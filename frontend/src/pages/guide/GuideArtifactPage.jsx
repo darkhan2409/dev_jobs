@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
@@ -12,8 +13,13 @@ export default function GuideArtifactPage() {
 
   const artifact = getArtifact(artifactId);
 
+  useEffect(() => {
+    if (!artifact) {
+      navigate('/guide', { replace: true });
+    }
+  }, [artifact, navigate]);
+
   if (!artifact) {
-    navigate('/guide');
     return null;
   }
 

@@ -111,8 +111,13 @@ export default function GuideStageDetailPage() {
     });
   }, [stage, stageId, recommendedStageId, isRecommendedStage]);
 
+  useEffect(() => {
+    if (!stage) {
+      navigate('/guide', { replace: true });
+    }
+  }, [stage, navigate]);
+
   if (!stage) {
-    navigate('/guide');
     return null;
   }
 

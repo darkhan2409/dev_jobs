@@ -73,6 +73,9 @@ class CompanyResponse(BaseModel):
 class CompaniesListResponse(BaseModel):
     items: List[CompanyResponse]
     total: int
+    page: int
+    per_page: int
+    total_pages: int
 
 class CompanyDetailResponse(BaseModel):
     company: CompanyResponse
@@ -286,6 +289,7 @@ class TestResultResponse(BaseModel):
     # Stage recommendation (NEW)
     ranked_stages: Optional[List[TestStageScoreResponse]] = None
     stage_recommendation: Optional[TestStageRecommendationResponse] = None
+    warnings: Optional[List[str]] = None
 
 
 # --- Stage Schemas ---

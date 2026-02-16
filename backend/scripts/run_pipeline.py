@@ -191,9 +191,9 @@ async def execute_full_cycle(deep_scrape: bool = False, dry_run_cleaner: bool = 
 
 
 if __name__ == "__main__":
-    # Run with default settings (shallow scrape, production AI cleaner)
+    # Run with default settings (shallow scrape, AI cleaner in DRY-RUN mode for safety)
     logger.info("Starting manual pipeline execution...")
-    logger.info("Mode: Shallow scrape (3 pages), AI cleaner in PRODUCTION mode")
-    logger.info("To run deep scrape, modify the script or import this function.\n")
+    logger.info("Mode: Shallow scrape (3 pages), AI cleaner in DRY-RUN mode (safe)")
+    logger.info("To run production cleaner, modify dry_run_cleaner=False explicitly.\n")
     
-    asyncio.run(execute_full_cycle(deep_scrape=False, dry_run_cleaner=False))
+    asyncio.run(execute_full_cycle(deep_scrape=False, dry_run_cleaner=True))

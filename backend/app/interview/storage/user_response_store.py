@@ -7,9 +7,10 @@ Manages test sessions and user responses with semantic context storage
 
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
+from uuid import uuid4
 from ..models.user_response import UserResponse, SessionModel, SessionStatus
-from ..models.question import Question
 from .question_bank_manager import QuestionBankManager
+from .session_store import SessionStore, SessionLimitExceededError
 from app.config import settings
 
 
@@ -38,7 +39,7 @@ class SessionCompleteError(UserResponseStoreError):
     pass
 
 
-class UserResponseStore:
+class UserResponseStore(SessionStore):
     """
     Manages user responses with semantic context storage.
 
@@ -46,9 +47,18 @@ class UserResponseStore:
     from answer options (denormalization for efficient aggregation).
     """
 
-    def __init__(self, question_bank_manager: QuestionBankManager):
+    def __init__(
+        self,
+        question_bank_manager: QuestionBankManager,
+        max_active_sessions: Optional[int] = None
+    ):
         self._sessions: Dict[str, SessionModel] = {}
         self._question_bank_manager = question_bank_manager
+        self._max_active_sessions = (
+            max_active_sessions
+            if max_active_sessions is not None
+            else settings.INTERVIEW_SESSION_MAX_ACTIVE
+        )
 
     def _evict_expired_sessions(self, current_session_id: Optional[str] = None) -> None:
         """Remove expired sessions from memory."""
@@ -65,7 +75,15 @@ class UserResponseStore:
         """Create a new test session."""
         self._evict_expired_sessions()
 
-        session_id = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
+        active_sessions = sum(
+            1
+            for session in self._sessions.values()
+            if session.status == SessionStatus.IN_PROGRESS
+        )
+        if active_sessions >= self._max_active_sessions:
+            raise SessionLimitExceededError("Too many active interview sessions")
+
+        session_id = f"session_{uuid4()}"
         created_at = datetime.now()
         expires_at = created_at + timedelta(minutes=settings.CAREER_SESSION_TTL_MINUTES)
 
@@ -182,6 +200,10 @@ class UserResponseStore:
             raise SessionNotFoundError(f"Session '{session_id}' does not exist")
 
         session = self._sessions[session_id]
+        if session.status == SessionStatus.COMPLETED:
+            raise SessionCompleteError(
+                f"Session '{session_id}' is already completed"
+            )
         session.status = SessionStatus.COMPLETED
         self._question_bank_manager.unlock_question_bank(session_id)
         return session

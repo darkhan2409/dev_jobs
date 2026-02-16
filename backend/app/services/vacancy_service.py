@@ -18,6 +18,11 @@ ROLE_SEARCH_MAPPING = {
     "devops_engineer": ["devops", "sre", "site reliability", "infrastructure", "системный администратор", "cloud engineer"],
 }
 
+def _escape_ilike_value(raw_value: str) -> str:
+    """Escape wildcard symbols used by SQL ILIKE."""
+    return raw_value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 class VacancyService:
     @staticmethod
     async def get_filters(db: AsyncSession):
@@ -88,10 +93,11 @@ class VacancyService:
         if search:
             # Full Text Search via Postgres
             ts_query = func.websearch_to_tsquery('simple', search)
+            escaped_search = _escape_ilike_value(search)
             query = query.filter(
                 or_(
                     Vacancy.search_vector.op('@@')(ts_query),
-                    Vacancy.company_name.ilike(f"%{search}%")
+                    Vacancy.company_name.ilike(f"%{escaped_search}%", escape="\\")
                 )
             )
         
@@ -120,16 +126,18 @@ class VacancyService:
                 query = query.filter(Vacancy.grade.in_(grades_list))
             
         if stack:
-            stack_pattern = f"%{stack}%"
+            escaped_stack = _escape_ilike_value(stack)
+            stack_pattern = f"%{escaped_stack}%"
             query = query.filter(
                 or_(
-                    Vacancy.description.ilike(stack_pattern),
-                    Vacancy.title.ilike(stack_pattern)
+                    Vacancy.description.ilike(stack_pattern, escape="\\"),
+                    Vacancy.title.ilike(stack_pattern, escape="\\")
                 )
             )
 
         if company:
-            query = query.filter(Vacancy.company_name.ilike(f"%{company}%"))
+            escaped_company = _escape_ilike_value(company)
+            query = query.filter(Vacancy.company_name.ilike(f"%{escaped_company}%", escape="\\"))
 
         # Get total count (optimized count query)
         count_query = select(func.count()).select_from(query.subquery())
@@ -176,7 +184,10 @@ class VacancyService:
         salary_ranges_by_grade, companies_hiring_count, hiring_company_share_percent, top_skills
         """
         # Build filter: match any search term in title
-        title_filters = [Vacancy.title.ilike(f"%{term}%") for term in search_terms]
+        title_filters = [
+            Vacancy.title.ilike(f"%{_escape_ilike_value(term)}%", escape="\\")
+            for term in search_terms
+        ]
         base_filter = or_(*title_filters)
 
         # Count total matching vacancies

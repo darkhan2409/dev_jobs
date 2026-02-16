@@ -99,7 +99,7 @@ export const GUIDE_STAGES = [
       'Как интегрировать компоненты?',
       'Как управлять версиями? (Git)',
     ],
-    backendStageIds: ['build'],
+    backendStageIds: ['development'],
   },
   {
     id: 'verify',
@@ -130,7 +130,7 @@ export const GUIDE_STAGES = [
       'Безопасны ли данные пользователей?',
       'Готов ли продукт к нагрузке?',
     ],
-    backendStageIds: ['test'],
+    backendStageIds: ['testing'],
   },
   {
     id: 'release',
@@ -161,7 +161,7 @@ export const GUIDE_STAGES = [
       'Как собирать обратную связь?',
       'Как документировать API?',
     ],
-    backendStageIds: ['run'],
+    backendStageIds: ['launch_ops'],
   },
 ];
 

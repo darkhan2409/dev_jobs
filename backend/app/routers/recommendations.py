@@ -14,6 +14,10 @@ router = APIRouter(
     tags=["recommendations"]
 )
 
+RECOMMENDATIONS_PREFILTER_CAP = 500
+RECOMMENDATIONS_LIMIT = 20
+
+
 @router.get("", response_model=List[VacancyResponse], summary="Get personalized recommendations")
 async def get_recommendations(
     current_user: User = Depends(get_current_user),
@@ -34,7 +38,7 @@ async def get_recommendations(
             select(Vacancy)
             .filter(Vacancy.is_active == True)
             .order_by(desc(Vacancy.published_at))
-            .limit(20)
+            .limit(RECOMMENDATIONS_LIMIT)
         )
         return result.scalars().all()
     
@@ -53,6 +57,12 @@ async def get_recommendations(
         allowed_grades = grade_map[current_user.grade]
         query = query.filter(Vacancy.grade.in_(allowed_grades))
     
+    # SQL prefilter before in-memory scoring to cap memory usage.
+    if current_user.skills:
+        query = query.filter(Vacancy.key_skills.isnot(None))
+
+    query = query.order_by(desc(Vacancy.published_at)).limit(RECOMMENDATIONS_PREFILTER_CAP)
+
     result = await db.execute(query)
     vacancies = result.scalars().all()
     
@@ -75,8 +85,8 @@ async def get_recommendations(
             reverse=True
         )
         
-        # Return top 20
-        return [v[0] for v in scored_vacancies[:20]]
+        # Return top recommendations limit.
+        return [v[0] for v in scored_vacancies[:RECOMMENDATIONS_LIMIT]]
     
     # No skills, just sort by date
     vacancies_list = sorted(
@@ -84,4 +94,4 @@ async def get_recommendations(
         key=lambda v: v.published_at or datetime.min,
         reverse=True
     )
-    return vacancies_list[:20]
+    return vacancies_list[:RECOMMENDATIONS_LIMIT]

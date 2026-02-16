@@ -1,7 +1,7 @@
 import asyncio
 import httpx
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Set
 
 from sqlalchemy import func, text
@@ -228,7 +228,12 @@ class HHScraper:
         """Check if company data should be refreshed (older than 7 days)."""
         if not company or not company.updated_at:
             return True
-        age_days = (datetime.now() - company.updated_at).days
+
+        company_updated_at = company.updated_at
+        if company_updated_at.tzinfo is None:
+            company_updated_at = company_updated_at.replace(tzinfo=timezone.utc)
+
+        age_days = (datetime.now(timezone.utc) - company_updated_at).days
         return age_days > 7
 
     async def _upsert_companies(self, employer_ids: Set[int], client: httpx.AsyncClient):
@@ -335,124 +340,123 @@ class HHScraper:
         return logo_urls.get("240")
 
     def save_to_db(self, items: List[dict], role_id: int, start_time: datetime, do_cleanup: bool) -> dict:
-        db = SessionLocal()
         stats = {"added": 0, "updated": 0, "deleted": 0}
-        
-        try:
-            for item in items:
-                # Skip None items
-                if not item or not isinstance(item, dict):
-                    logger.warning(f"Skipping invalid item: {item}")
-                    continue
-                    
-                salary = item.get("salary") or {}
-                exp_data = item.get("experience", {})
-                experience_id = exp_data.get("id")
-                grade = determine_grade(item.get("name"), experience_id)
-                
-                # Extract tech stack from title and description
-                from app.utils.tech_extractor import extract_tech_from_vacancy
-                title = item.get("name", "")
-                description = item.get("description", "")
-                tech_stack = extract_tech_from_vacancy(title, description)
-                
-                vacancy_data = {
-                    "external_id": str(item.get("id")),
-                    "source": "hh",
-                    "title": title,
-                    "salary_from": salary.get("from"),
-                    "salary_to": salary.get("to"),
-                    "currency": salary.get("currency") or "KZT",
-                    "location": item.get("area", {}).get("name"),
-                    "experience": exp_data.get("name"),
-                    "employment": item.get("employment", {}).get("name"),
-                    "schedule": item.get("schedule", {}).get("name"),
-                    "grade": grade,
-                    "company_name": self._extract_company_name(item),
-                    "company_logo": self._extract_company_logo(item),
-                    "salary_in_kzt": self._calculate_salary_in_kzt(salary),
-                    "key_skills": tech_stack,  # Use extracted tech stack instead of HH.ru's key_skills
-                    "url": item.get("alternate_url"),
-                    "published_at": self._parse_date(item.get("published_at")),
-                    "raw_data": item,
-                    "is_active": True,
-                    "updated_at": datetime.now()
-                }
 
-                # Conditional Description Logic
-                if not item.get('skip_detail'):
-                     vacancy_data["description"] = item.get("description")
+        with SessionLocal() as db:
+            try:
+                with db.begin():
+                    for item in items:
+                        # Skip None items
+                        if not item or not isinstance(item, dict):
+                            logger.warning(f"Skipping invalid item: {item}")
+                            continue
 
-                # Link to company
-                employer = item.get('employer')
-                if employer and employer.get('id'):
-                    try:
-                        hh_emp_id = int(employer['id'])
-                        company_id = self._get_company_id_by_hh_id(hh_emp_id)
-                        if company_id:
-                            vacancy_data['company_id'] = company_id
-                    except (ValueError, TypeError):
-                        pass
+                        salary = item.get("salary") or {}
+                        exp_data = item.get("experience", {})
+                        experience_id = exp_data.get("id")
+                        grade = determine_grade(item.get("name"), experience_id)
 
-                # Smart AI Recheck: Check if title changed BEFORE update
-                # If title changed, mark for AI re-verification
-                existing_vacancy = db.query(Vacancy).filter(
-                    Vacancy.external_id == str(item.get("id")),
-                    Vacancy.source == "hh"
-                ).first()
-                
-                title_changed = existing_vacancy and existing_vacancy.title != title
-                if title_changed:
-                    logger.debug(f"Title changed for {item.get('id')}: '{existing_vacancy.title}' → '{title}'. Will mark for AI recheck.")
-                
-                stmt = insert(Vacancy).values(**vacancy_data)
-                
-                # Update Dict logic
-                update_dict = {**vacancy_data}
-                if item.get('skip_detail') and "description" in update_dict:
-                    del update_dict["description"] # Don't overwrite existing HTML with nothing
-                
-                # If title changed, reset AI check flag
-                if title_changed:
-                    update_dict["is_ai_checked"] = False
-                
-                stmt = stmt.on_conflict_do_update(
-                    index_elements=["external_id", "source"],
-                    set_=update_dict
-                )
-                
-                stmt = stmt.returning(text("(xmax = 0) as is_new"))
-                result = db.execute(stmt)
-                row = result.fetchone()
-                
-                if row and row[0]:
-                    stats["added"] += 1
-                else:
-                    stats["updated"] += 1
-            
-            db.commit()
+                        # Extract tech stack from title and description
+                        from app.utils.tech_extractor import extract_tech_from_vacancy
+                        title = item.get("name", "")
+                        description = item.get("description", "")
+                        tech_stack = extract_tech_from_vacancy(title, description)
 
-            if do_cleanup:
-                threshold = start_time - timedelta(minutes=10)
-                role_filter = [{"id": str(role_id)}]
-                affected = db.query(Vacancy).filter(
-                    Vacancy.source == "hh",
-                    Vacancy.is_active == True,
-                    Vacancy.updated_at < threshold,
-                    Vacancy.raw_data['professional_roles'].contains(role_filter)
-                ).update({"is_active": False}, synchronize_session=False)
-                db.commit()
-                if affected:
-                    stats["deleted"] = affected
-            
-            return stats
+                        vacancy_data = {
+                            "external_id": str(item.get("id")),
+                            "source": "hh",
+                            "title": title,
+                            "salary_from": salary.get("from"),
+                            "salary_to": salary.get("to"),
+                            "currency": salary.get("currency") or "KZT",
+                            "location": item.get("area", {}).get("name"),
+                            "experience": exp_data.get("name"),
+                            "employment": item.get("employment", {}).get("name"),
+                            "schedule": item.get("schedule", {}).get("name"),
+                            "grade": grade,
+                            "company_name": self._extract_company_name(item),
+                            "company_logo": self._extract_company_logo(item),
+                            "salary_in_kzt": self._calculate_salary_in_kzt(salary),
+                            "key_skills": tech_stack,  # Use extracted tech stack instead of HH.ru's key_skills
+                            "url": item.get("alternate_url"),
+                            "published_at": self._parse_date(item.get("published_at")),
+                            "raw_data": item,
+                            "is_active": True,
+                            "updated_at": datetime.now()
+                        }
 
-        except Exception as e:
-            db.rollback()
-            logger.error(f"save_to_db failed: {e}", exc_info=True)
-            return stats
-        finally:
-            db.close()
+                        # Conditional Description Logic
+                        if not item.get('skip_detail'):
+                            vacancy_data["description"] = item.get("description")
+
+                        # Link to company
+                        employer = item.get('employer')
+                        if employer and employer.get('id'):
+                            try:
+                                hh_emp_id = int(employer['id'])
+                                company_id = self._get_company_id_by_hh_id(hh_emp_id)
+                                if company_id:
+                                    vacancy_data['company_id'] = company_id
+                            except (ValueError, TypeError):
+                                pass
+
+                        # Smart AI Recheck: Check if title changed BEFORE update
+                        # If title changed, mark for AI re-verification
+                        existing_vacancy = db.query(Vacancy).filter(
+                            Vacancy.external_id == str(item.get("id")),
+                            Vacancy.source == "hh"
+                        ).first()
+
+                        title_changed = existing_vacancy and existing_vacancy.title != title
+                        if title_changed:
+                            logger.debug(
+                                "Title changed for %s: '%s' -> '%s'. Will mark for AI recheck.",
+                                item.get('id'),
+                                existing_vacancy.title,
+                                title,
+                            )
+
+                        stmt = insert(Vacancy).values(**vacancy_data)
+
+                        # Update Dict logic
+                        update_dict = {**vacancy_data}
+                        if item.get('skip_detail') and "description" in update_dict:
+                            del update_dict["description"]  # Don't overwrite existing HTML with nothing
+
+                        # If title changed, reset AI check flag
+                        if title_changed:
+                            update_dict["is_ai_checked"] = False
+
+                        stmt = stmt.on_conflict_do_update(
+                            index_elements=["external_id", "source"],
+                            set_=update_dict
+                        )
+
+                        stmt = stmt.returning(text("(xmax = 0) as is_new"))
+                        result = db.execute(stmt)
+                        row = result.fetchone()
+
+                        if row and row[0]:
+                            stats["added"] += 1
+                        else:
+                            stats["updated"] += 1
+
+                    if do_cleanup:
+                        threshold = start_time - timedelta(minutes=10)
+                        role_filter = [{"id": str(role_id)}]
+                        affected = db.query(Vacancy).filter(
+                            Vacancy.source == "hh",
+                            Vacancy.is_active == True,
+                            Vacancy.updated_at < threshold,
+                            Vacancy.raw_data['professional_roles'].contains(role_filter)
+                        ).update({"is_active": False}, synchronize_session=False)
+                        if affected:
+                            stats["deleted"] = affected
+
+                return stats
+            except Exception as e:
+                logger.error(f"save_to_db failed: {e}", exc_info=True)
+                return stats
 
     def _parse_date(self, date_str: str) -> Optional[datetime]:
         if not date_str: return None
@@ -474,11 +478,11 @@ if __name__ == "__main__":
 
     async def manual_mass_scrape():
         scraper = HHScraper()
-        logger.info("🚀 STARTING MASS SCRAPE (ALL IT ROLES - KAZAKHSTAN)")
+        logger.info("STARTING MASS SCRAPE (ALL IT ROLES - KAZAKHSTAN)")
 
         for role in ROLES:
             try:
-                logger.info(f"--- 📥 Processing: {role['name']} (ID: {role['id']}) ---")
+                logger.info(f"--- Processing: {role['name']} (ID: {role['id']}) ---")
                 stats = await scraper.fetch_vacancies(
                     role_id=role['id'],
                     text=None,      
@@ -486,18 +490,19 @@ if __name__ == "__main__":
                     area=settings.HH_AREA,
                     do_cleanup=False 
                 )
-                print(f"📊 Stats for {role['name']}: {stats}")
+                logger.debug("Stats for %s: %s", role['name'], stats)
                 
                 # Add delay between roles to avoid rate limiting
                 import random
                 delay = random.uniform(10, 20)
-                logger.info(f"⏳ Waiting {delay:.1f}s before next role...")
+                logger.info(f"Waiting {delay:.1f}s before next role...")
                 await asyncio.sleep(delay)
                 
             except Exception as e:
-                logger.error(f"❌ Failed to scrape role {role['name']}: {e}")
+                logger.error(f"Failed to scrape role {role['name']}: {e}")
                 continue # Skip to next role if one fails
 
-        logger.info("✅ MASS SCRAPE COMPLETE.")
+        logger.info("MASS SCRAPE COMPLETE.")
 
     asyncio.run(manual_mass_scrape())
+

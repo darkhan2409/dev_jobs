@@ -131,7 +131,7 @@ const SecuritySettingsPage = () => {
             setSessions(sessions.filter(s => s.id !== sessionId));
             setSuccess('Сессия завершена');
             setTimeout(() => setSuccess(''), 3000);
-        } catch (err) {
+        } catch {
             setError('Не удалось завершить сессию');
         }
     };

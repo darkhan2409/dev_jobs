@@ -11,16 +11,21 @@ Orchestrates the role-first scoring pipeline:
 7. Return results
 """
 
-from typing import List, Dict, Tuple
-from dataclasses import dataclass
+from typing import List, Dict, Tuple, Optional
+from dataclasses import dataclass, field
 import os
 import logging
+
+from app.config import settings
 
 from .storage.role_profile_manager import RoleProfileManager
 from .storage.signal_dictionary_manager import SignalDictionaryManager
 from .storage.question_bank_manager import QuestionBankManager
 from .storage.user_response_store import UserResponseStore
+from .storage.redis_session_store import RedisSessionStore
+from .storage.session_store import SessionBackendUnavailableError
 from .storage.role_catalog_manager import RoleCatalogManager
+from .storage.stage_manager import StageManager
 from .aggregation.aggregation_engine import AggregationEngine
 from .aggregation.stage_aggregation_engine import StageAggregationEngine, StageScoreComputeResult
 from .interpretation.llm_interpreter import LLMInterpreter, InterpretationResult
@@ -35,20 +40,60 @@ class CareerTestResult:
     session_id: str
     ranked_roles: List[Tuple[str, float]]
     signal_profile: Dict[str, int]
-    interpretation: InterpretationResult
-    stage_result: StageScoreComputeResult = None
+    interpretation: Optional[InterpretationResult]
+    stage_result: Optional[StageScoreComputeResult] = None
+    warnings: List[str] = field(default_factory=list)
 
 
 class ITCareerTestOrchestrator:
     """Orchestrator for the IT Career Test Engine v2.1."""
 
-    def __init__(self, openai_api_key: str = None, model: str = "gpt-4", enable_llm: bool = True):
+    def __init__(
+        self,
+        openai_api_key: str = None,
+        model: str = "gpt-4",
+        enable_llm: bool = True,
+        session_backend: str = None,
+    ):
         self.role_manager = RoleProfileManager()
         self.signal_manager = SignalDictionaryManager()
         self.question_manager = QuestionBankManager()
-        self.response_store = UserResponseStore(self.question_manager)
+        backend = (session_backend or settings.INTERVIEW_SESSION_BACKEND or "memory").lower()
+        if backend not in {"memory", "redis"}:
+            raise ValueError(f"Unsupported interview session backend: {backend}")
+        self._session_backend = backend
+        if backend == "redis":
+            try:
+                self.response_store = RedisSessionStore(
+                    question_bank_manager=self.question_manager,
+                    redis_url=settings.REDIS_URL,
+                    max_active_sessions=settings.INTERVIEW_SESSION_MAX_ACTIVE,
+                )
+            except SessionBackendUnavailableError:
+                if settings.ENV.lower() == "prod":
+                    logger.exception("Interview redis backend initialization failed in prod")
+                    raise
+                logger.warning(
+                    "Interview Redis backend is unavailable; falling back to in-memory sessions",
+                    exc_info=True,
+                )
+                self.response_store = UserResponseStore(
+                    self.question_manager,
+                    max_active_sessions=settings.INTERVIEW_SESSION_MAX_ACTIVE,
+                )
+                self._session_backend = "memory"
+        else:
+            self.response_store = UserResponseStore(
+                self.question_manager,
+                max_active_sessions=settings.INTERVIEW_SESSION_MAX_ACTIVE,
+            )
         self.aggregation_engine = AggregationEngine(self.response_store)
         self.role_catalog_manager = RoleCatalogManager()
+        self.stage_manager = StageManager()
+        self.stage_engine = StageAggregationEngine(
+            stage_manager=self.stage_manager,
+            role_catalog_manager=self.role_catalog_manager,
+        )
 
         self.llm_interpreter = None
         if enable_llm:
@@ -66,25 +111,20 @@ class ITCareerTestOrchestrator:
 
     def complete_test(self, session_id: str, skip_llm: bool = False) -> CareerTestResult:
         """Complete the test: role scores -> role-first stage selection -> LLM interpretation."""
-        self.response_store.complete_session(session_id)
         score_result = self.aggregation_engine.compute_scores(session_id)
+        self.response_store.complete_session(session_id)
+        warnings: List[str] = []
 
         # Role-first stage selection
         stage_result = None
         try:
-            from .storage.stage_manager import StageManager
-            stage_manager = StageManager()
-            stage_engine = StageAggregationEngine(
-                stage_manager=stage_manager,
-                role_catalog_manager=self.role_catalog_manager,
-            )
-            stage_result = stage_engine.compute_stage_scores(
+            stage_result = self.stage_engine.compute_stage_scores(
                 ranked_roles=score_result.ranked_roles,
                 stage_affinity=score_result.stage_affinity,
             )
-        except Exception as e:
-            import logging
-            logging.getLogger(__name__).warning(f"Stage computation failed: {e}")
+        except Exception:
+            logger.warning("Stage computation failed, continuing without stage result", exc_info=True)
+            warnings.append("stage_unavailable")
 
         # LLM interpretation
         interpretation = None
@@ -111,10 +151,11 @@ class ITCareerTestOrchestrator:
                     role_profiles=role_profiles,
                     signals=signals
                 )
-            except Exception as e:
+            except Exception:
                 # LLM is non-critical for the test flow: return deterministic result without interpretation.
-                logger.warning(f"LLM interpretation failed, continuing without it: {e}")
+                logger.warning("LLM interpretation failed, continuing without interpretation", exc_info=True)
                 interpretation = None
+                warnings.append("llm_unavailable")
 
         return CareerTestResult(
             session_id=session_id,
@@ -122,6 +163,7 @@ class ITCareerTestOrchestrator:
             signal_profile=score_result.signal_profile,
             interpretation=interpretation,
             stage_result=stage_result,
+            warnings=warnings,
         )
 
     def run_full_test(self, answers: List[Tuple[str, str]]) -> CareerTestResult:
@@ -142,26 +184,26 @@ def load_env_file():
                         value = value.strip().strip("'").strip('"')
                         os.environ[key.strip()] = value
     except Exception as e:
-        print(f"Warning: Could not load .env file: {e}")
+        logger.warning("Could not load .env file: %s", e)
 
 
 def main():
     load_env_file()
-    print("\n" + "=" * 60)
-    print("IT Career Test Engine v2.1")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("IT Career Test Engine v2.1")
+    logger.info("=" * 60)
 
     orchestrator = ITCareerTestOrchestrator()
     questions = orchestrator.get_all_questions()
-    print(f"\nЗагружено {len(questions)} вопросов.")
+    logger.info("Загружено %d вопросов.", len(questions))
 
     session_id = orchestrator.start_test()
     for i, question in enumerate(questions, 1):
         num_options = len(question.answer_options)
-        print(f"\nВопрос {i}/{len(questions)}: [{question.thematic_block}]")
-        print(f"{question.text}\n")
+        logger.info("Вопрос %d/%d: [%s]", i, len(questions), question.thematic_block)
+        logger.info("%s", question.text)
         for j, option in enumerate(question.answer_options, 1):
-            print(f"  {j}. {option.text}")
+            logger.info("  %d. %s", j, option.text)
         while True:
             try:
                 idx = int(input(f"\nВаш выбор (1-{num_options}): ").strip()) - 1
@@ -172,14 +214,14 @@ def main():
                 pass
 
     result = orchestrator.complete_test(session_id)
-    print("\nТоп-5 ролей:")
+    logger.info("Топ-5 ролей:")
     for i, (role_id, score) in enumerate(result.ranked_roles[:5], 1):
         role = orchestrator.role_manager.get_role(role_id)
-        print(f"{i}. {role.name if role else role_id}: {score:.2f}")
+        logger.info("%d. %s: %.2f", i, role.name if role else role_id, score)
 
     if result.stage_result:
         rec = result.stage_result.recommendation
-        print(f"\nЭтап: {rec.primary_stage_name}\n{rec.what_user_will_see}")
+        logger.info("Этап: %s\n%s", rec.primary_stage_name, rec.what_user_will_see)
 
 if __name__ == "__main__":
     main()

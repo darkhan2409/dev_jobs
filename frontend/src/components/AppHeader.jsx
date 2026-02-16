@@ -119,8 +119,8 @@ const AppHeader = () => {
         <>
             <header
                 className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-                        ? 'bg-[#0B0C10]/95 backdrop-blur-md border-b border-gray-800/50'
-                        : 'bg-[#0B0C10]/70 backdrop-blur-sm'
+                    ? 'bg-[#0B0C10]/95 backdrop-blur-md border-b border-gray-800/50'
+                    : 'bg-[#0B0C10]/70 backdrop-blur-sm'
                     }`}
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -185,80 +185,80 @@ const AppHeader = () => {
                             <div className="h-6 w-px bg-gray-700 mx-6"></div>
 
                             <div className="flex items-center gap-4">
-                            {isLoading ? (
-                                <div className="w-20 h-8 bg-gray-800 rounded-lg animate-pulse"></div>
-                            ) : isAuthenticated ? (
-                                /* User Menu */
-                                <div className="relative">
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setIsUserMenuOpen(!isUserMenuOpen);
-                                        }}
-                                        className="flex items-center gap-2 px-3 py-2 bg-gray-800/50 hover:bg-gray-800 rounded-xl transition-colors border border-gray-700/50 hover:border-gray-600 cursor-pointer"
-                                    >
-                                        <div className="w-7 h-7 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center">
-                                            <User size={14} className="text-white" />
-                                        </div>
-                                        <span className="text-sm text-white hidden sm:inline max-w-[120px] truncate">
-                                            {user?.username || user?.email?.split('@')[0]}
-                                        </span>
-                                        <ChevronDown
-                                            size={14}
-                                            className={`text-gray-400 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`}
-                                        />
-                                    </button>
+                                {isLoading ? (
+                                    <div className="w-20 h-8 bg-gray-800 rounded-lg animate-pulse"></div>
+                                ) : isAuthenticated ? (
+                                    /* User Menu */
+                                    <div className="relative">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setIsUserMenuOpen(!isUserMenuOpen);
+                                            }}
+                                            className="flex items-center gap-2 px-3 py-2 bg-gray-800/50 hover:bg-gray-800 rounded-xl transition-colors border border-gray-700/50 hover:border-gray-600 cursor-pointer"
+                                        >
+                                            <div className="w-7 h-7 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center">
+                                                <User size={14} className="text-white" />
+                                            </div>
+                                            <span className="text-sm text-white hidden sm:inline max-w-[120px] truncate">
+                                                {user?.username || user?.email?.split('@')[0] || 'User'}
+                                            </span>
+                                            <ChevronDown
+                                                size={14}
+                                                className={`text-gray-400 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`}
+                                            />
+                                        </button>
 
-                                    <AnimatePresence>
-                                        {isUserMenuOpen && (
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 5 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: 5 }}
-                                                className="absolute right-0 mt-2 w-48 bg-[#0B0C10]/95 backdrop-blur-xl border border-gray-800 rounded-xl shadow-2xl overflow-hidden"
-                                            >
-                                                <div className="p-3 border-b border-gray-800">
-                                                    <p className="text-sm font-medium text-white truncate">{user?.username}</p>
-                                                    <p className="text-xs text-gray-400 truncate">{user?.email}</p>
-                                                </div>
-                                                <div className="p-2">
-                                                    <Link
-                                                        to="/profile"
-                                                        onClick={() => setIsUserMenuOpen(false)}
-                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors"
-                                                    >
-                                                        <User size={14} />
-                                                        Мой профиль
-                                                    </Link>
-                                                    <button
-                                                        onClick={handleLogout}
-                                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors cursor-pointer"
-                                                    >
-                                                        <LogOut size={14} />
-                                                        Выйти
-                                                    </button>
-                                                </div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-                            ) : (
-                                /* Login/Register Buttons */
-                                <div className="flex items-center gap-4 ml-auto">
-                                    <button
-                                        onClick={openLogin}
-                                        className="text-sm font-medium text-gray-400 hover:text-white transition-colors cursor-pointer"
-                                    >
-                                        Войти
-                                    </button>
-                                    <button
-                                        onClick={openRegister}
-                                        className="inline-flex h-9 items-center justify-center px-5 border border-gray-600 bg-transparent text-gray-100 text-sm leading-none font-semibold rounded-full hover:bg-white/10 hover:border-white transition-colors cursor-pointer"
-                                    >
-                                        Регистрация
-                                    </button>
-                                </div>
-                            )}
+                                        <AnimatePresence>
+                                            {isUserMenuOpen && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 5 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: 5 }}
+                                                    className="absolute right-0 mt-2 w-48 bg-[#0B0C10]/95 backdrop-blur-xl border border-gray-800 rounded-xl shadow-2xl overflow-hidden"
+                                                >
+                                                    <div className="p-3 border-b border-gray-800">
+                                                        <p className="text-sm font-medium text-white truncate">{user?.username || user?.email?.split('@')[0] || 'User'}</p>
+                                                        <p className="text-xs text-gray-400 truncate">{user?.email || 'No email'}</p>
+                                                    </div>
+                                                    <div className="p-2">
+                                                        <Link
+                                                            to="/profile"
+                                                            onClick={() => setIsUserMenuOpen(false)}
+                                                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors"
+                                                        >
+                                                            <User size={14} />
+                                                            Мой профиль
+                                                        </Link>
+                                                        <button
+                                                            onClick={handleLogout}
+                                                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg transition-colors cursor-pointer"
+                                                        >
+                                                            <LogOut size={14} />
+                                                            Выйти
+                                                        </button>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                ) : (
+                                    /* Login/Register Buttons */
+                                    <div className="flex items-center gap-4 ml-auto">
+                                        <button
+                                            onClick={openLogin}
+                                            className="text-sm font-medium text-gray-400 hover:text-white transition-colors cursor-pointer"
+                                        >
+                                            Войти
+                                        </button>
+                                        <button
+                                            onClick={openRegister}
+                                            className="inline-flex h-9 items-center justify-center px-5 border border-gray-600 bg-transparent text-gray-100 text-sm leading-none font-semibold rounded-full hover:bg-white/10 hover:border-white transition-colors cursor-pointer"
+                                        >
+                                            Регистрация
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -303,7 +303,7 @@ const AppHeader = () => {
                                                 : isActive
                                                     ? 'text-white bg-gray-800/50'
                                                     : 'text-gray-300 hover:text-white hover:bg-gray-800/30'
-                                                }`
+                                            }`
                                         }
                                     >
                                         {link.label}

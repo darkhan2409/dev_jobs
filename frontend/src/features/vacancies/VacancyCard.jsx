@@ -39,6 +39,7 @@ const formatCardUpdatedLabel = (vacancy) => {
 };
 
 const VacancyCard = ({ vacancy }) => {
+    const [isLogoBroken, setIsLogoBroken] = React.useState(false);
     const hasSalary = (vacancy.salary_from && vacancy.salary_from > 0) || (vacancy.salary_to && vacancy.salary_to > 0);
     const salaryLabel = hasSalary
         ? formatCurrency(vacancy.salary_from, vacancy.salary_to, vacancy.currency)
@@ -62,20 +63,17 @@ const VacancyCard = ({ vacancy }) => {
                 <div className="px-4 py-3 flex items-center justify-between gap-3 border-b border-white/5">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                         <div className="relative w-6 h-6 rounded-full overflow-hidden bg-white p-0.5 flex-shrink-0">
-                            {vacancy.company_logo ? (
+                            {vacancy.company_logo && !isLogoBroken ? (
                                 <img
                                     src={vacancy.company_logo}
                                     alt={vacancy.company_name}
                                     className="w-full h-full object-contain rounded-full"
-                                    onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        e.target.nextSibling.style.display = 'flex';
-                                    }}
+                                    onError={() => setIsLogoBroken(true)}
                                 />
                             ) : null}
                             <div
                                 className="absolute inset-0 w-full h-full flex items-center justify-center text-[10px] font-bold text-slate-600 bg-white rounded-full"
-                                style={{ display: vacancy.company_logo ? 'none' : 'flex' }}
+                                style={{ display: vacancy.company_logo && !isLogoBroken ? 'none' : 'flex' }}
                             >
                                 {(vacancy.company_name || '—').charAt(0).toUpperCase()}
                             </div>

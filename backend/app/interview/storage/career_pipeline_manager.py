@@ -1,7 +1,10 @@
 
 import json
+import logging
 from typing import List, Dict, Optional, Any
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 class CareerPipelineManager:
     """
@@ -35,7 +38,7 @@ class CareerPipelineManager:
         """Load data from the JSON file."""
         if not self.data_file.exists():
             # Fallback or empty init if file missing (should not happen in prod)
-            print(f"Warning: Career pipeline data file not found at {self.data_file}")
+            logger.warning("Career pipeline data file not found at %s", self.data_file)
             return
             
         try:
@@ -46,7 +49,7 @@ class CareerPipelineManager:
                 self._clusters_data = data.get("role_clusters", [])
                 self._last_loaded_mtime = self.data_file.stat().st_mtime
         except Exception as e:
-            print(f"Error loading career pipeline data: {e}")
+            logger.error("Error loading career pipeline data: %s", e)
 
     def _reload_if_source_changed(self) -> None:
         """

@@ -7,7 +7,7 @@ weight summation and min-max normalization.
 
 from typing import Dict, List, Tuple
 from dataclasses import dataclass, field
-from ..storage.user_response_store import UserResponseStore
+from ..storage.session_store import SessionStore
 
 
 class AggregationEngineError(Exception):
@@ -51,7 +51,7 @@ class AggregationEngine:
     Uses min-max normalization to handle negative scores.
     """
 
-    def __init__(self, user_response_store: UserResponseStore):
+    def __init__(self, user_response_store: SessionStore):
         self._user_response_store = user_response_store
 
     def _get_all_role_ids(self) -> List[str]:

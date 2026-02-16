@@ -1,0 +1,34 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# IDE
+.vscode
+.idea
+.claude
+
+# Python
+__pycache__
+*.pyc
+.pytest_cache
+
+# Node
+node_modules
+
+# Env files
+.env
+.env.example
+
+# Logs
+*.log
+logs/
+
+# Scripts
+docker-verify.sh
+docker-verify.ps1
+start.bat
+stop.bat

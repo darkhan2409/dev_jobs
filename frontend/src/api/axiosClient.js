@@ -12,7 +12,7 @@ const normalizeApiBaseUrl = (rawApiUrl) => {
             if (!parsed.pathname || parsed.pathname === '/') {
                 return `${trimmed}/api`;
             }
-        } catch (_err) {
+        } catch {
             // Keep original if URL parsing fails.
         }
     }
@@ -21,13 +21,94 @@ const normalizeApiBaseUrl = (rawApiUrl) => {
 };
 
 const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_URL);
+const REQUEST_TIMEOUT_MS = 15000;
 
 const axiosClient = axios.create({
     baseURL: API_BASE_URL,
+    timeout: REQUEST_TIMEOUT_MS,
     headers: {
         'Content-Type': 'application/json',
     },
 });
+
+let refreshPromise = null;
+let logoutDispatched = false;
+
+const dispatchLogout = () => {
+    if (logoutDispatched) return;
+    logoutDispatched = true;
+    window.dispatchEvent(new CustomEvent('auth:logout'));
+    setTimeout(() => {
+        logoutDispatched = false;
+    }, 0);
+};
+
+const getStoredRefreshToken = () => (
+    localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token')
+);
+
+const persistTokenPair = (accessToken, refreshToken) => {
+    if (accessToken) {
+        localStorage.setItem('access_token', accessToken);
+    }
+
+    if (!refreshToken) return;
+
+    const storage = localStorage.getItem('refresh_token')
+        ? localStorage
+        : sessionStorage;
+    storage.setItem('refresh_token', refreshToken);
+};
+
+const clearAuthStorage = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    sessionStorage.removeItem('refresh_token');
+};
+
+const isProtectedRequest = (requestConfig) => {
+    const headers = requestConfig?.headers || {};
+    return Boolean(headers.Authorization || headers.authorization);
+};
+
+export const refreshAccessTokenSingleFlight = async () => {
+    if (refreshPromise) {
+        return refreshPromise;
+    }
+
+    const refreshToken = getStoredRefreshToken();
+    if (!refreshToken) {
+        clearAuthStorage();
+        dispatchLogout();
+        throw new Error('No refresh token available');
+    }
+
+    refreshPromise = (async () => {
+        const response = await axios.post(
+            `${API_BASE_URL}/auth/refresh`,
+            { refresh_token: refreshToken },
+            { timeout: REQUEST_TIMEOUT_MS }
+        );
+
+        const newAccessToken = response.data?.access_token;
+        if (!newAccessToken) {
+            throw new Error('Refresh endpoint did not return access token');
+        }
+
+        persistTokenPair(newAccessToken, response.data?.refresh_token);
+        return newAccessToken;
+    })();
+
+    try {
+        return await refreshPromise;
+    } catch (error) {
+        clearAuthStorage();
+        dispatchLogout();
+        throw error;
+    } finally {
+        refreshPromise = null;
+    }
+};
 
 // Request interceptor - auto-inject Authorization header
 axiosClient.interceptors.request.use(
@@ -38,61 +119,39 @@ axiosClient.interceptors.request.use(
         }
         return config;
     },
-    (error) => {
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
 );
 
-// Response interceptor - handle 401 errors with auto-refresh
+// Response interceptor - handle 401 errors with single-flight refresh
 axiosClient.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
 
-        // If 401 and we haven't retried yet, try to refresh token
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (
+            error.response?.status === 401
+            && originalRequest
+            && !originalRequest._retry
+            && !String(originalRequest.url || '').includes('/auth/refresh')
+        ) {
             originalRequest._retry = true;
 
-            const refreshToken = localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
-
-            if (refreshToken) {
-                try {
-                    // Try to refresh the access token
-                    const response = await axios.post(
-                        `${API_BASE_URL}/auth/refresh`,
-                        { refresh_token: refreshToken }
-                    );
-
-                    const newAccessToken = response.data.access_token;
-
-                    // Update stored token
-                    localStorage.setItem('access_token', newAccessToken);
-
-                    // Token Rotation: Save new refresh token if provided
-                    if (response.data.refresh_token) {
-                        const storage = localStorage.getItem('refresh_token')
-                            ? localStorage
-                            : sessionStorage;
-                        storage.setItem('refresh_token', response.data.refresh_token);
-                    }
-
-                    // Update the failed request's auth header and retry
-                    originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-                    return axiosClient.request(originalRequest);
-
-                } catch (refreshError) {
-                    // Refresh failed - logout user
-                    localStorage.removeItem('access_token');
-                    localStorage.removeItem('refresh_token');
-                    sessionStorage.removeItem('refresh_token');
-                    window.dispatchEvent(new CustomEvent('auth:logout'));
-                    return Promise.reject(refreshError);
-                }
-            } else {
-                // No refresh token - logout
-                localStorage.removeItem('access_token');
-                window.dispatchEvent(new CustomEvent('auth:logout'));
+            try {
+                const newAccessToken = await refreshAccessTokenSingleFlight();
+                originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+                return axiosClient.request(originalRequest);
+            } catch (refreshError) {
+                return Promise.reject(refreshError);
             }
+        }
+
+        if (
+            error.response?.status === 403
+            && originalRequest
+            && isProtectedRequest(originalRequest)
+        ) {
+            clearAuthStorage();
+            dispatchLogout();
         }
 
         return Promise.reject(error);

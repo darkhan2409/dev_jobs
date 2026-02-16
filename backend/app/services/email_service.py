@@ -3,6 +3,7 @@ Email service for sending authentication-related emails.
 """
 import logging
 from typing import Optional
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 from app.config import settings
 from app.models import User
@@ -21,11 +22,18 @@ class EmailService:
         self.from_email = settings.FROM_EMAIL
         self.enabled = settings.EMAIL_ENABLED
 
-    async def send_email(self, to: str, subject: str, body: str):
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        retry=retry_if_exception_type(Exception),
+        reraise=True
+    )
+    async def send_email(self, to: str, subject: str, body: str) -> bool:
         """
         Send an email.
         In dev mode (EMAIL_ENABLED=False), logs to console.
-        In prod mode (EMAIL_ENABLED=True), sends via SMTP.
+        In prod mode (EMAIL_ENABLED=True), sends via SMTP with retry.
         """
         if self.enabled:
             # Production SMTP sending
@@ -46,27 +54,27 @@ class EmailService:
                     username=self.smtp_user,
                     password=self.smtp_password,
                     start_tls=True,
+                    timeout=settings.SMTP_TIMEOUT_SECONDS,
                 )
 
                 logger.info(f"Email sent to {to}: {subject}")
+                return True
 
             except Exception as e:
                 logger.error(f"Failed to send email to {to}: {e}")
-                raise
+                return False
 
         else:
             # Development mode - log to console
-            print("\n" + "=" * 80)
-            print("[DEV MODE EMAIL]")
-            print(f"To: {to}")
-            print(f"Subject: {subject}")
-            print(f"Body:\n{body}")
-            print("=" * 80 + "\n")
+            logger.info("=" * 80)
+            logger.info("[DEV MODE EMAIL]")
+            logger.info("To: %s", to)
+            logger.info("Subject: %s", subject)
+            logger.info("Body:\\n%s", body)
+            logger.info("=" * 80)
+            return True
 
-            # Also log via logger for proper logging
-            logger.info(f"[DEV MODE EMAIL] To: {to}, Subject: {subject}")
-
-    async def send_verification_email(self, user: User, token: str):
+    async def send_verification_email(self, user: User, token: str) -> bool:
         """Send email verification code to user."""
         subject = "Подтвердите email - GitJob"
         body = f"""
@@ -83,9 +91,9 @@ class EmailService:
 Команда GitJob
         """.strip()
 
-        await self.send_email(user.email, subject, body)
+        return await self.send_email(user.email, subject, body)
 
-    async def send_password_reset_email(self, user: User, token: str):
+    async def send_password_reset_email(self, user: User, token: str) -> bool:
         """Send password reset link to user."""
         from app.config import settings
         reset_link = f"{settings.FRONTEND_URL}/reset-password?token={token}"
@@ -108,7 +116,7 @@ class EmailService:
 Команда GitJob
         """.strip()
 
-        await self.send_email(user.email, subject, body)
+        return await self.send_email(user.email, subject, body)
 
 
 # Singleton instance
