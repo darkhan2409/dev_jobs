@@ -64,7 +64,7 @@ def trigger_cache_clear():
         if not secret:
             logger.warning("[WARNING] INTERNAL_SECRET is not set; skipping cache clear trigger.")
             return
-        url = "http://127.0.0.1:8000/api/internal/clear-cache"
+        url = "http://backend:8000/api/internal/clear-cache"
         
         response = httpx.post(
             url,

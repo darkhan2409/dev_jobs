@@ -75,6 +75,9 @@ async def run_ai_cleaning_job(dry_run: bool = False):
                 # Classify batch
                 junk_ids = await classifier.classify_batch(vacancy_data)
                 total_junk += len(junk_ids)
+
+                # Delay between batches to avoid proxy rate limits
+                await asyncio.sleep(3)
                 
                 # Process results
                 for vacancy in batch:
@@ -122,4 +125,4 @@ async def run_ai_cleaning_job(dry_run: bool = False):
         db.close()
 
 if __name__ == "__main__":
-    asyncio.run(run_ai_cleaning_job(dry_run=True))
+    asyncio.run(run_ai_cleaning_job(dry_run=False))

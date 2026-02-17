@@ -82,7 +82,10 @@ class LLMInterpreter:
                 "Set OPENAI_API_KEY environment variable or pass api_key parameter."
             )
 
-        self._client = OpenAI(api_key=self._api_key)
+        self._client = OpenAI(
+            api_key=self._api_key,
+            base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+        )
         self._model = model
         self._score_threshold = score_threshold
         self._retry_config = retry_config or RetryConfig()
