@@ -5,7 +5,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -15,7 +15,7 @@ services:
   redis:
     image: redis:7-alpine
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -34,7 +34,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/healthz" ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -52,8 +52,20 @@ services:
     networks:
       - app-network
 
+  scheduler:
+    build: ./backend
+    env_file: .env
+    command: python scripts/run_scheduler.py
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
 volumes:
   pgdata:
+
 
 networks:
   app-network:
