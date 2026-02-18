@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Building2, Briefcase, TrendingUp, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -12,29 +12,40 @@ import ErrorState from '../components/ui/ErrorState';
 import LoadingState from '../components/ui/LoadingState';
 import EmptyState from '../components/ui/EmptyState';
 
+const PER_PAGE = 20;
+
 const CompaniesPage = () => {
     const [companies, setCompanies] = useState([]);
+    const [total, setTotal] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState('active');
     const [searchParams, setSearchParams] = useSearchParams();
-    const [pendingPage, setPendingPage] = useState(null);
-    const [isPageTransitioning, setIsPageTransitioning] = useState(false);
 
     const navigate = useNavigate();
-    const listRef = React.useRef(null);
-    const perPage = 20;
+    const debounceRef = useRef(null);
 
-    const fetchCompanies = useCallback(async () => {
+    const page = parseInt(searchParams.get('page'), 10) || 1;
+
+    const fetchCompanies = useCallback(async (currentPage, search, sort) => {
         setLoading(true);
         setError(null);
-
         try {
-            const response = await axiosClient.get('/companies?limit=100');
+            const params = new URLSearchParams({
+                page: currentPage,
+                per_page: PER_PAGE,
+                sort,
+            });
+            if (search) params.set('search', search);
+
+            const response = await axiosClient.get(`/companies?${params.toString()}`);
             setCompanies(response.data.items || []);
-        } catch (loadError) {
-            console.error('Failed to load companies:', loadError);
+            setTotal(response.data.total || 0);
+            setTotalPages(response.data.total_pages || 1);
+        } catch (err) {
+            console.error('Failed to load companies:', err);
             setCompanies([]);
             setError('Не удалось загрузить список компаний. Попробуйте снова.');
         } finally {
@@ -43,86 +54,43 @@ const CompaniesPage = () => {
     }, []);
 
     useEffect(() => {
-        fetchCompanies();
-    }, [fetchCompanies]);
+        fetchCompanies(page, searchTerm, sortBy);
+    }, [page, sortBy]);
 
-    const filteredCompanies = useMemo(() => {
-        let result = [...companies];
+    const handleSearchChange = (event) => {
+        const value = event.target.value;
+        setSearchTerm(value);
 
-        if (searchTerm) {
-            const lowerTerm = searchTerm.toLowerCase();
-            result = result.filter((company) => company.name.toLowerCase().includes(lowerTerm));
-        }
+        clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+            const newParams = new URLSearchParams(searchParams);
+            newParams.delete('page');
+            setSearchParams(newParams, { replace: true });
+            fetchCompanies(1, value, sortBy);
+        }, 400);
+    };
 
-        if (sortBy === 'active') {
-            result.sort((a, b) => b.vacancy_count - a.vacancy_count);
-        } else if (sortBy === 'name') {
-            result.sort((a, b) => a.name.localeCompare(b.name));
-        }
-
-        return result;
-    }, [companies, searchTerm, sortBy]);
-
-    const page = parseInt(searchParams.get('page'), 10) || 1;
-    const totalPages = Math.ceil(filteredCompanies.length / perPage) || 1;
-    const paginatedCompanies = filteredCompanies.slice(
-        (page - 1) * perPage,
-        page * perPage
-    );
-    const visibleFrom = filteredCompanies.length === 0 ? 0 : (page - 1) * perPage + 1;
-    const visibleTo = filteredCompanies.length === 0 ? 0 : Math.min(page * perPage, filteredCompanies.length);
-
-    const setPage = (nextPage, replace = false) => {
-        if (nextPage < 1 || nextPage > totalPages || nextPage === page) return;
-
-        setPendingPage(nextPage);
+    const handleSortChange = (nextSort) => {
+        setSortBy(nextSort);
         const newParams = new URLSearchParams(searchParams);
+        newParams.delete('page');
+        setSearchParams(newParams, { replace: true });
+    };
 
+    const setPage = (nextPage) => {
+        if (nextPage < 1 || nextPage > totalPages || nextPage === page) return;
+        const newParams = new URLSearchParams(searchParams);
         if (nextPage <= 1) {
             newParams.delete('page');
         } else {
             newParams.set('page', nextPage.toString());
         }
-
-        setSearchParams(newParams, { replace });
+        setSearchParams(newParams);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const handleSearchChange = (event) => {
-        setSearchTerm(event.target.value);
-        if (page !== 1) {
-            setPage(1, true);
-        }
-    };
-
-    const handleSortChange = (nextSort) => {
-        setSortBy(nextSort);
-        if (page !== 1) {
-            setPage(1, true);
-        }
-    };
-
-    useEffect(() => {
-        setIsPageTransitioning(true);
-        setPendingPage(null);
-        const timerId = setTimeout(() => setIsPageTransitioning(false), 600);
-        return () => clearTimeout(timerId);
-    }, [page]);
-
-    const stats = useMemo(() => {
-        return {
-            totalCompanies: companies.length,
-            totalVacancies: companies.reduce((acc, curr) => acc + curr.vacancy_count, 0),
-            topHiring: companies.filter((company) => company.vacancy_count >= 5).length
-        };
-    }, [companies]);
-
-    const handleOpenProfile = (companyId) => {
-        navigate(`/companies/${companyId}`);
-    };
-
-    const handleViewJobs = (companyName) => {
-        navigate(`/jobs?company=${encodeURIComponent(companyName)}`);
-    };
+    const visibleFrom = total === 0 ? 0 : (page - 1) * PER_PAGE + 1;
+    const visibleTo = total === 0 ? 0 : Math.min(page * PER_PAGE, total);
 
     if (loading && companies.length === 0) {
         return (
@@ -141,7 +109,7 @@ const CompaniesPage = () => {
                 <ErrorState
                     title="Не удалось загрузить компании"
                     message={error}
-                    onRetry={fetchCompanies}
+                    onRetry={() => fetchCompanies(page, searchTerm, sortBy)}
                     showHomeLink={false}
                 />
             </div>
@@ -175,7 +143,7 @@ const CompaniesPage = () => {
                                 <Building2 className="text-violet-400" size={20} />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-white leading-none">{stats.totalCompanies}</p>
+                                <p className="text-2xl font-bold text-white leading-none">{total}</p>
                                 <p className="text-xs text-slate-500 mt-0.5">Компаний</p>
                             </div>
                         </div>
@@ -187,8 +155,8 @@ const CompaniesPage = () => {
                                 <Briefcase className="text-blue-400" size={20} />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-white leading-none">{stats.totalVacancies}</p>
-                                <p className="text-xs text-slate-500 mt-0.5">Вакансий</p>
+                                <p className="text-2xl font-bold text-white leading-none">{companies.reduce((acc, c) => acc + c.vacancy_count, 0)}</p>
+                                <p className="text-xs text-slate-500 mt-0.5">Вакансий на странице</p>
                             </div>
                         </div>
 
@@ -199,7 +167,7 @@ const CompaniesPage = () => {
                                 <TrendingUp className="text-emerald-400" size={20} />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-white leading-none">{stats.topHiring}</p>
+                                <p className="text-2xl font-bold text-white leading-none">{companies.filter(c => c.vacancy_count >= 5).length}</p>
                                 <p className="text-xs text-slate-500 mt-0.5">Активно нанимают</p>
                             </div>
                         </div>
@@ -240,35 +208,31 @@ const CompaniesPage = () => {
                     </motion.div>
                 </motion.div>
 
-                {filteredCompanies.length === 0 ? (
+                {companies.length === 0 && !loading ? (
                     <EmptyState
                         title="Компании не найдены"
                         message="Попробуйте изменить поисковый запрос или сбросить фильтр сортировки."
                         actionLabel={searchTerm ? 'Сбросить поиск' : undefined}
-                        onAction={searchTerm ? () => setSearchTerm('') : undefined}
+                        onAction={searchTerm ? () => { setSearchTerm(''); fetchCompanies(1, '', sortBy); } : undefined}
                     />
                 ) : (
                     <>
                         <div className="mb-4 flex items-center justify-between gap-3">
                             <p className="text-sm text-slate-400">
-                                Показаны {visibleFrom}-{visibleTo} из {filteredCompanies.length}. Страница {page} из {totalPages}.
+                                Показаны {visibleFrom}–{visibleTo} из {total}. Страница {page} из {totalPages}.
                             </p>
-                            {isPageTransitioning && (
+                            {loading && (
                                 <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-violet-500/20 border border-violet-500/30 rounded-md text-violet-300 text-xs font-medium animate-pulse">
-                                    <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Загрузка страницы {pendingPage || '...'}
+                                    Загрузка...
                                 </span>
                             )}
                         </div>
 
-                        <div ref={listRef} className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-opacity duration-500 ${isPageTransitioning ? 'opacity-30' : 'opacity-100'}`}>
+                        <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-opacity duration-300 ${loading ? 'opacity-40' : 'opacity-100'}`}>
                             <AnimatePresence mode="popLayout">
-                                {paginatedCompanies.map((company) => (
+                                {companies.map((company) => (
                                     <motion.div
-                                        key={company.name}
+                                        key={company.id}
                                         layout
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
@@ -277,8 +241,8 @@ const CompaniesPage = () => {
                                     >
                                         <CompanyCard
                                             company={company}
-                                            onOpenProfile={handleOpenProfile}
-                                            onViewJobs={handleViewJobs}
+                                            onOpenProfile={() => navigate(`/companies/${company.id}`)}
+                                            onViewJobs={() => navigate(`/jobs?company=${encodeURIComponent(company.name)}`)}
                                         />
                                     </motion.div>
                                 ))}
@@ -288,11 +252,8 @@ const CompaniesPage = () => {
                         <Pagination
                             currentPage={page}
                             totalPages={totalPages}
-                            isLoading={isPageTransitioning}
-                            pendingPage={pendingPage}
-                            onPageChange={(newPage) => {
-                                setPage(newPage);
-                            }}
+                            isLoading={loading}
+                            onPageChange={setPage}
                         />
                     </>
                 )}
