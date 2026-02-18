@@ -33,36 +33,58 @@ class EmailService:
         """
         Send an email.
         In dev mode (EMAIL_ENABLED=False), logs to console.
-        In prod mode (EMAIL_ENABLED=True), sends via SMTP with retry.
+        In prod mode (EMAIL_ENABLED=True), sends via Resend HTTP API or SMTP with retry.
         """
         if self.enabled:
-            # Production SMTP sending
-            try:
-                import aiosmtplib
-                from email.message import EmailMessage
+            if self.smtp_host == "smtp.resend.com":
+                # Resend HTTP API — works through HTTPS proxy
+                try:
+                    import httpx
+                    import os
+                    proxy = os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy")
+                    async with httpx.AsyncClient(proxy=proxy, timeout=settings.SMTP_TIMEOUT_SECONDS) as client:
+                        response = await client.post(
+                            "https://api.resend.com/emails",
+                            headers={"Authorization": f"Bearer {self.smtp_password}"},
+                            json={"from": self.from_email, "to": [to], "subject": subject, "text": body},
+                        )
+                    if response.status_code in (200, 201):
+                        logger.info(f"Email sent via Resend API to {to}: {subject}")
+                        return True
+                    else:
+                        logger.error(f"Resend API error {response.status_code}: {response.text}")
+                        return False
+                except Exception as e:
+                    logger.error(f"Failed to send email to {to}: {e}")
+                    return False
+            else:
+                # Generic SMTP sending
+                try:
+                    import aiosmtplib
+                    from email.message import EmailMessage
 
-                message = EmailMessage()
-                message["From"] = self.from_email
-                message["To"] = to
-                message["Subject"] = subject
-                message.set_content(body)
+                    message = EmailMessage()
+                    message["From"] = self.from_email
+                    message["To"] = to
+                    message["Subject"] = subject
+                    message.set_content(body)
 
-                await aiosmtplib.send(
-                    message,
-                    hostname=self.smtp_host,
-                    port=self.smtp_port,
-                    username=self.smtp_user,
-                    password=self.smtp_password,
-                    start_tls=True,
-                    timeout=settings.SMTP_TIMEOUT_SECONDS,
-                )
+                    await aiosmtplib.send(
+                        message,
+                        hostname=self.smtp_host,
+                        port=self.smtp_port,
+                        username=self.smtp_user,
+                        password=self.smtp_password,
+                        start_tls=True,
+                        timeout=settings.SMTP_TIMEOUT_SECONDS,
+                    )
 
-                logger.info(f"Email sent to {to}: {subject}")
-                return True
+                    logger.info(f"Email sent to {to}: {subject}")
+                    return True
 
-            except Exception as e:
-                logger.error(f"Failed to send email to {to}: {e}")
-                return False
+                except Exception as e:
+                    logger.error(f"Failed to send email to {to}: {e}")
+                    return False
 
         else:
             # Development mode - log to console
