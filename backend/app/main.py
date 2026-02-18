@@ -153,7 +153,7 @@ app.include_router(admin.router)
 app.include_router(analytics.router)
 
 
-@app.get("/healthz")
+@app.api_route("/healthz", methods=["GET", "HEAD"])
 def healthz():
     """Minimal health check endpoint."""
     return {"status": "ok"}
