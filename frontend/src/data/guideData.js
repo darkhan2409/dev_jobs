@@ -38,6 +38,7 @@ export const GUIDE_STAGES = [
       'Определить границы MVP',
     ],
     backendStageIds: ['research'],
+    jobSearchQuery: 'product manager продакт менеджер аналитик',
   },
   {
     id: 'design',
@@ -69,6 +70,7 @@ export const GUIDE_STAGES = [
       'Кто за что отвечает в команде?',
     ],
     backendStageIds: ['design'],
+    jobSearchQuery: 'designer дизайнер UX UI проектировщик',
   },
   {
     id: 'build',
@@ -100,6 +102,7 @@ export const GUIDE_STAGES = [
       'Как управлять версиями? (Git)',
     ],
     backendStageIds: ['development'],
+    jobSearchQuery: 'developer разработчик программист',
   },
   {
     id: 'verify',
@@ -131,6 +134,7 @@ export const GUIDE_STAGES = [
       'Готов ли продукт к нагрузке?',
     ],
     backendStageIds: ['testing'],
+    jobSearchQuery: 'QA тестировщик quality assurance',
   },
   {
     id: 'release',
@@ -162,6 +166,7 @@ export const GUIDE_STAGES = [
       'Как документировать API?',
     ],
     backendStageIds: ['launch_ops'],
+    jobSearchQuery: 'devops SRE инженер инфраструктуры',
   },
 ];
 

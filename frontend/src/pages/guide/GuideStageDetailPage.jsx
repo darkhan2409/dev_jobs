@@ -21,7 +21,7 @@ const STAGE_CONTENT_COMPONENTS = {
   release: ReleaseStageContent,
 };
 
-function OptionalJobsBridge({ stageId, stageName, isRecommendedStage }) {
+function OptionalJobsBridge({ stageId, stageName, jobSearchQuery, isRecommendedStage }) {
   const navigate = useNavigate();
 
   const handleOpenJobs = () => {
@@ -32,7 +32,7 @@ function OptionalJobsBridge({ stageId, stageName, isRecommendedStage }) {
       is_recommended_stage: Boolean(isRecommendedStage),
       destination: '/jobs',
     });
-    navigate(`/jobs?search=${encodeURIComponent(stageName)}`);
+    navigate(`/jobs?search=${encodeURIComponent(jobSearchQuery)}`);
   };
 
   return (
@@ -176,6 +176,7 @@ export default function GuideStageDetailPage() {
         <OptionalJobsBridge
           stageId={stageId}
           stageName={stage.name}
+          jobSearchQuery={stage.jobSearchQuery}
           isRecommendedStage={isRecommendedStage}
         />
       </div>
