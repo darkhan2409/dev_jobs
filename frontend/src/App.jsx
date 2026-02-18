@@ -14,6 +14,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import CareerPage from './pages/CareerPage';
 import StartPage from './pages/StartPage';
 import SecuritySettingsPage from './pages/SecuritySettingsPage';
+import AdminPage from './pages/AdminPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -115,6 +116,7 @@ function AnimatedRoutes() {
             </ProtectedRoute>
           )}
         />
+        <Route path="/admin" element={<AdminPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         {/* Guide — educational section within main layout */}

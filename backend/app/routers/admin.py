@@ -1,11 +1,12 @@
+from datetime import datetime, timedelta
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Header, Body
+from fastapi import APIRouter, Depends, HTTPException, Header, Body, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import desc, func, select
 from fastapi_cache import FastAPICache
 
 from app.database import get_db
-from app.models import User, Vacancy, LoginAttempt
+from app.models import User, Vacancy, LoginAttempt, AnalyticsEvent
 from app.config import settings
 from app.auth import require_admin
 
@@ -156,6 +157,72 @@ async def update_user_role(
         "message": f"User {user.email} role updated to {new_role}",
         "user_id": user.id,
         "new_role": new_role
+    }
+
+
+@router.get("/admin/analytics", summary="Get analytics dashboard data (Admin)")
+async def get_analytics(
+    days: int = Query(7, ge=1, le=90),
+    admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    since = datetime.utcnow() - timedelta(days=days)
+
+    result = await db.execute(
+        select(func.count(AnalyticsEvent.id)).filter(AnalyticsEvent.created_at >= since)
+    )
+    total_events = result.scalar()
+
+    result = await db.execute(
+        select(func.count(func.distinct(AnalyticsEvent.session_id)))
+        .filter(AnalyticsEvent.created_at >= since, AnalyticsEvent.session_id.isnot(None))
+    )
+    unique_sessions = result.scalar()
+
+    result = await db.execute(
+        select(AnalyticsEvent.user_type_guess, func.count(AnalyticsEvent.id))
+        .filter(AnalyticsEvent.created_at >= since)
+        .group_by(AnalyticsEvent.user_type_guess)
+    )
+    user_types = {row[0]: row[1] for row in result.all()}
+
+    result = await db.execute(
+        select(AnalyticsEvent.event_name, func.count(AnalyticsEvent.id).label("cnt"))
+        .filter(AnalyticsEvent.created_at >= since)
+        .group_by(AnalyticsEvent.event_name)
+        .order_by(desc("cnt"))
+        .limit(10)
+    )
+    top_events = [{"event_name": row[0], "count": row[1]} for row in result.all()]
+
+    result = await db.execute(
+        select(AnalyticsEvent.route, func.count(AnalyticsEvent.id).label("cnt"))
+        .filter(AnalyticsEvent.created_at >= since)
+        .group_by(AnalyticsEvent.route)
+        .order_by(desc("cnt"))
+        .limit(10)
+    )
+    top_routes = [{"route": row[0], "count": row[1]} for row in result.all()]
+
+    result = await db.execute(
+        select(
+            func.date_trunc("day", AnalyticsEvent.created_at).label("day"),
+            func.count(AnalyticsEvent.id).label("cnt")
+        )
+        .filter(AnalyticsEvent.created_at >= since)
+        .group_by("day")
+        .order_by("day")
+    )
+    events_per_day = [{"date": row[0].strftime("%Y-%m-%d"), "count": row[1]} for row in result.all()]
+
+    return {
+        "period_days": days,
+        "total_events": total_events,
+        "unique_sessions": unique_sessions,
+        "user_types": user_types,
+        "top_events": top_events,
+        "top_routes": top_routes,
+        "events_per_day": events_per_day,
     }
 
 
