@@ -35,7 +35,6 @@ services:
     env_file: .env
     environment:
       - ENV=dev
-      - EMAIL_ENABLED=false
     depends_on:
       db:
         condition: service_healthy
