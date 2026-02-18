@@ -2,7 +2,7 @@
 
 IT-агрегатор вакансий для Казахстана с AI-фильтрацией, карьерным тестом и персональными рекомендациями.
 
-**Demo:** [gitjob.kz](http://gitjob.kz) | **API Docs:** [gitjob.kz/api/docs](http://gitjob.kz/api/docs)
+**Demo:** [gitjob.su](http://gitjob.su) | **API Docs:** [gitjob.su/api/docs](http://gitjob.su/api/docs)
 
 ## Что делает
 

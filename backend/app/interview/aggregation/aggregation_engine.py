@@ -2,7 +2,7 @@
 Aggregation Engine for IT Career Test Engine v2.1.
 
 Computes role scores and stage affinity deterministically through
-weight summation and min-max normalization.
+weight summation and max-possible normalization.
 """
 
 from typing import Dict, List, Tuple
@@ -47,8 +47,8 @@ class AggregationEngine:
     """
     Deterministic aggregation engine for computing role scores and stage affinity.
 
-    v2.1: Also computes stage_affinity from stage_weights for role-first algorithm.
-    Uses min-max normalization to handle negative scores.
+    v2.2: Uses max-possible normalization (% of theoretical max per role).
+    Also computes stage_affinity from stage_weights for role-first algorithm.
     """
 
     def __init__(self, user_response_store: SessionStore):
@@ -75,6 +75,33 @@ class AggregationEngine:
 
         return sorted(role_ids)
 
+    def _compute_max_possible_scores(self) -> Dict[str, float]:
+        """
+        For each role, compute the maximum possible score —
+        i.e. the sum of the best weight available per question.
+
+        This is the theoretical max if the user always picks the best
+        answer for that specific role in every question.
+        """
+        question_bank_manager = getattr(self._user_response_store, "_question_bank_manager", None)
+        if question_bank_manager is None:
+            return {}
+
+        max_possible: Dict[str, float] = {}
+        try:
+            for question in question_bank_manager.get_all_questions():
+                best_per_role: Dict[str, float] = {}
+                for option in question.answer_options:
+                    for role_id, weight in option.role_weights.items():
+                        if role_id not in best_per_role or weight > best_per_role[role_id]:
+                            best_per_role[role_id] = weight
+                for role_id, best_weight in best_per_role.items():
+                    max_possible[role_id] = max_possible.get(role_id, 0.0) + best_weight
+        except Exception:
+            return {}
+
+        return max_possible
+
     def compute_scores(self, session_id: str) -> RoleScoreResult:
         """
         Compute role scores and stage affinity for a completed test session.
@@ -82,7 +109,7 @@ class AggregationEngine:
         Algorithm:
         1. Sum role_weights from all responses -> raw_scores
         2. Sum stage_weights from all responses -> stage_affinity
-        3. Normalize role scores using min-max (handles negative values)
+        3. Normalize each role as percentage of its max possible score
         4. Rank roles by normalized score (descending)
         5. Aggregate signal profile (count occurrences)
         """
@@ -112,20 +139,15 @@ class AggregationEngine:
             for stage_id, weight in response.resolved_stage_weights.items():
                 stage_affinity[stage_id] = stage_affinity.get(stage_id, 0.0) + weight
 
-        # Step 3: Min-max normalize role scores to 0-1 range
+        # Step 3: Normalize as percentage of max possible score per role
+        max_possible = self._compute_max_possible_scores()
         normalized_scores: Dict[str, float] = {}
-        if raw_scores:
-            min_score = min(raw_scores.values())
-            max_score = max(raw_scores.values())
-            score_range = max_score - min_score
-
-            if score_range == 0:
-                # All scores equal — assign 1.0 to all
-                for role_id in raw_scores:
-                    normalized_scores[role_id] = 1.0
+        for role_id, raw_score in raw_scores.items():
+            max_score = max_possible.get(role_id, 0.0)
+            if max_score > 0:
+                normalized_scores[role_id] = max(0.0, min(1.0, raw_score / max_score))
             else:
-                for role_id, raw_score in raw_scores.items():
-                    normalized_scores[role_id] = (raw_score - min_score) / score_range
+                normalized_scores[role_id] = 0.0
 
         # Step 4: Rank roles by normalized score (descending)
         ranked_roles = sorted(

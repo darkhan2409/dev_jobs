@@ -129,8 +129,8 @@
           "id": "c",
           "text": "Я нарисую удобный интерфейс, выберу красивые цвета и сделаю так, чтобы кнопки были на своих местах.",
           "role_weights": {
-            "uiux_designer": 3,
-            "frontend_developer": 2
+            "frontend_developer": 3,
+            "uiux_designer": 2
           },
           "stage_weights": {
             "design": 4,
@@ -147,7 +147,8 @@
           "id": "d",
           "text": "Я буду специально пробовать отправить пустое сообщение или очень длинный текст, чтобы найти ошибку.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 3,
+            "frontend_developer": 1
           },
           "stage_weights": {
             "testing": 4,
@@ -188,8 +189,8 @@
           "id": "b",
           "text": "Я настрою серверы так, чтобы игра сохраняла прогресс, даже если у игрока пропал интернет.",
           "role_weights": {
-            "backend_developer": 3,
-            "devops_engineer": 2
+            "devops_engineer": 3,
+            "backend_developer": 2
           },
           "stage_weights": {
             "development": 3,
@@ -206,7 +207,8 @@
           "id": "c",
           "text": "Я буду искать способы \"обмануть\" игру: проходить сквозь стены или получать бесконечные патроны, чтобы найти дыры.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 3,
+            "devops_engineer": 1
           },
           "stage_weights": {
             "testing": 4,
@@ -299,7 +301,8 @@
           "id": "d",
           "text": "Инспектором, который проверяет каждый кирпич на прочность и ищет трещины перед сдачей дома.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 3,
+            "ai_data_engineer": 1
           },
           "stage_weights": {
             "testing": 4,
@@ -322,8 +325,7 @@
           "id": "a",
           "text": "Сделать так, чтобы меню с пиццами листалось плавно и аппетитно выглядело на экране телефона.",
           "role_weights": {
-            "frontend_developer": 3,
-            "uiux_designer": 2
+            "frontend_developer": 4
           },
           "stage_weights": {
             "development": 3,
@@ -340,8 +342,8 @@
           "id": "b",
           "text": "Написать алгоритм, который рассчитывает время доставки и строит оптимальный маршрут для курьера.",
           "role_weights": {
-            "backend_developer": 3,
-            "ai_data_engineer": 2
+            "ai_data_engineer": 3,
+            "backend_developer": 2
           },
           "stage_weights": {
             "development": 4,
@@ -358,7 +360,8 @@
           "id": "c",
           "text": "Проверить, что будет, если заказать пиццу на адрес в Антарктиде — не сломается ли приложение?",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 3,
+            "devops_engineer": 1
           },
           "stage_weights": {
             "testing": 4,
@@ -397,7 +400,8 @@
           "id": "a",
           "text": "Спрошу, что именно он делал перед этим, и попробую повторить его действия, чтобы понять причину.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 3,
+            "frontend_developer": 1
           },
           "stage_weights": {
             "testing": 4,
@@ -487,7 +491,7 @@
           "text": "За техническую часть: подключение колонок, настройка звука и проверка проводов, чтобы музыка не прерывалась.",
           "role_weights": {
             "devops_engineer": 3,
-            "backend_developer": 2
+            "frontend_developer": 1
           },
           "stage_weights": {
             "launch_ops": 4,
@@ -520,7 +524,8 @@
           "id": "d",
           "text": "Я пройдусь по залу перед началом и проверю, надежно ли закреплена аппаратура и нет ли скользкого пола.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 3,
+            "frontend_developer": 1
           },
           "stage_weights": {
             "testing": 4,
@@ -543,8 +548,7 @@
           "id": "a",
           "text": "Мне важно сначала представить задачу в голове или нарисовать схему, чтобы увидеть решение.",
           "role_weights": {
-            "frontend_developer": 3,
-            "uiux_designer": 2
+            "frontend_developer": 4
           },
           "stage_weights": {
             "development": 3,
@@ -577,7 +581,8 @@
           "id": "c",
           "text": "Я ищу нестандартные пути или пытаюсь найти ошибку в самом условии задачи.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 2,
+            "ai_data_engineer": 2
           },
           "stage_weights": {
             "testing": 4,
@@ -648,7 +653,8 @@
           "id": "c",
           "text": "Проверить корзину: попробовать купить 0 товаров или ввести буквы вместо номера телефона.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 3,
+            "devops_engineer": 2
           },
           "stage_weights": {
             "testing": 4,
@@ -705,8 +711,8 @@
           "id": "b",
           "text": "Когда приложение постоянно вылетает, виснет или долго грузится.",
           "role_weights": {
-            "backend_developer": 3,
-            "devops_engineer": 2
+            "devops_engineer": 3,
+            "backend_developer": 2
           },
           "stage_weights": {
             "development": 3,
@@ -723,8 +729,8 @@
           "id": "c",
           "text": "Когда мне предлагают товары, которые мне совершенно не интересны.",
           "role_weights": {
-            "ai_data_engineer": 3,
-            "product_manager": 2
+            "product_manager": 3,
+            "ai_data_engineer": 2
           },
           "stage_weights": {
             "research": 5,
@@ -741,7 +747,8 @@
           "id": "d",
           "text": "Когда я нахожу опечатки в тексте или функции работают не так, как написано.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 2,
+            "frontend_developer": 2
           },
           "stage_weights": {
             "testing": 4,
@@ -764,8 +771,8 @@
           "id": "a",
           "text": "Это была бы энциклопедия со структурами, схемами и точными данными о мире.",
           "role_weights": {
-            "backend_developer": 3,
-            "ai_data_engineer": 2
+            "ai_data_engineer": 3,
+            "backend_developer": 2
           },
           "stage_weights": {
             "development": 4,
@@ -782,7 +789,8 @@
           "id": "b",
           "text": "Это был бы детектив, где герои ищут улики и распутывают сложные загадки.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 3,
+            "devops_engineer": 2
           },
           "stage_weights": {
             "testing": 4,
@@ -857,8 +865,8 @@
           "id": "b",
           "text": "Интерфейс пульта управления: чтобы кнопки были понятными и удобными для пользователя.",
           "role_weights": {
-            "uiux_designer": 3,
-            "frontend_developer": 2
+            "frontend_developer": 3,
+            "uiux_designer": 2
           },
           "stage_weights": {
             "design": 4,
@@ -891,7 +899,8 @@
           "id": "d",
           "text": "Тесты на прочность: пущу кота кататься на роботе и посмотрю, выдержит ли он.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 3,
+            "product_manager": 1
           },
           "stage_weights": {
             "testing": 4,
@@ -930,7 +939,8 @@
           "id": "b",
           "text": "Я люблю отвечать за свою часть работы самостоятельно, чтобы меня никто не отвлекал.",
           "role_weights": {
-            "backend_developer": 4
+            "backend_developer": 3,
+            "devops_engineer": 2
           },
           "stage_weights": {
             "development": 4,
@@ -946,7 +956,8 @@
           "id": "c",
           "text": "Я люблю обсуждать идеи, рисовать на доске и придумывать что-то новое вместе.",
           "role_weights": {
-            "uiux_designer": 4
+            "uiux_designer": 3,
+            "frontend_developer": 1
           },
           "stage_weights": {
             "design": 4,
@@ -962,7 +973,8 @@
           "id": "d",
           "text": "Я люблю помогать другим находить ошибки в их работе и улучшать результат.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 2,
+            "ai_data_engineer": 2
           },
           "stage_weights": {
             "testing": 4,
@@ -985,8 +997,7 @@
           "id": "a",
           "text": "Сделать так, чтобы фильмы загружались быстро и в высоком качестве у миллионов зрителей.",
           "role_weights": {
-            "devops_engineer": 3,
-            "backend_developer": 2
+            "devops_engineer": 4
           },
           "stage_weights": {
             "launch_ops": 4,
@@ -1019,8 +1030,7 @@
           "id": "c",
           "text": "Нарисовать красивый плеер и сделать удобный поиск по жанрам.",
           "role_weights": {
-            "frontend_developer": 3,
-            "uiux_designer": 2
+            "frontend_developer": 4
           },
           "stage_weights": {
             "development": 3,
@@ -1037,7 +1047,8 @@
           "id": "d",
           "text": "Проверить, работает ли перемотка назад и включаются ли субтитры на разных языках.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 3,
+            "product_manager": 1
           },
           "stage_weights": {
             "testing": 4,
@@ -1078,7 +1089,8 @@
           "id": "b",
           "text": "Буду собирать строго по инструкции, проверяя каждый шаг, чтобы не ошибиться.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 3,
+            "ai_data_engineer": 1
           },
           "stage_weights": {
             "testing": 4,
@@ -1133,8 +1145,8 @@
           "id": "a",
           "text": "Сделаю расписание уроков красивым и понятным, чтобы в нем легко было разобраться.",
           "role_weights": {
-            "uiux_designer": 3,
-            "frontend_developer": 2
+            "frontend_developer": 3,
+            "uiux_designer": 2
           },
           "stage_weights": {
             "design": 4,
@@ -1167,7 +1179,8 @@
           "id": "c",
           "text": "Буду проверять электронный журнал: попробую поставить оценку \"12\" или удалить предмет.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 3,
+            "devops_engineer": 2
           },
           "stage_weights": {
             "testing": 4,
@@ -1206,8 +1219,8 @@
           "id": "a",
           "text": "Графика, стиль персонажей и красивые локации.",
           "role_weights": {
-            "uiux_designer": 3,
-            "frontend_developer": 2
+            "frontend_developer": 3,
+            "uiux_designer": 2
           },
           "stage_weights": {
             "design": 4,
@@ -1242,7 +1255,8 @@
           "id": "c",
           "text": "Поиск секретов, \"пасхалок\" и багов, которые разработчики забыли убрать.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 2,
+            "devops_engineer": 2
           },
           "stage_weights": {
             "testing": 4,
@@ -1315,8 +1329,8 @@
           "id": "c",
           "text": "Я буду следить, чтобы мы ничего не забыли: паспорта, зарядки, аптечку.",
           "role_weights": {
-            "qa_engineer": 3,
-            "devops_engineer": 2
+            "devops_engineer": 3,
+            "qa_engineer": 2
           },
           "stage_weights": {
             "testing": 4,
@@ -1356,7 +1370,8 @@
           "text": "Напишу код, который анализирует фазы сна и будит человека в самый легкий момент.",
           "role_weights": {
             "ai_data_engineer": 3,
-            "backend_developer": 2
+            "devops_engineer": 1,
+            "backend_developer": 1
           },
           "stage_weights": {
             "research": 3,
@@ -1391,7 +1406,8 @@
           "id": "c",
           "text": "Проверю, сработает ли будильник, если телефон разрядился до 1% или переведен в авиарежим.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 2,
+            "devops_engineer": 2
           },
           "stage_weights": {
             "testing": 4,
@@ -1480,7 +1496,8 @@
           "id": "d",
           "text": "Я регулярно удаляю ненужные файлы и проверяю систему антивирусом.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 2,
+            "frontend_developer": 2
           },
           "stage_weights": {
             "testing": 4,
@@ -1503,8 +1520,7 @@
           "id": "a",
           "text": "Сделать так, чтобы карта загружалась мгновенно, даже при плохом интернете.",
           "role_weights": {
-            "devops_engineer": 3,
-            "backend_developer": 2
+            "devops_engineer": 4
           },
           "stage_weights": {
             "launch_ops": 4,
@@ -1521,8 +1537,8 @@
           "id": "b",
           "text": "Продумать, как показывать пробки, чтобы водителю было сразу понятно, где затор.",
           "role_weights": {
-            "uiux_designer": 3,
-            "frontend_developer": 2
+            "frontend_developer": 3,
+            "uiux_designer": 2
           },
           "stage_weights": {
             "design": 4,
@@ -1555,7 +1571,8 @@
           "id": "d",
           "text": "Проверить, приведет ли навигатор в тупик, если специально свернуть не туда.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 3,
+            "product_manager": 1
           },
           "stage_weights": {
             "testing": 4,
@@ -1612,7 +1629,8 @@
           "id": "c",
           "text": "Мгновенно замечать любую, даже самую мелкую деталь или ошибку.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 2,
+            "devops_engineer": 2
           },
           "stage_weights": {
             "testing": 4,
@@ -1628,8 +1646,8 @@
           "id": "d",
           "text": "Создавать иллюзии и красивые образы силой мысли.",
           "role_weights": {
-            "uiux_designer": 3,
-            "frontend_developer": 2
+            "frontend_developer": 3,
+            "uiux_designer": 2
           },
           "stage_weights": {
             "design": 4,
@@ -1705,7 +1723,8 @@
           "id": "d",
           "text": "Попробую создать анкету кота и посмотрю, пропустит ли её модерация.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 3,
+            "product_manager": 1
           },
           "stage_weights": {
             "testing": 4,
@@ -1744,8 +1763,8 @@
           "id": "b",
           "text": "На структуру выступления: логика, аргументы, факты.",
           "role_weights": {
-            "backend_developer": 3,
-            "product_manager": 2
+            "product_manager": 3,
+            "backend_developer": 2
           },
           "stage_weights": {
             "development": 3,
@@ -1763,7 +1782,8 @@
           "id": "c",
           "text": "На проверку текста: чтобы не было ни одной ошибки или запятой не там.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 2,
+            "frontend_developer": 2
           },
           "stage_weights": {
             "testing": 4,
@@ -1854,8 +1874,8 @@
           "id": "d",
           "text": "Аналитика: понять, какими услугами банка люди пользуются чаще всего.",
           "role_weights": {
-            "ai_data_engineer": 3,
-            "product_manager": 2
+            "product_manager": 3,
+            "ai_data_engineer": 2
           },
           "stage_weights": {
             "research": 5,
@@ -1897,7 +1917,8 @@
           "id": "b",
           "text": "Читаю, чтобы найти в них противоречия или неточности.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 3,
+            "ai_data_engineer": 1
           },
           "stage_weights": {
             "testing": 4,
@@ -1968,8 +1989,7 @@
           "id": "b",
           "text": "Сделать красивую анимацию, когда помощник \"слушает\" или \"говорит\".",
           "role_weights": {
-            "frontend_developer": 3,
-            "uiux_designer": 2
+            "frontend_developer": 4
           },
           "stage_weights": {
             "development": 3,
@@ -1986,7 +2006,8 @@
           "id": "c",
           "text": "Связать помощника с интернетом, чтобы он мог быстро находить ответы.",
           "role_weights": {
-            "backend_developer": 4
+            "backend_developer": 3,
+            "devops_engineer": 1
           },
           "stage_weights": {
             "development": 4,
@@ -2002,7 +2023,8 @@
           "id": "d",
           "text": "Задавать помощнику глупые или очень сложные вопросы, чтобы проверить его реакцию.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 3,
+            "product_manager": 1
           },
           "stage_weights": {
             "testing": 4,
@@ -2059,8 +2081,8 @@
           "id": "c",
           "text": "Тот, кто замечает слабые места противника и использует их.",
           "role_weights": {
-            "qa_engineer": 3,
-            "ai_data_engineer": 2
+            "ai_data_engineer": 3,
+            "qa_engineer": 2
           },
           "stage_weights": {
             "testing": 3,
@@ -2101,8 +2123,7 @@
           "id": "a",
           "text": "Сделать так, чтобы обложки альбомов красиво разворачивались на весь экран.",
           "role_weights": {
-            "frontend_developer": 3,
-            "uiux_designer": 2
+            "frontend_developer": 4
           },
           "stage_weights": {
             "development": 3,
@@ -2119,7 +2140,8 @@
           "id": "b",
           "text": "Обеспечить хранение миллионов треков так, чтобы любой находился за секунду.",
           "role_weights": {
-            "backend_developer": 4
+            "backend_developer": 2,
+            "devops_engineer": 2
           },
           "stage_weights": {
             "development": 4,
@@ -2151,7 +2173,8 @@
           "id": "d",
           "text": "Проверить звук: не искажается ли он при плохом интернете.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 2,
+            "product_manager": 2
           },
           "stage_weights": {
             "testing": 4,
@@ -2226,7 +2249,8 @@
           "id": "d",
           "text": "Когда в системе не осталось ни одной ошибки.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 3,
+            "ai_data_engineer": 1
           },
           "stage_weights": {
             "testing": 4,
@@ -2249,7 +2273,8 @@
           "id": "a",
           "text": "Искал бы каждую мелкую ошибку и помарку.",
           "role_weights": {
-            "qa_engineer": 4
+            "qa_engineer": 3,
+            "frontend_developer": 1
           },
           "stage_weights": {
             "testing": 4,
@@ -2265,7 +2290,8 @@
           "id": "b",
           "text": "Смотрел бы на ход решения и логику, даже если ответ не совсем точный.",
           "role_weights": {
-            "backend_developer": 4
+            "backend_developer": 3,
+            "devops_engineer": 1
           },
           "stage_weights": {
             "development": 4,

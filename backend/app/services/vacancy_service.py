@@ -9,13 +9,54 @@ from app.schemas import SortEnum
 
 # Role to vacancy search terms mapping
 ROLE_SEARCH_MAPPING = {
-    "backend_developer": ["backend", "бэкенд", "python developer", "java developer", "go developer", "django", "fastapi", "spring"],
-    "frontend_developer": ["frontend", "фронтенд", "react", "vue", "angular", "верстальщик", "javascript developer"],
-    "product_manager": ["product manager", "продакт", "product owner", "менеджер продукта"],
-    "uiux_designer": ["ui/ux", "ux designer", "ui designer", "дизайнер интерфейсов", "figma", "product designer"],
-    "ai_data_engineer": ["data engineer", "data scientist", "ml engineer", "machine learning", "аналитик данных", "data analyst"],
-    "qa_engineer": ["qa", "тестировщик", "quality assurance", "test engineer", "автотестирование"],
-    "devops_engineer": ["devops", "sre", "site reliability", "infrastructure", "системный администратор", "cloud engineer"],
+    "backend_developer": [
+        "backend", "бэкенд", "backend developer", "бэкенд разработчик", "серверный разработчик",
+        "python developer", "java developer", "go developer", "golang", "go разработчик", "golang разработчик",
+        "node.js", "nodejs", "node разработчик",
+        "php developer", "php разработчик", "разработчик php",
+        ".net developer", ".net разработчик", "c# developer", "c# разработчик",
+        "kotlin developer", "kotlin разработчик",
+        "django", "fastapi", "spring", "laravel", "rails",
+    ],
+    "frontend_developer": [
+        "frontend", "фронтенд", "frontend developer", "фронтенд разработчик",
+        "react", "vue", "angular", "svelte",
+        "next.js", "nextjs", "nuxt", "nuxt.js",
+        "разработчик react", "разработчик vue", "разработчик angular",
+        "javascript developer", "typescript developer",
+        "верстальщик", "разработчик интерфейсов",
+    ],
+    "product_manager": [
+        "product manager", "product owner", "продакт", "продакт менеджер",
+        "менеджер продукта", "руководитель продукта", "менеджер по продукту",
+        "владелец продукта", "цифрового продукта",
+    ],
+    "uiux_designer": [
+        "ui/ux", "ux/ui", "ux designer", "ui designer", "product designer",
+        "дизайнер интерфейсов", "дизайнер приложений", "дизайнер мобильных",
+        "веб-дизайнер", "веб дизайнер", "web designer",
+        "графический дизайнер", "моушн дизайнер", "motion designer",
+        "figma", "sketch designer",
+    ],
+    "ai_data_engineer": [
+        "data engineer", "data scientist", "data analyst", "ml engineer",
+        "machine learning", "deep learning", "нейронные сети",
+        "аналитик данных", "big data", "bi аналитик", "bi-аналитик",
+        "business intelligence", "аналитик bi",
+        "nlp engineer", "computer vision",
+    ],
+    "qa_engineer": [
+        "qa", "тестировщик", "quality assurance", "test engineer",
+        "инженер по тестированию", "тестирование по", "тестирование программного",
+        "qa автоматизатор", "автоматизатор тестирования", "automation engineer",
+        "автотестирование", "sdet", "manual qa",
+    ],
+    "devops_engineer": [
+        "devops", "sre", "site reliability", "platform engineer",
+        "infrastructure engineer", "cloud engineer",
+        "системный администратор", "linux администратор", "системный инженер",
+        "kubernetes", "k8s", "docker", "ci/cd",
+    ],
 }
 
 def _escape_ilike_value(raw_value: str) -> str:
