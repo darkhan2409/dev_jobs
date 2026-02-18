@@ -88,7 +88,7 @@ export default function AdminPage() {
     const maxRouteCount = data?.top_routes?.[0]?.count || 1;
 
     return (
-        <div className="max-w-5xl mx-auto px-4 py-10">
+        <div className="max-w-5xl mx-auto px-4 pt-24 pb-10">
             <div className="flex items-center justify-between mb-8">
                 <h1 className="text-xl font-semibold text-slate-100">Аналитика</h1>
                 <div className="flex gap-1">
