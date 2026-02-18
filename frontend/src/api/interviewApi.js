@@ -12,7 +12,7 @@ export const interviewApi = {
         }),
 
     completeTest: (sessionId) =>
-        axiosClient.post(`/interview/complete/${sessionId}`),
+        axiosClient.post(`/interview/complete/${sessionId}`, {}, { timeout: 0 }),
 
     // Career Pipeline Endpoints
     getRoleDetails: (roleId) => axiosClient.get(`/interview/roles/${roleId}`),
