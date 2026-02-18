@@ -99,10 +99,12 @@ class LLMInterpreter:
 Пиши по-русски, дружелюбно, просто и по делу. Без пафоса, без воды, без канцелярита.
 Учитывай контекст: сейчас 2026 год, эпоха ИИ, поэтому рекомендации должны включать практичный AI-старт.
 
+ВАЖНО: Анализ должен быть уникален для КАЖДОЙ роли. Используй distinguishing_features, key_signals и типичные responsibilities чтобы объяснить почему именно ЭТА роль, а не смежные. Не давай generic ответ.
+
 Сформируй explanation ровно в 8-10 предложениях по структуре:
-1) Короткий вывод: какая роль подходит и почему.
+1) Короткий вывод: какая роль подходит и почему (используй distinguishing_features из контекста).
 2) Разбери 3 главных качества пользователя, каждое качество подкрепи наблюдением из его ответов/паттернов.
-3) Объясни, как эти качества проявятся в реальных рабочих задачах выбранной роли.
+3) Объясни, как эти качества проявятся в КОНКРЕТНЫХ рабочих задачах выбранной роли (используй примеры из typical responsibilities).
 4) Дай старт обучения: 2-3 инструмента (для каждого: что это и зачем новичку), строго уровня beginner.
 Формат explanation: 4 именованных блока. Каждый блок с новой строки в формате "Название: текст".
 Используй такие названия блоков:
@@ -140,7 +142,7 @@ primary_recommendation, explanation, signal_analysis, why_this_role_reasons, alt
             ],
             "response_format": {"type": "json_object"},
             "temperature": 0.5,
-            "max_tokens": 600,
+            "max_tokens": 900,
         })
 
         for attempt in range(self._retry_config.max_retries + 1):
@@ -244,6 +246,17 @@ primary_recommendation, explanation, signal_analysis, why_this_role_reasons, alt
         primary_role_profile = role_profiles.get(primary_role_id, {})
         role_hint = primary_role_profile.get("description", "")
 
+        # Enrich with role-specific context
+        distinguishing_features = primary_role_profile.get("distinguishing_features", "")
+        key_signals = primary_role_profile.get("key_signals", [])
+        key_signals_names = []
+        for sig_id in key_signals[:3]:
+            sig_name = signals.get(sig_id, {}).get("name", sig_id)
+            key_signals_names.append(f"{sig_name} ({sig_id})")
+
+        responsibilities = primary_role_profile.get("responsibilities", [])[:2]
+        typical_stack = primary_role_profile.get("typical_stack", [])[:3]
+
         close_roles_text = None
         if multiple_recommendations and len(ranked_roles) > 1:
             close_roles = []
@@ -274,6 +287,18 @@ primary_recommendation, explanation, signal_analysis, why_this_role_reasons, alt
 
         if role_hint:
             prompt_lines.extend(["", f"Role profile hint: {role_hint}"])
+
+        if distinguishing_features:
+            prompt_lines.extend(["", f"What makes this role unique: {distinguishing_features}"])
+
+        if key_signals_names:
+            prompt_lines.extend(["", "Key signals for this role:", *[f"- {sig}" for sig in key_signals_names]])
+
+        if responsibilities:
+            prompt_lines.extend(["", "Typical responsibilities:", *[f"- {resp}" for resp in responsibilities]])
+
+        if typical_stack:
+            prompt_lines.extend(["", "Typical tools/stack:", *[f"- {tool}" for tool in typical_stack]])
 
         prompt_lines.extend(
             [
