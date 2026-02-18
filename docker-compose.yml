@@ -1,3 +1,9 @@
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
 services:
   db:
     image: postgres:16-alpine
@@ -9,6 +15,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    logging: *default-logging
     networks:
       - app-network
 
@@ -19,6 +26,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    logging: *default-logging
     networks:
       - app-network
 
@@ -39,6 +47,7 @@ services:
       timeout: 5s
       retries: 3
       start_period: 40s
+    logging: *default-logging
     networks:
       - app-network
 
@@ -49,6 +58,7 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    logging: *default-logging
     networks:
       - app-network
 
@@ -62,6 +72,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    logging: *default-logging
     networks:
       - app-network
 
