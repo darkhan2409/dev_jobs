@@ -10,7 +10,7 @@ import { trackEvent } from '../utils/analytics';
 import { ANALYTICS_EVENTS } from '../constants/analyticsEvents';
 
 const CareerPage = () => {
-    const [screen, setScreen] = useState('welcome'); // 'welcome' | 'test' | 'results'
+    const [screen, setScreen] = useState('welcome'); // 'welcome' | 'test' | 'analyzing' | 'results'
     const [sessionId, setSessionId] = useState(null);
     const [questions, setQuestions] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -135,17 +135,18 @@ const CareerPage = () => {
             return;
         }
 
+        setIsSubmitting(false);
+        setScreen('analyzing');
         try {
             await completeTestRequest();
         } catch (err) {
+            setScreen('test');
             setErrorState({
                 title: 'Не удалось загрузить результаты',
                 message: 'Ответы сохранены, но результаты не загрузились. Повторите попытку.',
                 retryAction: 'complete'
             });
             console.error('Complete test error:', err);
-        } finally {
-            setIsSubmitting(false);
         }
     }, [answers, completeTestRequest, currentIndex, questions, sessionId]);
 
@@ -276,6 +277,19 @@ const CareerPage = () => {
                         showHomeLink={false}
                         className="py-8"
                     />
+                )}
+
+                {screen === 'analyzing' && (
+                    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 text-center">
+                        <div className="relative flex items-center justify-center w-20 h-20">
+                            <div className="absolute w-20 h-20 rounded-full border-4 border-violet-500/20 border-t-violet-500 animate-spin"></div>
+                            <span className="text-3xl">🤖</span>
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-bold text-white mb-2">Анализируем результаты</h2>
+                            <p className="text-slate-400">ИИ изучает твои ответы и подбирает карьерный путь...</p>
+                        </div>
+                    </div>
                 )}
 
                 {screen === 'results' && results && (
