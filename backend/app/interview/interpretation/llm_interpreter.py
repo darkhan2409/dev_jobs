@@ -7,12 +7,11 @@ Generates concise, evidence-based interpretation of test results using OpenAI AP
 import json
 import ast
 import os
+import subprocess
 import time
 import logging
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
-
-from openai import OpenAI, RateLimitError, APIConnectionError, APITimeoutError
 
 
 logger = logging.getLogger(__name__)
@@ -56,11 +55,6 @@ class InterpretationResult:
 class LLMInterpreter:
     """LLM-based interpreter for natural language explanation of test results."""
 
-    RETRYABLE_EXCEPTIONS = (
-        RateLimitError,
-        APIConnectionError,
-        APITimeoutError,
-    )
     EXPLANATION_BLOCK_TITLES = [
         "Почему тебе подходит роль",
         "Твои сильные качества",
@@ -82,10 +76,7 @@ class LLMInterpreter:
                 "Set OPENAI_API_KEY environment variable or pass api_key parameter."
             )
 
-        self._client = OpenAI(
-            api_key=self._api_key,
-            base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
-        )
+        self._base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
         self._model = model
         self._score_threshold = score_threshold
         self._retry_config = retry_config or RetryConfig()
@@ -140,33 +131,55 @@ primary_recommendation, explanation, signal_analysis, why_this_role_reasons, alt
 """
 
     def _call_with_retry(self, prompt: str) -> str:
-        """Call OpenAI API with retry logic and exponential backoff."""
+        """Call OpenAI API via curl with retry logic."""
+        payload = json.dumps({
+            "model": self._model,
+            "messages": [
+                {"role": "system", "content": self._build_system_prompt()},
+                {"role": "user", "content": prompt},
+            ],
+            "response_format": {"type": "json_object"},
+            "temperature": 0.5,
+            "max_tokens": 600,
+        })
+
         for attempt in range(self._retry_config.max_retries + 1):
             try:
-                response = self._client.chat.completions.create(
-                    model=self._model,
-                    messages=[
-                        {"role": "system", "content": self._build_system_prompt()},
-                        {"role": "user", "content": prompt},
+                result = subprocess.run(
+                    [
+                        "curl", "-s", "--max-time", "45",
+                        "-X", "POST", f"{self._base_url}/chat/completions",
+                        "-H", "Content-Type: application/json",
+                        "-H", f"Authorization: Bearer {self._api_key}",
+                        "-H", "Connection: close",
+                        "-d", payload,
                     ],
-                    response_format={"type": "json_object"},
-                    temperature=0.5,
-                    max_tokens=600,
-                    timeout=45.0,
+                    capture_output=True,
+                    text=True,
+                    timeout=50,
                 )
-                return response.choices[0].message.content
 
-            except self.RETRYABLE_EXCEPTIONS as e:
+                if result.returncode != 0:
+                    raise LLMAPIError(f"curl failed: {result.stderr}")
+
+                data = json.loads(result.stdout)
+
+                if "error" in data:
+                    raise LLMAPIError(f"API error: {data['error']}")
+
+                return data["choices"][0]["message"]["content"]
+
+            except LLMAPIError as e:
                 if attempt < self._retry_config.max_retries:
                     delay = self._calculate_delay(attempt)
                     logger.warning(f"Retry {attempt + 1}: {e}. Waiting {delay:.2f}s...")
                     time.sleep(delay)
                 else:
-                    raise LLMAPIError(f"OpenAI exhausted retries: {e}") from e
+                    raise
             except Exception as e:
                 raise LLMAPIError(f"Unexpected LLM error: {e}") from e
 
-        raise LLMAPIError("OpenAI call failed")
+        raise LLMAPIError("OpenAI call failed after all retries")
 
     def interpret_results(
         self,
