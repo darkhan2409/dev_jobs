@@ -31,36 +31,41 @@ class AIClassifier:
         system_prompt = """You are a strict filter for an IT Job Board (GitJob).
 Your task: identify vacancies that DO NOT belong on an IT job board.
 
-KEEP a vacancy ONLY if the job requires working with software, technology, computers, or IT systems.
+KEEP a vacancy ONLY if the job directly involves software, programming, IT infrastructure, or digital technology.
 
-KEEP these roles (IT-related):
-- Software Developers (Backend, Frontend, Fullstack, Mobile, GameDev, разработчики любого стека)
-- QA Engineers, Testers (Manual/Automation, тестировщики)
-- DevOps, SRE, System Administrators, DBAs, Network Engineers
-- Data Scientists, Data Analysts, Data Engineers, Business Analysts (if in tech context)
-- Product Managers, Project Managers (if in IT company/product context)
-- Scrum Masters, Agile Coaches, Team Leads (technical teams)
-- IT Support, Technical Support, HelpDesk, эникейщик
-- SAP/1C/ERP Consultants and Developers
-- Security Engineers, Architects, CTO, CIO
-- UI/UX Designers, Technical Writers
-- Any role with "IT", "Tech", "Software", "Developer", "Engineer" in the title
+KEEP these roles (explicit IT roles):
+- Software Developers: Backend, Frontend, Fullstack, Mobile, GameDev, разработчик, программист
+- QA/Testing: QA Engineer, Tester, тестировщик (Manual or Automation)
+- Infrastructure: DevOps, SRE, System Administrator, DBA, Network Engineer, сисадмин
+- Data/AI: Data Scientist, Data Engineer, ML Engineer, AI Engineer
+- IT Management: CTO, CIO, IT Director, IT Manager, Head of Engineering
+- IT Support: HelpDesk, Technical Support, IT Support, эникейщик
+- Enterprise IT: SAP Developer, 1C Developer, ERP Developer/Consultant
+- IT Security: Cybersecurity Engineer, Information Security Engineer, Pentest, SOC Analyst
+- Digital Design: UI Designer, UX Designer, UX/UI Designer, Web Designer, Product Designer
+- Product/Project (IT only): Product Manager, Product Owner, Scrum Master — ONLY if title explicitly contains "IT", "software", "digital", "tech", "product" in IT context
+- Technical roles: Technical Writer, Solution Architect, Cloud Engineer, Data Analyst (IT company)
 
-DISCARD a vacancy if the job has NOTHING to do with IT or technology:
-- Physical labor: Driver/Водитель, Courier/Курьер, Loader/Грузчик, Builder/Строитель
-- Food & Retail: Cashier/Кассир, Waiter/Официант, Barista, Cook/Повар, Florist/Флорист
-- Beauty & Fitness: Hairdresser/Парикмахер, Fitness Trainer/Тренер, Massage Therapist
-- Traditional office (non-IT): Accountant/Бухгалтер, Lawyer/Юрист, Secretary/Секретарь
-- Generic Sales: Менеджер по продажам, Sales Representative (unless selling software/IT)
-- Medical: Doctor/Врач, Nurse/Медсестра, Pharmacist/Фармацевт
-- Education (non-IT): Teacher/Учитель, Tutor (unless "IT Teacher" or "Programming Teacher")
-- Manufacturing: Factory Worker, Machinist/Токарь, Welder/Сварщик, Geologist, Miner
-- Agriculture/Nature: Agronomist/Агроном, Veterinarian/Ветеринар, Farmer
+DISCARD everything that is NOT clearly IT:
+- Any "Инженер" (Engineer) without IT qualifier: radiation, safety, construction, mechanical, electrical, chemical, industrial, civil
+- Any "Дизайнер" without UI/UX/Web qualifier: interior designer, graphic designer (print), fashion designer
+- Any "Аналитик" in banking/finance/sales context: кредитный аналитик, аналитик продаж, финансовый аналитик
+- Project/Program Managers for non-IT projects: construction, oil&gas, events, resort, medical, finance
+- Sales & Business: Менеджер по продажам, Менеджер по развитию, Hunter/Хантер, BD Manager (non-IT)
+- Finance/Legal/HR: Бухгалтер, Юрист, Финансист, HR (unless "HR Automation" or "HRIS")
+- Physical labor: Driver, Courier, Loader, Builder, Welder, Electrician, Plumber
+- Food & Retail: Cashier, Waiter, Cook, Florist, Barista, Продавец
+- Healthcare: Doctor, Nurse, Pharmacist, Врач, Медсестра (unless health-tech software)
+- Safety roles: Инженер по охране труда, Инженер по пожарной безопасности, Инженер по радиационной безопасности
+- Education (non-IT): Teacher, Tutor, Преподаватель (unless "Python Teacher" or "IT Teacher")
+- Manufacturing/Industry: Factory Worker, Токарь, Сварщик, Геолог, Горняк
+- Agriculture: Агроном, Ветеринар, Фермер
+- Administrative: Secretary, Receptionist, Office Manager, Координатор (non-IT)
 
 DECISION RULE:
-Ask yourself: "Does this job require using or building software/technology?"
-- YES → KEEP
-- NO or NOT CLEAR from the title → DISCARD
+"Does this job DIRECTLY require writing code, administering IT systems, or building digital products?"
+- CLEARLY YES → KEEP
+- NO or UNCLEAR → DISCARD
 
 Return ONLY a JSON object: {"junk_ids": [list of vacancy IDs to discard]}"""
 

@@ -423,6 +423,9 @@ class HHScraper:
                         if item.get('skip_detail') and "description" in update_dict:
                             del update_dict["description"]  # Don't overwrite existing HTML with nothing
 
+                        # Never reset is_active on update — AI cleaner may have deactivated it
+                        del update_dict["is_active"]
+
                         # If title changed, reset AI check flag
                         if title_changed:
                             update_dict["is_ai_checked"] = False
