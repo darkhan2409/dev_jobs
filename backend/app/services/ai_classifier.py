@@ -28,37 +28,39 @@ class AIClassifier:
             for v in vacancies
         ])
 
-        system_prompt = """You are an HR Tech Recruiter for an IT Job Board (GitJob).
-Filter out ONLY clearly NON-IT roles.
+        system_prompt = """You are a strict filter for an IT Job Board (GitJob).
+Your task: identify vacancies that DO NOT belong on an IT job board.
 
-CONTEXT: We want ALL IT-related roles including developers, QA, DevOps, data, managers, analysts, and support.
-Vacancies are mostly in Russian and English.
+KEEP a vacancy ONLY if the job requires working with software, technology, computers, or IT systems.
 
-RULES:
-1. KEEP (Relevant IT roles):
-   - Software Developers (Backend, Frontend, Fullstack, Mobile, GameDev, любые разработчики)
-   - QA Engineers, Testers (Manual/Automation, Тестировщики)
-   - DevOps, SRE, System Administrators, DBAs, Network Engineers
-   - Data Scientists, Data Analysts, Data Engineers, Business Analysts
-   - Product Owners, Product Managers, Project Managers (assume IT-related)
-   - Scrum Masters, Agile Coaches, Team Leads
-   - IT Specialists, IT Support, Technical Support, HelpDesk (ALL levels, including эникейщик)
-   - SAP/1C/ERP Consultants/Developers
-   - Security Engineers, Architects, CTO, CIO
-   - UI/UX Designers, Technical Writers
+KEEP these roles (IT-related):
+- Software Developers (Backend, Frontend, Fullstack, Mobile, GameDev, разработчики любого стека)
+- QA Engineers, Testers (Manual/Automation, тестировщики)
+- DevOps, SRE, System Administrators, DBAs, Network Engineers
+- Data Scientists, Data Analysts, Data Engineers, Business Analysts (if in tech context)
+- Product Managers, Project Managers (if in IT company/product context)
+- Scrum Masters, Agile Coaches, Team Leads (technical teams)
+- IT Support, Technical Support, HelpDesk, эникейщик
+- SAP/1C/ERP Consultants and Developers
+- Security Engineers, Architects, CTO, CIO
+- UI/UX Designers, Technical Writers
+- Any role with "IT", "Tech", "Software", "Developer", "Engineer" in the title
 
-2. DISCARD (Clearly NON-IT):
-   - Physical labor (Driver/Водитель, Courier/Курьер, Warehouse/Склад, Construction/Строитель)
-   - Retail/Service (Cashier/Кассир, Waiter/Официант, Barista, Fitness Trainer)
-   - Traditional office (Secretary/Секретарь, Accountant/Бухгалтер, Lawyer/Юрист, HR Generalist)
-   - Sales/Marketing (Sales Manager/Менеджер по продажам, UNLESS explicitly tech like "Salesforce Developer")
-   - Medical/Education (Doctor/Врач, Teacher/Учитель, unless "IT Teacher")
-   - Manufacturing/Production (Factory Worker, Geologist, Mining)
+DISCARD a vacancy if the job has NOTHING to do with IT or technology:
+- Physical labor: Driver/Водитель, Courier/Курьер, Loader/Грузчик, Builder/Строитель
+- Food & Retail: Cashier/Кассир, Waiter/Официант, Barista, Cook/Повар, Florist/Флорист
+- Beauty & Fitness: Hairdresser/Парикмахер, Fitness Trainer/Тренер, Massage Therapist
+- Traditional office (non-IT): Accountant/Бухгалтер, Lawyer/Юрист, Secretary/Секретарь
+- Generic Sales: Менеджер по продажам, Sales Representative (unless selling software/IT)
+- Medical: Doctor/Врач, Nurse/Медсестра, Pharmacist/Фармацевт
+- Education (non-IT): Teacher/Учитель, Tutor (unless "IT Teacher" or "Programming Teacher")
+- Manufacturing: Factory Worker, Machinist/Токарь, Welder/Сварщик, Geologist, Miner
+- Agriculture/Nature: Agronomist/Агроном, Veterinarian/Ветеринар, Farmer
 
-IMPORTANT:
-- If title contains "IT", "Tech", "Software", "Developer", "Engineer", "Analyst", "Manager", "Scrum", "Product", "Project" → KEEP
-- If you're unsure → KEEP (better to keep than discard)
-- Only discard if it's CLEARLY not IT-related
+DECISION RULE:
+Ask yourself: "Does this job require using or building software/technology?"
+- YES → KEEP
+- NO or NOT CLEAR from the title → DISCARD
 
 Return ONLY a JSON object: {"junk_ids": [list of vacancy IDs to discard]}"""
 
@@ -110,4 +112,4 @@ Return ONLY a JSON object: {"junk_ids": [list of vacancy IDs to discard]}"""
 
         except Exception as e:
             logger.error(f"AI Classification failed: {e}")
-            return []
+            raise
