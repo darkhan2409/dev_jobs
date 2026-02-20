@@ -84,7 +84,7 @@ const AboutPage = () => {
                 {/* Features */}
                 <motion.section variants={fadeInUp} className="mb-16">
                     <h2 className="text-2xl font-bold text-white mb-8 text-center">Почему GitJob?</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {features.map((feature, idx) => (
                             <div
                                 key={idx}
@@ -103,7 +103,7 @@ const AboutPage = () => {
                 {/* Data Transparency */}
                 <motion.section variants={fadeInUp} className="mb-16">
                     <h2 className="text-2xl font-bold text-white mb-8 text-center">Прозрачность данных</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
                             <div className="bg-slate-800 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
                                 <Database className="text-violet-400" size={22} />

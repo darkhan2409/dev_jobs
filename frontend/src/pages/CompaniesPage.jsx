@@ -228,7 +228,7 @@ const CompaniesPage = () => {
                             )}
                         </div>
 
-                        <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-opacity duration-300 ${loading ? 'opacity-40' : 'opacity-100'}`}>
+                        <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 transition-opacity duration-300 ${loading ? 'opacity-40' : 'opacity-100'}`}>
                             <AnimatePresence mode="popLayout">
                                 {companies.map((company) => (
                                     <motion.div

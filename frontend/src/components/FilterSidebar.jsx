@@ -161,7 +161,7 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
     return (
         <aside className={`w-full lg:w-72 flex-shrink-0 relative ${className}`}>
             <div className="sticky top-24 p-1">
-                <div className="flex flex-col h-full max-h-[calc(100vh-140px)]">
+                <div className="flex flex-col h-full max-h-[calc(100svh-7rem)]">
                     <div className="flex items-center justify-between pb-4 border-b border-white/5 shrink-0">
                         <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2 uppercase tracking-wider">
                             <Filter size={16} className="text-purple-500" />
