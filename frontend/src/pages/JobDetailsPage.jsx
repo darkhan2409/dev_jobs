@@ -11,7 +11,8 @@ import {
     Clock,
     Briefcase,
     Calendar,
-    Share2
+    Share2,
+    ArrowLeft
 } from 'lucide-react';
 import ErrorState from '../components/ui/ErrorState';
 import EmptyState from '../components/ui/EmptyState';
@@ -139,6 +140,17 @@ const JobDetailsPage = () => {
 
     const sourceLabel = getVacancySourceLabel(vacancy);
 
+    // Если страница открыта напрямую (LinkedIn, прямая ссылка) — идём на /jobs,
+    // иначе — назад по истории (сохраняет фильтры)
+    const canGoBack = location.key !== 'default';
+    const handleBack = () => {
+        if (canGoBack) {
+            navigate(-1);
+        } else {
+            navigate('/jobs');
+        }
+    };
+
     return (
         <motion.div
             className="min-h-screen text-slate-200 font-sans pb-12"
@@ -148,12 +160,14 @@ const JobDetailsPage = () => {
             exit="exit"
         >
             <main className="max-w-7xl mx-auto px-4 pt-24">
-                {/* Breadcrumbs */}
-                <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
-                    <Link to="/jobs" className="hover:text-white transition-colors">Вакансии</Link>
-                    <span>/</span>
-                    <span className="text-slate-300 truncate max-w-[300px]">{vacancy.title}</span>
-                </div>
+                {/* Back button */}
+                <button
+                    onClick={handleBack}
+                    className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-white transition-colors mb-6 group -ml-1 px-1 py-2 pr-3 rounded-lg hover:bg-slate-800/50"
+                >
+                    <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-0.5" />
+                    <span>Вакансии</span>
+                </button>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     {/* LEFT COLUMN (70%) - Header & Description */}
