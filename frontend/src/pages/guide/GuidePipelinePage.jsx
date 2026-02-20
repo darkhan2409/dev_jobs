@@ -76,10 +76,10 @@ export default function GuidePipelinePage() {
 
       {/* ── Pipeline ── */}
       <div className="relative">
-        {/* Background connecting line (desktop only) */}
-        <div className="hidden lg:block absolute top-1/2 left-0 right-0 -translate-y-1/2 h-0.5 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800" />
+        {/* Background connecting line — at 72px (center of h-36 card) */}
+        <div className="hidden lg:block absolute top-[72px] left-0 right-0 h-0.5 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800" />
 
-        <div className="flex flex-col lg:grid lg:grid-cols-5 items-center gap-12 lg:gap-4">
+        <div className="flex flex-col lg:grid lg:grid-cols-5 lg:items-start items-center gap-12 lg:gap-4">
           {GUIDE_STAGES.map((stage) => {
             const Icon = ICON_MAP[stage.icon];
             const isHovered = hoveredId === stage.id;
