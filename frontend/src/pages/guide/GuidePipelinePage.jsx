@@ -89,7 +89,7 @@ export default function GuidePipelinePage() {
             return (
               <div
                 key={stage.id}
-                className="relative flex flex-col items-center group w-40"
+                className="relative flex flex-col items-center group"
                 onMouseEnter={() => setHoveredId(stage.id)}
                 onMouseLeave={() => setHoveredId(null)}
               >
@@ -124,7 +124,7 @@ export default function GuidePipelinePage() {
                 {/* Title + English subtitle */}
                 <div className="mt-5 text-center">
                   <h3
-                    className={`text-2xl font-bold transition-colors duration-300 ${
+                    className={`text-lg lg:text-2xl font-bold transition-colors duration-300 ${
                       isHighlighted ? 'text-white' : 'text-slate-200 group-hover:text-white'
                     }`}
                   >
