@@ -105,6 +105,26 @@ class HHScraper:
                 logger.error(f"Error fetching detail {item['id']}: {e}")
                 self._fallback_to_snippet(item)
 
+    async def _get_valid_area_ids(self, client: httpx.AsyncClient, parent_area_id: int) -> Optional[Set[str]]:
+        """Fetch all area IDs within a parent area from HH API.
+        Returns None on failure (filtering will be skipped to avoid data loss)."""
+        try:
+            url = f"https://api.hh.ru/areas/{parent_area_id}"
+            resp = await client.get(url)
+            if resp.status_code == 200:
+                data = resp.json()
+                ids = {str(parent_area_id)}
+                for area in data.get('areas', []):
+                    ids.add(str(area['id']))
+                    for sub_area in area.get('areas', []):
+                        ids.add(str(sub_area['id']))
+                logger.debug(f"Loaded {len(ids)} valid area IDs for area {parent_area_id}")
+                return ids
+            logger.warning(f"HH areas API returned {resp.status_code} for area {parent_area_id}")
+        except Exception as e:
+            logger.warning(f"Failed to fetch area IDs for {parent_area_id}: {e}")
+        return None
+
     async def fetch_vacancies(
         self,
         role_id: int,
@@ -115,10 +135,13 @@ class HHScraper:
     ) -> dict:
         start_time = datetime.now()
         target_area = settings.HH_AREA if area is None else area
-        
+
         # --- Step 1: Fetch Search Results ---
         tasks = []
         async with httpx.AsyncClient(headers=self.headers, timeout=30.0) as client:
+            # Prefetch valid area IDs to filter remote vacancies from other countries
+            valid_area_ids = await self._get_valid_area_ids(client, target_area)
+
             for page in range(pages):
                 params = {
                     "professional_role": role_id,
@@ -128,7 +151,7 @@ class HHScraper:
                 }
                 if text: params["text"] = text
                 tasks.append(self.fetch_page(client, params))
-            
+
             search_label = f"Role {role_id}" + (f" + '{text}'" if text else "")
             logger.info(f"[{search_label}] Scraping list ({pages} pages)...")
             results = await asyncio.gather(*tasks)
@@ -172,12 +195,25 @@ class HHScraper:
 
         if items_to_enrich:
             logger.info(f"[{search_label}] Fetching details for {len(items_to_enrich)} items (Parallel)...")
-            
+
             # Using a new client for detail fetching to reset connection pool state
             async with httpx.AsyncClient(headers=self.headers, timeout=30.0) as client:
                 detail_tasks = [self._fetch_single_detail(client, item) for item in items_to_enrich]
                 # Run concurrently
                 await asyncio.gather(*detail_tasks)
+
+        # --- Step 3.5: Filter non-target-area vacancies ---
+        # HH.ru returns remote vacancies from other countries when searching by area.
+        # We only want vacancies physically located within the target area.
+        if valid_area_ids is not None:
+            before = len(all_items)
+            all_items = [
+                item for item in all_items
+                if str(item.get('area', {}).get('id', '')) in valid_area_ids
+            ]
+            filtered = before - len(all_items)
+            if filtered:
+                logger.info(f"[{search_label}] Filtered out {filtered} vacancies outside target area (remote from other countries)")
 
         # --- Step 4: Save to DB ---
         logger.info(f"[{search_label}] Saving {len(all_items)} records to DB...")
