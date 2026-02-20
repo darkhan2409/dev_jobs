@@ -173,14 +173,14 @@ const AppHeader = () => {
                         </Link>
 
                         {/* Desktop Navigation */}
-                        <nav className="hidden md:flex items-center gap-2">
+                        <nav className="hidden lg:flex items-center gap-2">
                             {primaryNavLinks.map((link) => (
                                 <NavLinkItem key={link.to} {...link} />
                             ))}
                         </nav>
 
                         {/* Right Side: Auth */}
-                        <div className="hidden md:flex items-center">
+                        <div className="hidden lg:flex items-center">
                             {/* Vertical Divider */}
                             <div className="h-6 w-px bg-gray-700 mx-6"></div>
 
@@ -265,7 +265,7 @@ const AppHeader = () => {
                         {/* Mobile Menu Button */}
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className="md:hidden p-2 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                            className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors cursor-pointer"
                             aria-label={isMobileMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
                             aria-expanded={isMobileMenuOpen}
                             aria-controls="mobile-main-nav"
@@ -282,7 +282,7 @@ const AppHeader = () => {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="md:hidden bg-[#0B0C10]/95 backdrop-blur-xl border-t border-gray-800"
+                            className="lg:hidden bg-[#0B0C10]/95 backdrop-blur-xl border-t border-gray-800"
                             id="mobile-main-nav"
                         >
                             <div className="px-4 py-4 space-y-2">

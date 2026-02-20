@@ -77,9 +77,9 @@ export default function GuidePipelinePage() {
       {/* ── Pipeline ── */}
       <div className="relative">
         {/* Background connecting line (desktop only) */}
-        <div className="hidden md:block absolute top-1/2 left-0 right-0 -translate-y-1/2 h-0.5 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800" />
+        <div className="hidden lg:block absolute top-1/2 left-0 right-0 -translate-y-1/2 h-0.5 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800" />
 
-        <div className="flex flex-col md:flex-row md:justify-between items-center gap-12 md:gap-0">
+        <div className="flex flex-col lg:flex-row lg:justify-between items-center gap-12 lg:gap-0">
           {GUIDE_STAGES.map((stage) => {
             const Icon = ICON_MAP[stage.icon];
             const isHovered = hoveredId === stage.id;
@@ -89,7 +89,7 @@ export default function GuidePipelinePage() {
             return (
               <div
                 key={stage.id}
-                className="relative flex flex-col items-center group"
+                className="relative flex flex-col items-center group w-40"
                 onMouseEnter={() => setHoveredId(stage.id)}
                 onMouseLeave={() => setHoveredId(null)}
               >
