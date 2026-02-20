@@ -25,6 +25,12 @@ const AppHeader = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Lock body scroll when mobile menu is open
+    useEffect(() => {
+        document.body.style.overflow = isMobileMenuOpen ? 'hidden' : '';
+        return () => { document.body.style.overflow = ''; };
+    }, [isMobileMenuOpen]);
+
     // Close menus when clicking outside
     useEffect(() => {
         const handleClickOutside = () => {
@@ -282,7 +288,7 @@ const AppHeader = () => {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="lg:hidden bg-[#0B0C10]/95 backdrop-blur-xl border-t border-gray-800"
+                            className="lg:hidden bg-[#0B0C10]/95 backdrop-blur-xl border-t border-gray-800 overflow-y-auto max-h-[calc(100dvh-4rem)]"
                             id="mobile-main-nav"
                         >
                             <div className="px-4 py-4 space-y-2">
