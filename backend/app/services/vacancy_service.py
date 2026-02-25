@@ -1,6 +1,6 @@
 from typing import List, Optional, Tuple, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import desc, func, or_, select, asc, String
+from sqlalchemy import desc, func, or_, select, asc, String, text, bindparam
 from fastapi import HTTPException, status
 
 from app.models import Vacancy
@@ -167,14 +167,18 @@ class VacancyService:
                 query = query.filter(Vacancy.grade.in_(grades_list))
             
         if stack:
-            escaped_stack = _escape_ilike_value(stack)
-            stack_pattern = f"%{escaped_stack}%"
-            query = query.filter(
-                or_(
-                    Vacancy.description.ilike(stack_pattern, escape="\\"),
-                    Vacancy.title.ilike(stack_pattern, escape="\\")
-                )
-            )
+            stacks = [s.strip() for s in stack.split(',') if s.strip()]
+            if stacks:
+                stack_conditions = []
+                for i, s in enumerate(stacks):
+                    param_name = f"tech_{i}"
+                    stack_conditions.append(
+                        text(
+                            f"EXISTS (SELECT 1 FROM jsonb_array_elements_text(key_skills) elem"
+                            f" WHERE lower(elem) = lower(:{param_name}))"
+                        ).bindparams(bindparam(param_name, value=s, type_=String))
+                    )
+                query = query.filter(or_(*stack_conditions))
 
         if company:
             escaped_company = _escape_ilike_value(company)

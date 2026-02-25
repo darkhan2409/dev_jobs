@@ -123,7 +123,7 @@ const ProfilePage = () => {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Public Profile Info */}
-                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6">
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-6">
                         <div className="flex items-center gap-3 text-lg font-semibold text-white border-b border-slate-800 pb-4">
                             <User className="text-violet-500" size={24} />
                             <h2>Личные данные</h2>
@@ -178,7 +178,7 @@ const ProfilePage = () => {
                     </div>
 
                     {/* Professional Info */}
-                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6">
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-6">
                         <div className="flex items-center gap-3 text-lg font-semibold text-white border-b border-slate-800 pb-4">
                             <Briefcase className="text-violet-500" size={24} />
                             <h2>Профессиональный профиль</h2>

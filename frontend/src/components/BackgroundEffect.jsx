@@ -3,6 +3,7 @@ import { useReducedMotion } from 'framer-motion';
 
 const BackgroundEffect = () => {
     const canvasRef = useRef(null);
+    const animFrameRef = useRef(null);
     const shouldReduceMotion = useReducedMotion();
 
     useEffect(() => {
@@ -19,7 +20,11 @@ const BackgroundEffect = () => {
             canvas.width = width;
             canvas.height = height;
             particles = [];
-            const particleCount = Math.min(Math.floor(width * height / 15000), 100);
+            const isMobile = width < 768;
+            const particleCount = Math.min(
+                Math.floor(width * height / (isMobile ? 30000 : 15000)),
+                isMobile ? 40 : 100
+            );
 
             for (let i = 0; i < particleCount; i++) {
                 particles.push({
@@ -68,15 +73,15 @@ const BackgroundEffect = () => {
                     }
                 }
             }
-            requestAnimationFrame(draw);
+            animFrameRef.current = requestAnimationFrame(draw);
         };
 
         init();
-        const animationId = requestAnimationFrame(draw);
+        animFrameRef.current = requestAnimationFrame(draw);
         window.addEventListener('resize', init);
 
         return () => {
-            cancelAnimationFrame(animationId);
+            if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
             window.removeEventListener('resize', init);
         };
     }, [shouldReduceMotion]);

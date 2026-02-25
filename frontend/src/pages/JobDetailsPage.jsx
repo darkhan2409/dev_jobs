@@ -174,11 +174,11 @@ const JobDetailsPage = () => {
                     <div className="lg:col-span-8 space-y-8">
                         {/* Unified Header Block */}
                         <div>
-                            <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3">
                                 {vacancy.title}
                             </h1>
 
-                            <div className="text-2xl md:text-3xl font-mono font-bold text-emerald-400 mb-6">
+                            <div className="text-xl sm:text-2xl md:text-3xl font-mono font-bold text-emerald-400 mb-6">
                                 {formatSalary(vacancy.salary_from, vacancy.salary_to, vacancy.currency || 'KZT')}
                                 <span className="text-sm font-sans font-normal text-slate-500 ml-3 align-middle">
                                     до вычета налогов

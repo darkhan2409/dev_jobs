@@ -43,7 +43,7 @@ const HeroSection = ({ onSearchApply, totalJobs }) => {
                         </span>
                     </div>
 
-                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
                         Твой навигатор по <br className="md:hidden" />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
                             IT-вакансиям

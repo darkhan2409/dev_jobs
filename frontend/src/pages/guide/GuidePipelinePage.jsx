@@ -50,7 +50,7 @@ export default function GuidePipelinePage() {
       >
         <motion.h1
           variants={fadeInUp}
-          className="text-4xl md:text-5xl font-bold leading-tight mb-6"
+          className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-6"
         >
           <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
             Как создаются IT-продукты

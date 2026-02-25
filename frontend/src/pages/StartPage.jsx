@@ -62,7 +62,7 @@ const StartPage = () => {
             exit="exit"
         >
             <div className="max-w-6xl mx-auto">
-                <div className="relative overflow-hidden rounded-3xl border border-violet-500/20 bg-slate-900/70 backdrop-blur-sm p-8 md:p-10 mb-8">
+                <div className="relative overflow-hidden rounded-3xl border border-violet-500/20 bg-slate-900/70 backdrop-blur-sm p-5 sm:p-7 md:p-10 mb-8">
                     <div className="absolute -top-24 -left-12 h-64 w-64 rounded-full bg-violet-500/20 blur-3xl pointer-events-none" />
                     <div className="absolute -bottom-28 -right-12 h-64 w-64 rounded-full bg-cyan-500/20 blur-3xl pointer-events-none" />
                     <div className="relative">
@@ -70,7 +70,7 @@ const StartPage = () => {
                             <Sparkles size={14} />
                             Навигация по платформе
                         </span>
-                        <h1 className="mt-4 text-3xl md:text-5xl font-bold text-white tracking-tight">
+                        <h1 className="mt-4 text-2xl sm:text-3xl md:text-5xl font-bold text-white tracking-tight">
                             С чего начать в{' '}
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">
                                 GitJob
@@ -83,7 +83,7 @@ const StartPage = () => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <section className="rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-500/10 to-slate-900/60 p-6 md:p-7">
+                    <section className="rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-500/10 to-slate-900/60 p-4 sm:p-6 md:p-7">
                         <div className="w-11 h-11 rounded-xl bg-violet-500/20 border border-violet-400/40 text-violet-200 flex items-center justify-center">
                             <BriefcaseBusiness size={20} />
                         </div>
@@ -100,7 +100,7 @@ const StartPage = () => {
                         </Button>
                     </section>
 
-                    <section className="rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-slate-900/60 p-6 md:p-7">
+                    <section className="rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-slate-900/60 p-4 sm:p-6 md:p-7">
                         <div className="w-11 h-11 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-200 flex items-center justify-center">
                             <Compass size={20} />
                         </div>

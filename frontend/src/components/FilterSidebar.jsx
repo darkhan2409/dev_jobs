@@ -16,7 +16,7 @@ const buildLocalFilters = (filters = {}) => ({
     minSalary: filters.minSalary || '',
     location: filters.location || '',
     grade: normalizeGradeValue(filters.grade || ''),
-    stack: filters.stack || ''
+    stack: filters.stack ? filters.stack.split(',').filter(Boolean) : []
 });
 
 const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = '' }) => {
@@ -64,10 +64,12 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
     }, []);
 
     const handleTechChange = (tech) => {
-        setLocalFilters((prev) => ({
-            ...prev,
-            stack: prev.stack === tech ? '' : tech
-        }));
+        setLocalFilters((prev) => {
+            const next = prev.stack.includes(tech)
+                ? prev.stack.filter((t) => t !== tech)
+                : [...prev.stack, tech];
+            return { ...prev, stack: next };
+        });
     };
 
     const handleGradeChange = (grade) => {
@@ -119,8 +121,9 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
     };
 
     const applyFilters = () => {
-        onFilterChange(localFilters, { trigger: 'filter_apply_button' });
-        onFiltersApplied?.({ action: 'apply', filters: localFilters });
+        const filtersToApply = { ...localFilters, stack: localFilters.stack.join(',') };
+        onFilterChange(filtersToApply, { trigger: 'filter_apply_button' });
+        onFiltersApplied?.({ action: 'apply', filters: filtersToApply });
     };
 
     const clearFilters = () => {
@@ -133,7 +136,7 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
             stack: ''
         };
 
-        setLocalFilters(clearedFilters);
+        setLocalFilters({ ...clearedFilters, stack: [] });
         onFilterChange(clearedFilters, { trigger: 'filter_clear_button' });
         onFiltersApplied?.({ action: 'clear', filters: clearedFilters });
     };
@@ -144,7 +147,7 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
         localFilters.minSalary !== (filters.minSalary || '') ||
         localFilters.location !== (filters.location || '') ||
         normalizeGradeValue(localFilters.grade) !== normalizeGradeValue(filters.grade || '') ||
-        localFilters.stack !== (filters.stack || '');
+        [...localFilters.stack].sort().join(',') !== [...(filters.stack || '').split(',').filter(Boolean)].sort().join(',');
 
     const hasActiveFilters =
         Boolean(filters.search) ||
@@ -189,7 +192,7 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                                 <span>{filtersError}</span>
                                 <button
                                     onClick={fetchFilters}
-                                    className="px-2 py-1 rounded border border-red-400/40 hover:bg-red-500/20 transition-colors cursor-pointer"
+                                    className="px-3 py-2 rounded border border-red-400/40 hover:bg-red-500/20 transition-colors cursor-pointer"
                                 >
                                     Retry
                                 </button>
@@ -213,7 +216,7 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                                             applyFilters();
                                         }
                                     }}
-                                    className="w-full bg-[#0B0C10] border border-gray-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500/50 transition-colors"
+                                    className="w-full bg-[#0B0C10] border border-gray-800 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500/50 transition-colors"
                                 />
                             </div>
                         </div>
@@ -235,7 +238,7 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                                             applyFilters();
                                         }
                                     }}
-                                    className="w-full bg-[#0B0C10] border border-gray-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500/50 transition-colors"
+                                    className="w-full bg-[#0B0C10] border border-gray-800 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500/50 transition-colors"
                                 />
                             </div>
                         </div>
@@ -252,7 +255,7 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                                     placeholder="Зарплата от (₸)"
                                     value={localFilters.minSalary}
                                     onChange={(e) => handleSalaryChange(e.target.value)}
-                                    className="w-full bg-[#0B0C10] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500/50 transition-colors"
+                                    className="w-full bg-[#0B0C10] border border-gray-800 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500/50 transition-colors"
                                 />
                                 <p className="text-xs text-slate-600">Можно оставить пустым</p>
                             </div>
@@ -263,7 +266,7 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                             <div className="relative" ref={dropdownRef}>
                                 <button
                                     onClick={() => setIsLocationOpen((prev) => !prev)}
-                                    className="w-full flex items-center justify-between bg-[#0B0C10] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 hover:border-purple-500/50 transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500 cursor-pointer"
+                                    className="w-full flex items-center justify-between bg-[#0B0C10] border border-gray-800 rounded-xl px-4 py-3 text-sm text-slate-200 hover:border-purple-500/50 transition-colors focus:outline-none focus:ring-1 focus:ring-purple-500 cursor-pointer"
                                 >
                                     <span className="truncate">{localFilters.location || 'Все города'}</span>
                                     <ChevronDown size={16} className={`text-slate-500 transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} />
@@ -279,7 +282,7 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                                                     placeholder="Поиск города..."
                                                     value={locationSearch}
                                                     onChange={(e) => setLocationSearch(e.target.value)}
-                                                    className="w-full bg-slate-800 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 border-none focus:ring-1 focus:ring-violet-500/50"
+                                                    className="w-full bg-slate-800 rounded-lg pl-9 pr-3 py-2.5 text-xs text-slate-200 placeholder-slate-500 border-none focus:ring-1 focus:ring-violet-500/50"
                                                     autoFocus
                                                 />
                                             </div>
@@ -288,7 +291,7 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                                         <div className="overflow-y-auto p-1 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
                                             <button
                                                 onClick={() => handleLocationSelect('')}
-                                                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between group cursor-pointer ${!localFilters.location
+                                                className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors flex items-center justify-between group cursor-pointer ${!localFilters.location
                                                         ? 'bg-violet-500/10 text-violet-300'
                                                         : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
                                                     }`}
@@ -301,7 +304,7 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                                                 <button
                                                     key={loc}
                                                     onClick={() => handleLocationSelect(loc)}
-                                                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between group cursor-pointer ${localFilters.location === loc
+                                                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors flex items-center justify-between group cursor-pointer ${localFilters.location === loc
                                                             ? 'bg-violet-500/10 text-violet-300'
                                                             : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
                                                         }`}
@@ -359,7 +362,7 @@ const FilterSidebar = ({ filters, onFilterChange, onFiltersApplied, className = 
                                     <button
                                         key={tech}
                                         onClick={() => handleTechChange(tech)}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all border cursor-pointer ${localFilters.stack === tech
+                                        className={`px-3 py-2 rounded-lg text-xs font-mono transition-all border cursor-pointer ${localFilters.stack.includes(tech)
                                                 ? 'bg-purple-500/20 border-purple-500/50 text-purple-200'
                                                 : 'bg-[#0B0C10] border-gray-800 text-slate-400 hover:border-purple-500/30 hover:text-slate-200'
                                             }`}

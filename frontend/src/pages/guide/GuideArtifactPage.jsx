@@ -51,7 +51,7 @@ export default function GuideArtifactPage() {
           className={cn(
             'rounded-2xl overflow-hidden',
             'bg-slate-900/80 border border-slate-700/40',
-            'p-6 sm:p-8'
+            'p-4 sm:p-6 md:p-8'
           )}
         >
           <div className="flex items-start gap-4 mb-5">

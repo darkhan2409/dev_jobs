@@ -126,7 +126,7 @@ const CompaniesPage = () => {
                     className="mb-8"
                 >
                     <motion.div variants={fadeInUp} className="mb-6">
-                        <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 tracking-tight">
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 tracking-tight">
                             Лучшие <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">IT-компании</span>
                         </h1>
                         <p className="text-base text-slate-400 max-w-2xl">

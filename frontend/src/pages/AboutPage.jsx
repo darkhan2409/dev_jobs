@@ -57,7 +57,7 @@ const AboutPage = () => {
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Hero Section */}
                 <motion.div variants={fadeInUp} className="text-center mb-16">
-                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6">
                         О <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">GitJob</span>
                     </h1>
                     <p className="text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
@@ -68,7 +68,7 @@ const AboutPage = () => {
 
                 {/* Mission */}
                 <motion.section variants={fadeInUp} className="mb-16">
-                    <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-8 backdrop-blur-xl">
+                    <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 sm:p-8 backdrop-blur-xl">
                         <div className="flex items-center gap-3 mb-4">
                             <Heart className="text-red-500" size={28} />
                             <h2 className="text-2xl font-bold text-white">Наша миссия</h2>
@@ -88,7 +88,7 @@ const AboutPage = () => {
                         {features.map((feature, idx) => (
                             <div
                                 key={idx}
-                                className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 hover:border-violet-500/50 transition-colors"
+                                className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 sm:p-6 hover:border-violet-500/50 transition-colors"
                             >
                                 <div className="bg-slate-800 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
                                     {feature.icon}

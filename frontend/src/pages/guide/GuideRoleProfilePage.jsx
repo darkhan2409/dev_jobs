@@ -175,7 +175,7 @@ export default function GuideRoleProfilePage() {
         )}
       >
         {/* Card header with gradient */}
-        <div className="relative px-6 pt-8 pb-6 bg-gradient-to-b from-violet-500/10 to-transparent">
+        <div className="relative px-4 pt-5 pb-4 sm:px-6 sm:pt-8 sm:pb-6 bg-gradient-to-b from-violet-500/10 to-transparent">
           <motion.div variants={fadeInUp} className="flex items-center gap-5">
             <div className="w-16 h-16 rounded-2xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center">
               {Icon && <Icon size={32} className="text-violet-400" />}
@@ -187,7 +187,7 @@ export default function GuideRoleProfilePage() {
           </motion.div>
         </div>
 
-        <div className="px-6 pb-8 space-y-8">
+        <div className="px-4 pb-6 sm:px-6 sm:pb-8 space-y-8">
           {apiWarning && (
             <motion.div
               variants={fadeInUp}
