@@ -28,6 +28,7 @@ from app.routers import (
     interview,
     metrics,
     recommendations,
+    sitemap,
     users,
     vacancies,
 )
@@ -151,6 +152,7 @@ app.include_router(recommendations.router)
 app.include_router(interview.router)
 app.include_router(admin.router)
 app.include_router(analytics.router)
+app.include_router(sitemap.router)
 
 
 @app.api_route("/healthz", methods=["GET", "HEAD"])
